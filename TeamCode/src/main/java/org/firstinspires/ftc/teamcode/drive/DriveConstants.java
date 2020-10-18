@@ -21,7 +21,7 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = 1440;
+    public static final double TICKS_PER_REV = 720;
     public static final double MAX_RPM = 320;
 
     /*
