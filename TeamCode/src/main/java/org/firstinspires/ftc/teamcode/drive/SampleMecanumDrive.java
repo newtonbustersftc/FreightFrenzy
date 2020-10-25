@@ -101,7 +101,7 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         poseHistory = new ArrayList<>();
 
-        LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
+//        LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);

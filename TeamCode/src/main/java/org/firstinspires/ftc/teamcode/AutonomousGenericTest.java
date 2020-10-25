@@ -34,12 +34,7 @@ public class AutonomousGenericTest extends LinearOpMode {
 
     long loopCount = 0;
     int countTasks = 0;
-    int skystonePosition = -1;
-    RobotProfile.StartPosition startPosition;
-    String startingPositionModes;
-    String parkingLocation;
 
-    SequentialComboTask pickUpTask;
     private int delay;
 
     public void initRobot() {
@@ -53,59 +48,21 @@ public class AutonomousGenericTest extends LinearOpMode {
         navigator = new RobotNavigator(robotProfile);
         navigator.reset();
         navigator.setInitPosition(0, 0, 0);
-        robotHardware.setClampPosition(RobotHardware.ClampPosition.INITIAL);
         driverOptions = new DriverOptions();
         Logger.logFile("Init completed");
         Logger.logFile("DistancePID:" + robotProfile.distancePID.p + ", " + robotProfile.distancePID.i + ", " + robotProfile.distancePID.d);
         Logger.logFile("DistancePID:" + robotProfile.headingPID.p + ", " + robotProfile.headingPID.i + ", " + robotProfile.headingPID.d);
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
         try {
-            String delaystring = prefs.getString(DELAY_PREF, "");
-            delaystring = delaystring.replace(" sec", "");
-            driverOptions.setDelay(Integer.parseInt(delaystring));
-            Logger.logFile("delay: "+ this.delay);
-            driverOptions.setParking(prefs.getString(PARKING_PREF,""));
-            driverOptions.setStartingPositionModes(prefs.getString(START_POS_MODES_PREF, ""));
-            driverOptions.setDeliverRoute(prefs.getString(DELIVER_ROUTE_PREF,""));
-            driverOptions.setMoveFoundation(prefs.getString(FOUNDATION_PREF,""));
-            driverOptions.setIsParkOnly(prefs.getString(PARKING_ONLY_PREF,""));
-            Logger.logFile("parking: "+ driverOptions.getParking());
-            Logger.logFile("startingPositionModes: "+ driverOptions.getStartingPositionModes());
-            Logger.logFile("deliverRoute: " + driverOptions.getDeliverRoute());
-            Logger.logFile("moveFoundation: " + driverOptions.getMoveFoundation());
-            Logger.logFile("isParkOnly: " + driverOptions.getIsParkOnly());
-            Logger.logFile("StoneOptions: " + driverOptions.getStoneOptions());
+
         } catch (Exception e) {
             this.delay = 0;
         }
 
         double heading;
-         if (driverOptions.getStartingPositionModes().equals("RED_2")) {
-            startPosition = RobotProfile.StartPosition.RED_2;
-            heading = 0;
-        }
-        else if (driverOptions.getStartingPositionModes().equals("RED_3")) {
-            startPosition = RobotProfile.StartPosition.RED_3;
-            heading = 0;
-        }
-        else if (driverOptions.getStartingPositionModes().equals("BLUE_2")) {
-            startPosition = RobotProfile.StartPosition.BLUE_2;
-            heading =0;
-        }
-        else {
-            startPosition = RobotProfile.StartPosition.BLUE_3;
-            heading =0;
-        }
 
         navigator.setInitPosition(0,0, 0);
-        Logger.logFile("init x: " + robotProfile.robotStartPoints.get(startPosition).getX());
-        Logger.logFile("init y: " + robotProfile.robotStartPoints.get(startPosition).getY());
-        Logger.logFile("heading" + heading );
 
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(START_POS_MODES_PREF, driverOptions.getStartingPositionModes());
-        editor.putString(PARKING_PREF, driverOptions.getParking());
-        editor.apply();
     }
 
     @Override
@@ -113,15 +70,11 @@ public class AutonomousGenericTest extends LinearOpMode {
         initRobot();
         setUpTaskList();
 
-        //
-        //moveAndSlideToStone(new RobotPosition(0, 0, 0), new RobotPosition(70, 20, 0));
         taskList.add(new RobotSleep(10000));
         double origImu = robotHardware.getGyroAngle();
 
         waitForStart();
 
-
-        robotHardware.setClampPosition(RobotHardware.ClampPosition.INITIAL);
         if (taskList.size()>0) {
             taskList.get(0).prepare();
         }
