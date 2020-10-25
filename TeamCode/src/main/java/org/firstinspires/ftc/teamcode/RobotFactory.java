@@ -10,10 +10,6 @@ public class RobotFactory {
         if(theRobot == null){
             theRobot = new RobotHardware();
             theRobot.init(hardwareMap, robotProfile);
-            theRobot.rotateGrabberOriginPos();
-            theRobot.setClampPosition(RobotHardware.ClampPosition.INITIAL);
-            theRobot.setHookPosition(RobotHardware.HookPosition.HOOK_OFF);
-            theRobot.setCapStoneServo(RobotHardware.CapPosition.CAP_UP);
 
         }
         return theRobot;

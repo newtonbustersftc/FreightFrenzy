@@ -15,7 +15,6 @@ public class RobotProfileTest {
     public void robotProfileTest() {
         RobotProfile profile = new RobotProfile();
         profile.populateInitValue();
-        System.out.println(profile.stoneScanPoints.get(RobotProfile.StartPosition.BLUE_2)[0].x);
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -26,7 +25,6 @@ public class RobotProfileTest {
             File f = new File("../../profile.json");
             profile.saveToFile(f);
             RobotProfile profile2 = RobotProfile.loadFromFile(f);
-            System.out.println(profile2.stoneScanPoints.get(RobotProfile.StartPosition.BLUE_2)[0].x);
         } catch (Exception ex) {
             System.out.println(ex);
         }
