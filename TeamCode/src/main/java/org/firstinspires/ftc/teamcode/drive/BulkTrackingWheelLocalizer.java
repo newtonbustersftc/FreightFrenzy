@@ -49,8 +49,6 @@ public class BulkTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
         leftEncoder = new BulkEncoder(robotHardware, RobotHardware.EncoderType.LEFT);
         rightEncoder = new BulkEncoder(robotHardware, RobotHardware.EncoderType.RIGHT);
         frontEncoder = new BulkEncoder(robotHardware, RobotHardware.EncoderType.HORIZONTAL);
-
-        // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
     }
 
     public static double encoderTicksToInches(double ticks) {
@@ -77,7 +75,7 @@ public class BulkTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
         return Arrays.asList(
                 encoderTicksToInches(leftEncoder.getRawVelocity()),
                 encoderTicksToInches(rightEncoder.getRawVelocity()),
-                encoderTicksToInches(frontEncoder.getRawVelocity())
+                -encoderTicksToInches(frontEncoder.getRawVelocity())
         );
     }
 }

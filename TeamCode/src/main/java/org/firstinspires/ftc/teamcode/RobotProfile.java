@@ -48,8 +48,8 @@ public class RobotProfile {
         hardwareSpec.trackWheelDiameter = 3.8;   //cm diameter
         hardwareSpec.trackWheelCPR = 4000;
         hardwareSpec.leftRightWheelDist = 41;//cm left right dist, from tuning
-        hardwareSpec.leftEncodeForwardSign = -1;
-        hardwareSpec.rightEncoderForwardSign = -1;
+        hardwareSpec.leftEncodeForwardSign = 1;
+        hardwareSpec.rightEncoderForwardSign = 1;
         hardwareSpec.horizontalEncoderForwardSign = 1;
 
     }

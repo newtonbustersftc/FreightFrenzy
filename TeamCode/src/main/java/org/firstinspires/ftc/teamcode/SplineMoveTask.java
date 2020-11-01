@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 
+import org.firstinspires.ftc.teamcode.drive.BulkMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 /**
@@ -11,10 +12,10 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 public class SplineMoveTask implements RobotControl {
 
-    SampleMecanumDrive drive;
+    BulkMecanumDrive drive;
     Trajectory trajectory;
 
-    public SplineMoveTask(SampleMecanumDrive drive, Trajectory trajectory){
+    public SplineMoveTask(BulkMecanumDrive drive, Trajectory trajectory){
         this.drive = drive;
         this.trajectory = trajectory;
     }
@@ -29,7 +30,7 @@ public class SplineMoveTask implements RobotControl {
     }
 
     public void prepare(){
-        drive.followTrajectory(trajectory);
+        drive.followTrajectoryAsync(trajectory);
     }
 
     public void execute() {

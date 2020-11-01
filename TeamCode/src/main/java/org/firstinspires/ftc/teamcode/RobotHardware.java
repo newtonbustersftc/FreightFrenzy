@@ -15,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.drive.BulkMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.BulkTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -28,7 +29,7 @@ public class RobotHardware {
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
-    SampleMecanumDrive mecanumDrive;
+    BulkMecanumDrive mecanumDrive;
     BulkTrackingWheelLocalizer trackingWheelLocalizer;
     //ExpansionHubServo ;
 
@@ -49,14 +50,14 @@ public class RobotHardware {
         catch (IllegalArgumentException ex) {
             isPrototype = true;
         }
-        expansionHub1 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 1");
+        expansionHub1 = hardwareMap.get(ExpansionHubEx.class, "Control Hub");
         rrMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("RRMotor");
         rlMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("RLMotor");
         frMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("FRMotor");
         flMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("FLMotor");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.mode = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled = false;
         imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
@@ -77,17 +78,22 @@ public class RobotHardware {
         if (!isPrototype) {
             expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
         }
+        Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
+        getBulkData1();
+        getBulkData2();
+
         DriveConstants.kA = profile.rrFeedForwardParam.kA;
         DriveConstants.kV = profile.rrFeedForwardParam.kV;
         DriveConstants.kStatic = profile.rrFeedForwardParam.kStatic;
         SampleMecanumDrive.HEADING_PID = new PIDCoefficients(profile.rrHeadingPID.p,profile.rrHeadingPID.i,profile.rrHeadingPID.d);
         SampleMecanumDrive.TRANSLATIONAL_PID = new PIDCoefficients(profile.rrTranslationPID.p,profile.rrTranslationPID.i,profile.rrTranslationPID.d);
-        mecanumDrive = new SampleMecanumDrive(hardwareMap);
+        mecanumDrive = new BulkMecanumDrive(this, rrMotor, rlMotor, frMotor, flMotor);
         trackingWheelLocalizer = new BulkTrackingWheelLocalizer(this);
         mecanumDrive.setLocalizer(trackingWheelLocalizer);
+
     }
 
-    public MecanumDrive getMecanumDrive() {
+    public BulkMecanumDrive getMecanumDrive() {
         return mecanumDrive;
     }
 
@@ -97,6 +103,8 @@ public class RobotHardware {
 
     public void getBulkData1() {
         bulkData1 = expansionHub1.getBulkInputData();
+        Logger.logFile(("getBulkData1: " + bulkData1.getMotorCurrentPosition(rrMotor) + "," + bulkData1.getMotorCurrentPosition(rlMotor)));
+        Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
     }
 
     public void getBulkData2() {
@@ -236,7 +244,7 @@ public class RobotHardware {
 //    }
 
     public float getGyroAngle() {
-        float angle1 = -imu1.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+        float angle1 = -imu1.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle;
         //float angle2 = robotHardware.imu2.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).secondAngle;
         //return (angle1 + angle2) / 2;
         return angle1;

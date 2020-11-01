@@ -1,28 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.content.SharedPreferences;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.DELAY_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.DELIVER_ROUTE_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.FOUNDATION_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.PARKING_ONLY_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.PARKING_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.START_POS_MODES_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.STONE_PREF;
 
 /**
  * 2019.10.26
  * Created by Ian Q.
  */
-//@TeleOp(name="AutonomousTest", group="Test")
+@TeleOp(name="AutonomousTest", group="Test")
 public class AutonomousGenericTest extends LinearOpMode {
 
     RobotHardware robotHardware;
@@ -49,23 +41,29 @@ public class AutonomousGenericTest extends LinearOpMode {
         initRobot();
         setUpTaskList();
 
-        //taskList.add(new RobotSleep(10000));
-
         waitForStart();
 
         if (taskList.size()>0) {
+            Logger.logFile("Task Prepare " + taskList.get(0));
             taskList.get(0).prepare();
         }
         // run until the end of the match (driver presses STOP)
         // run until the end of the match (driver presses STOP)
+        Logger.logFile("Main Task Loop started");
         while (opModeIsActive()) {
             loopCount++;
             robotHardware.getBulkData1();
             robotHardware.getBulkData2();
+            try {
+                Logger.flushToFile();
+            }
+            catch (Exception ex) {
+            }
 
             if (taskList.size() > 0) {
                 taskList.get(0).execute();
                 if (taskList.get(0).isDone()) {
+                    Logger.logFile("Task Complete " + taskList.get(0));
                     taskList.get(0).cleanUp();
                     taskList.remove(0);
                     countTasks++;
@@ -85,6 +83,7 @@ public class AutonomousGenericTest extends LinearOpMode {
 
     void setUpTaskList() {
         taskList = new ArrayList<RobotControl>();
+
         Trajectory traj = robotHardware.mecanumDrive.trajectoryBuilder(new Pose2d())
                 .splineTo(new Vector2d(36, -15), 0)
                 .splineTo(new Vector2d(48, -15), 0)
