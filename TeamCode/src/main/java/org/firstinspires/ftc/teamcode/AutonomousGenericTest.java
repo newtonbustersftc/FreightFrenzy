@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.content.SharedPreferences;
+
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.io.File;
@@ -22,20 +26,12 @@ import static org.firstinspires.ftc.teamcode.AutonomousOptions.STONE_PREF;
 public class AutonomousGenericTest extends LinearOpMode {
 
     RobotHardware robotHardware;
-    RobotNavigator navigator;
     RobotProfile robotProfile;
-    DriverOptions driverOptions;
-
-    int leftEncoderCounts;
-    int rightEncoderCounts;
-    int horizontalEncoderCounts;
 
     ArrayList<RobotControl> taskList;
 
     long loopCount = 0;
     int countTasks = 0;
-
-    private int delay;
 
     public void initRobot() {
         try{
@@ -45,24 +41,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         Logger.init();
         robotHardware = new RobotHardware();
         robotHardware.init(hardwareMap, robotProfile);
-        navigator = new RobotNavigator(robotProfile);
-        navigator.reset();
-        navigator.setInitPosition(0, 0, 0);
-        driverOptions = new DriverOptions();
         Logger.logFile("Init completed");
-        Logger.logFile("DistancePID:" + robotProfile.distancePID.p + ", " + robotProfile.distancePID.i + ", " + robotProfile.distancePID.d);
-        Logger.logFile("DistancePID:" + robotProfile.headingPID.p + ", " + robotProfile.headingPID.i + ", " + robotProfile.headingPID.d);
-        SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
-        try {
-
-        } catch (Exception e) {
-            this.delay = 0;
-        }
-
-        double heading;
-
-        navigator.setInitPosition(0,0, 0);
-
     }
 
     @Override
@@ -70,8 +49,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         initRobot();
         setUpTaskList();
 
-        taskList.add(new RobotSleep(10000));
-        double origImu = robotHardware.getGyroAngle();
+        //taskList.add(new RobotSleep(10000));
 
         waitForStart();
 
@@ -84,18 +62,10 @@ public class AutonomousGenericTest extends LinearOpMode {
             loopCount++;
             robotHardware.getBulkData1();
             robotHardware.getBulkData2();
-            leftEncoderCounts = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT);
-            rightEncoderCounts = robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT);
-            horizontalEncoderCounts = robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL);
-            navigator.updateEncoderPos(leftEncoderCounts, rightEncoderCounts, horizontalEncoderCounts);
 
             if (taskList.size() > 0) {
                 taskList.get(0).execute();
                 if (taskList.get(0).isDone()) {
-                    double newImu = robotHardware.getGyroAngle();
-                    Logger.logFile("IME Rotate:" + (newImu - origImu));
-                    Logger.logFile("TaskComplete: " + taskList.get(0) + " Position:" + navigator.getWorldX() + "," + navigator.getWorldY() + " :" + navigator.getHeading());
-                    Logger.flushToFile();
                     taskList.get(0).cleanUp();
                     taskList.remove(0);
                     countTasks++;
@@ -114,7 +84,21 @@ public class AutonomousGenericTest extends LinearOpMode {
     }
 
     void setUpTaskList() {
-        navigator.reset();
         taskList = new ArrayList<RobotControl>();
+        Trajectory traj = robotHardware.mecanumDrive.trajectoryBuilder(new Pose2d())
+                .splineTo(new Vector2d(36, -15), 0)
+                .splineTo(new Vector2d(48, -15), 0)
+                .splineTo(new Vector2d(84, 6), 0)
+                .build();
+
+        Trajectory traj2 = robotHardware.mecanumDrive.trajectoryBuilder(traj.end(), true)
+                        .splineTo(new Vector2d(48, -15), Math.toRadians(180))
+                        .splineTo(new Vector2d(36, -15), Math.toRadians(180))
+                        .splineTo(new Vector2d(0, 0), Math.toRadians(180))
+                        .build();
+
+        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, traj));
+        taskList.add(new RobotSleep(1000));
+        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, traj2));
     }
 }
