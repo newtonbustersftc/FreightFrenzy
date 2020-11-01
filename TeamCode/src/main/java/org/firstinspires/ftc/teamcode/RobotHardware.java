@@ -15,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.drive.BulkTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
@@ -28,7 +29,7 @@ public class RobotHardware {
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
     SampleMecanumDrive mecanumDrive;
-    StandardTrackingWheelLocalizer trackingWheelLocalizer;
+    BulkTrackingWheelLocalizer trackingWheelLocalizer;
     //ExpansionHubServo ;
 
     //Servo ;
@@ -82,7 +83,7 @@ public class RobotHardware {
         SampleMecanumDrive.HEADING_PID = new PIDCoefficients(profile.rrHeadingPID.p,profile.rrHeadingPID.i,profile.rrHeadingPID.d);
         SampleMecanumDrive.TRANSLATIONAL_PID = new PIDCoefficients(profile.rrTranslationPID.p,profile.rrTranslationPID.i,profile.rrTranslationPID.d);
         mecanumDrive = new SampleMecanumDrive(hardwareMap);
-        trackingWheelLocalizer = new StandardTrackingWheelLocalizer(hardwareMap);
+        trackingWheelLocalizer = new BulkTrackingWheelLocalizer(this);
         mecanumDrive.setLocalizer(trackingWheelLocalizer);
     }
 
@@ -90,7 +91,7 @@ public class RobotHardware {
         return mecanumDrive;
     }
 
-    public StandardTrackingWheelLocalizer getTrackingWheelLocalizer(){
+    public BulkTrackingWheelLocalizer getTrackingWheelLocalizer(){
         return trackingWheelLocalizer;
     }
 
@@ -117,6 +118,20 @@ public class RobotHardware {
         }
         else if(encoder == EncoderType.HORIZONTAL) {
             return profile.hardwareSpec.horizontalEncoderForwardSign * bulkData1.getMotorCurrentPosition(frMotor);
+        } else {
+            return 0;
+        }
+    }
+
+    public double getEncoderVelocity(EncoderType encoder) {
+        if(encoder == EncoderType.LEFT) {
+            return profile.hardwareSpec.leftEncodeForwardSign * bulkData1.getMotorVelocity(rlMotor);
+        }
+        else if(encoder == EncoderType.RIGHT) {
+            return profile.hardwareSpec.rightEncoderForwardSign * bulkData1.getMotorVelocity(rrMotor);
+        }
+        else if(encoder == EncoderType.HORIZONTAL) {
+            return profile.hardwareSpec.horizontalEncoderForwardSign * bulkData1.getMotorVelocity(frMotor);
         } else {
             return 0;
         }
