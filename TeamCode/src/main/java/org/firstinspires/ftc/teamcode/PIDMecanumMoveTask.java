@@ -145,13 +145,13 @@ public class PIDMecanumMoveTask implements RobotControl {
         double headCorrection = pidHeading.performPID(getHeadingError());
         double targetDistance = Math.hypot(endPos.getY() - startPos.getY(), endPos.getX() - startPos.getX());
         double currentDistance = Math.hypot(navigator.getWorldY() - startPos.getY(), navigator.getWorldX() - startPos.getX());
-        if (targetDistance - currentDistance <= profile.movement.forwardStopDist){
+      /*  if (targetDistance - currentDistance <= profile.movement.forwardStopDist){
             double pwr = minPower + (targetDistance - currentDistance)/profile.movement.forwardStopDist * (power-minPower);
             robot.mecanumDrive2(pwr, targetAngle + posCorrection - endPos.getHeading(), headCorrection);
-        }
-        else{
+        }*/
+      /*  else{
             robot.mecanumDrive2(power,targetAngle + posCorrection - endPos.getHeading(), headCorrection);
-        }
+        }*/
         //Logger.logFile("X:" + navigator.getWorldX() + ", Y:" + navigator.getWorldY() +
         //         " H:" + navigator.getHeading() + ", PosCorr:" + posCorrection + " ,headCorr:" + headCorrection);
     }

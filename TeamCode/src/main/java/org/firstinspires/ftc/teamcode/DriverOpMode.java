@@ -30,12 +30,7 @@ public class DriverOpMode extends OpMode {
 
     boolean fieldMode;
     boolean xAlreadyPressed = false;
-    boolean aAlreadyPressed = false;
-    boolean bAlreadyPressed = false;
     boolean yAlreadyPressed = false;
-    boolean sliderPosReseted = false;
-    boolean clampServoOut = false;
-    boolean tapeMoving = false;
 
     // DriveThru combos
     RobotControl currentTask = null;
@@ -52,18 +47,12 @@ public class DriverOpMode extends OpMode {
         Logger.init();
 
         robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
-        robotHardware.setClampAnglePosition(RobotHardware.ClampAnglePosition.NORMAL);
+
 
         // Based on the Autonomous mode starting position, define the gyro offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
 
         gyroAngleOffset = robotHardware.getGyroAngle();
-        if (prefs.getString(START_POS_MODES_PREF, "").contains("RED")) {
-            gyroAngleOffset += 90;
-        }
-        else {
-            gyroAngleOffset -= 90;
-        }
 
         navigator = new RobotNavigator(robotProfile);
         navigator.reset();
@@ -101,21 +90,6 @@ public class DriverOpMode extends OpMode {
             fieldMode = false;  //good luck driving
         }
 
-
-//        if (gamepad1.x) {
-//            robotHardware.setHookPosition(RobotHardware.HookPosition.HOOK_ON);
-//        } else if (gamepad1.y) {
-//            robotHardware.setHookPosition(RobotHardware.HookPosition.HOOK_OFF);
-//        }
-
-        if (!yAlreadyPressed && !gamepad2.start) {
-            if (gamepad2.y) {
-                //currentTask = homePositionTask;
-                currentTask.prepare();
-                Logger.logFile(currentTask.toString());
-                yAlreadyPressed = true;
-            }
-        }
 
         if (!gamepad2.y) {
             yAlreadyPressed = false;

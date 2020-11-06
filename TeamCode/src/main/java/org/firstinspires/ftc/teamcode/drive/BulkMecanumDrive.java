@@ -21,36 +21,28 @@ import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumConstraints;
 import com.acmerobotics.roadrunner.util.NanoClock;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.teamcode.Logger;
+import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
-import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
+import org.openftc.revextensions2.ExpansionHubMotor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.BASE_CONSTRAINTS;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.getMotorVelocityF;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 
-/*
- * Simple mecanum drive hardware implementation for REV hardware.
- */
 @Config
-public class SampleMecanumDrive extends MecanumDrive {
+public class BulkMecanumDrive extends MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(8, 0.05, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0.05, 0);
 
@@ -76,14 +68,15 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     private List<Pose2d> poseHistory;
 
-    private DcMotorEx leftFront, leftRear, rightRear, rightFront;
+    private ExpansionHubMotor leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
-    private BNO055IMU imu;
 
     private Pose2d lastPoseOnTurn;
+    RobotHardware robotHardware;
 
-    public SampleMecanumDrive(HardwareMap hardwareMap) {
+    public BulkMecanumDrive(RobotHardware robotHardware, ExpansionHubMotor rrMotor, ExpansionHubMotor rlMotor, ExpansionHubMotor frMotor, ExpansionHubMotor flMotor) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
+        this.robotHardware = robotHardware;
 
         dashboard = FtcDashboard.getInstance();
         dashboard.setTelemetryTransmissionInterval(25);
@@ -101,26 +94,10 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         poseHistory = new ArrayList<>();
 
-//        LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
-
-        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
-
-        // TODO: adjust the names of the following hardware devices to match your configuration
-        imu = hardwareMap.get(BNO055IMU.class, "imu1");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        imu.initialize(parameters);
-
-        // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
-        // upward (normal to the floor) using a command like the following:
-        // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
-
-        leftFront = hardwareMap.get(DcMotorEx.class, "FLMotor");
-        leftRear = hardwareMap.get(DcMotorEx.class, "RLMotor");
-        rightRear = hardwareMap.get(DcMotorEx.class, "RRMotor");
-        rightFront = hardwareMap.get(DcMotorEx.class, "FRMotor");
+        leftFront = flMotor;
+        leftRear = rlMotor;
+        rightRear = rrMotor;
+        rightFront = frMotor;
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
@@ -130,23 +107,7 @@ public class SampleMecanumDrive extends MecanumDrive {
             motor.setMotorType(motorConfigurationType);
         }
 
-        if (RUN_USING_ENCODER) {
-            setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        if (RUN_USING_ENCODER && MOTOR_VELO_PID != null) {
-            setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, MOTOR_VELO_PID);
-        }
-
-        // TODO: reverse any motors using DcMotor.setDirection()
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-        rightRear.setDirection(DcMotor.Direction.REVERSE);
-
-        // TODO: if desired, use setLocalizer() to change the localization method
-        // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
-        setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -310,34 +271,25 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
     }
 
-    public PIDCoefficients getPIDCoefficients(DcMotor.RunMode runMode) {
-        PIDFCoefficients coefficients = leftFront.getPIDFCoefficients(runMode);
-        return new PIDCoefficients(coefficients.p, coefficients.i, coefficients.d);
-    }
-
-    public void setPIDCoefficients(DcMotor.RunMode runMode, PIDCoefficients coefficients) {
-        for (DcMotorEx motor : motors) {
-            motor.setPIDFCoefficients(runMode, new PIDFCoefficients(
-                    coefficients.kP, coefficients.kI, coefficients.kD, getMotorVelocityF()
-            ));
-        }
-    }
-
     @NonNull
     @Override
     public List<Double> getWheelPositions() {
         List<Double> wheelPositions = new ArrayList<>();
-        for (DcMotorEx motor : motors) {
-            wheelPositions.add(encoderTicksToInches(motor.getCurrentPosition()));
-        }
+        //Left front is not connected in our robot
+        wheelPositions.add(0.0);
+        wheelPositions.add(encoderTicksToInches(robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT)));
+        wheelPositions.add(encoderTicksToInches(robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT)));
+        wheelPositions.add(encoderTicksToInches(robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL)));
         return wheelPositions;
     }
 
     public List<Double> getWheelVelocities() {
         List<Double> wheelVelocities = new ArrayList<>();
-        for (DcMotorEx motor : motors) {
-            wheelVelocities.add(encoderTicksToInches(motor.getVelocity()));
-        }
+        //Left front is not connected in our robot
+        wheelVelocities.add(0.0);
+        wheelVelocities.add(encoderTicksToInches(robotHardware.getEncoderVelocity(RobotHardware.EncoderType.LEFT)));
+        wheelVelocities.add(encoderTicksToInches(robotHardware.getEncoderVelocity(RobotHardware.EncoderType.RIGHT)));
+        wheelVelocities.add(encoderTicksToInches(robotHardware.getEncoderVelocity(RobotHardware.EncoderType.HORIZONTAL)));
         return wheelVelocities;
     }
 
@@ -351,6 +303,6 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     @Override
     public double getRawExternalHeading() {
-        return imu.getAngularOrientation().firstAngle;
+        return 0;
     }
 }

@@ -20,6 +20,7 @@ repositories {
 
 dependencies {
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+    testImplementation 'org.testng:testng:6.9.6'
     implementation 'org.openftc:rev-extensions-2:1.2'
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'org.apache.commons:commons-math3:3.6.1'

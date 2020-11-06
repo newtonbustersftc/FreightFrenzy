@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.io.File;
 
-//@TeleOp(name="DriverOpMode Encoder", group="Test")
+@TeleOp(name="DriverOpMode Encoder", group="Test")
 //@Disabled
 public class DriverOpModeEncoder extends OpMode {
     RobotHardware robotHardware;
@@ -46,8 +46,8 @@ public class DriverOpModeEncoder extends OpMode {
     public void loop() {
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
+        robotHardware.getTrackingWheelLocalizer().update();
         gyroCurrAngle = robotHardware.getGyroAngle();
-
 
         navigator.updateEncoderPos(robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT),
                 robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT),
@@ -66,20 +66,15 @@ public class DriverOpModeEncoder extends OpMode {
             fieldMode = false;  //good luck driving
         }
 
-        telemetry.addData("Gyro", gyroCurrAngle);
-        telemetry.addData("LeftE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
-        telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
-        telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
+        telemetry.addData("Gyro", Math.toDegrees(gyroCurrAngle));
+        //telemetry.addData("LeftE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
+        //telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
+        //telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
+        telemetry.addData("Pose:", robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
+        telemetry.addData("Velo:", robotHardware.getTrackingWheelLocalizer().getPoseVelocity());
 //        telemetry.addData("X", navigator.getWorldX());
 //        telemetry.addData("Y", navigator.getWorldY());
 //        telemetry.addData("Angle:", navigator.getHeading());
-        if (!robotHardware.isPrototype) {
-            liftEncoderCnt = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
-            sliderEncoderCnt = robotHardware.getEncoderCounts(RobotHardware.EncoderType.SLIDER);
-            telemetry.addData("LiftE", liftEncoderCnt);
-            telemetry.addData("SlideE", sliderEncoderCnt);
-            telemetry.addData("Dist", robotHardware.getRightDistance());
-        }
    }
 
    private void handleMovement() {
