@@ -2,12 +2,16 @@ package org.firstinspires.ftc.teamcode;
 
 import android.content.SharedPreferences;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.firstinspires.ftc.teamcode.AutonomousOptions.DELAY_PREF;
 import static org.firstinspires.ftc.teamcode.AutonomousOptions.DELIVER_ROUTE_PREF;
@@ -34,7 +38,7 @@ public class DriverOpMode extends OpMode {
 
     // DriveThru combos
     RobotControl currentTask = null;
-
+    RobotVision robotVision;
     @Override
     public void init() {
         try {
@@ -47,7 +51,9 @@ public class DriverOpMode extends OpMode {
         Logger.init();
 
         robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
-
+        robotVision = robotHardware.getRobotVision();
+        robotVision.activateRecognition();
+        robotVision.activateNavigationTarget();
 
         // Based on the Autonomous mode starting position, define the gyro offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
@@ -71,6 +77,24 @@ public class DriverOpMode extends OpMode {
         }
     }
 
+    private void handleVision() {
+        Pose2d currentPosition = robotVision.getNavigationLocalization();
+        telemetry.addData("Current Location", currentPosition);
+        List<Recognition> updatedRecognitions = robotVision.getRingRecognition();
+        if (updatedRecognitions != null) {
+            telemetry.addData("# Object Detected", updatedRecognitions.size());
+            // step through the list of recognitions and display boundary info.
+            int i = 0;
+            for (Recognition recognition : updatedRecognitions) {
+                telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                        recognition.getLeft(), recognition.getTop());
+                telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                        recognition.getRight(), recognition.getBottom());
+            }
+        }
+    }
+
     @Override
     public void loop() {
         robotHardware.getBulkData1();
@@ -80,6 +104,7 @@ public class DriverOpMode extends OpMode {
 
         // Robot movement
         handleMovement();
+        handleVision();
 
         // toggle field mode on/off.
         // Driver 1: left trigger - enable; right trigger - disable
