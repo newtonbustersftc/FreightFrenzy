@@ -32,6 +32,7 @@ public class RobotHardware {
     BulkMecanumDrive mecanumDrive;
     BulkTrackingWheelLocalizer trackingWheelLocalizer;
     //ExpansionHubServo ;
+    RobotVision robotVision;
 
     //Servo ;
     //DigitalChannel ;
@@ -90,7 +91,12 @@ public class RobotHardware {
         mecanumDrive = new BulkMecanumDrive(this, rrMotor, rlMotor, frMotor, flMotor);
         trackingWheelLocalizer = new BulkTrackingWheelLocalizer(this);
         mecanumDrive.setLocalizer(trackingWheelLocalizer);
+        robotVision = new RobotVision();
+        robotVision.init(hardwareMap, this, profile);
+    }
 
+    public RobotVision getRobotVision() {
+        return robotVision;
     }
 
     public BulkMecanumDrive getMecanumDrive() {
