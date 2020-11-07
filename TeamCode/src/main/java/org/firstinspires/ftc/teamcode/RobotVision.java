@@ -91,7 +91,6 @@ public class RobotVision {
     public void init(HardwareMap hardwareMap, RobotHardware robotHardware, RobotProfile robotProfile){
         this.hardwareMap = hardwareMap;
         webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-        robotHardware.init(hardwareMap, robotProfile);
         initVuforia();
         initTfod();
      }
@@ -122,7 +121,7 @@ public class RobotVision {
 
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
-        VuforiaTrackables targetsUltimateGoal = this.vuforia.loadTrackablesFromAsset("UltimateGoal");
+        targetsUltimateGoal = this.vuforia.loadTrackablesFromAsset("UltimateGoal");
         VuforiaTrackable blueTowerGoalTarget = targetsUltimateGoal.get(0);
         blueTowerGoalTarget.setName("Blue Tower Goal Target");
         VuforiaTrackable redTowerGoalTarget = targetsUltimateGoal.get(1);
@@ -135,7 +134,7 @@ public class RobotVision {
         frontWallTarget.setName("Front Wall Target");
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
-        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+        allTrackables = new ArrayList<VuforiaTrackable>();
         allTrackables.addAll(targetsUltimateGoal);
 
         /**
