@@ -1,28 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
-import com.acmerobotics.roadrunner.drive.Drive;
-import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.BulkMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.BulkTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
-import org.openftc.revextensions2.ExpansionHubServo;
 import org.openftc.revextensions2.RevBulkData;
 
 public class RobotHardware {
@@ -31,6 +23,7 @@ public class RobotHardware {
     RevBulkData bulkData1, bulkData2;
     BulkMecanumDrive mecanumDrive;
     BulkTrackingWheelLocalizer trackingWheelLocalizer;
+    RobotVision robotVision;
     //ExpansionHubServo ;
 
     //Servo ;
@@ -75,6 +68,8 @@ public class RobotHardware {
         rlMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        getRobotVision();
         if (!isPrototype) {
             expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
         }
@@ -96,6 +91,8 @@ public class RobotHardware {
     public BulkMecanumDrive getMecanumDrive() {
         return mecanumDrive;
     }
+
+    public RobotVision getRobotVision(){ return robotVision;}
 
     public BulkTrackingWheelLocalizer getTrackingWheelLocalizer(){
         return trackingWheelLocalizer;
