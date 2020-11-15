@@ -2,20 +2,25 @@ package org.firstinspires.ftc.teamcode;
 
 import android.content.SharedPreferences;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
+
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.DELAY_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.DELIVER_ROUTE_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.FOUNDATION_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.PARKING_ONLY_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.PARKING_PREF;
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
+import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.mmPerInch;
 import static org.firstinspires.ftc.teamcode.AutonomousOptions.START_POS_MODES_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.STONE_PREF;
 
 @TeleOp(name="Newton DriverOpMode", group="Main")
 //@Disabledxxs
@@ -24,6 +29,8 @@ public class DriverOpMode extends OpMode {
     RobotNavigator navigator;
     RobotProfile robotProfile;
     DriverOptions driverOptions;
+    RobotVision robotVision;
+    RobotTrajectory robotTrajectory;
 
     double gyroCurrAngle;
     double gyroAngleOffset;
@@ -34,6 +41,9 @@ public class DriverOpMode extends OpMode {
 
     // DriveThru combos
     RobotControl currentTask = null;
+    private OpenGLMatrix lastLocation = null;
+
+    Pose2d currPos;
 
     @Override
     public void init() {
@@ -69,6 +79,10 @@ public class DriverOpMode extends OpMode {
             Logger.logFile("startingPositionModes: "+ driverOptions.getStartingPositionModes());
         } catch (Exception e) {
         }
+
+        robotVision.activateNavigationTarget();
+        robotVision.activateRecognition();
+
     }
 
     @Override
@@ -80,6 +94,50 @@ public class DriverOpMode extends OpMode {
 
         // Robot movement
         handleMovement();
+        moveToShooting();
+
+        if(robotHardware.getRobotVision().getRingRecognition() != null){
+            List<Recognition> recognitions = robotHardware.robotVision.getRingRecognition();
+            telemetry.addData("# Object Detected", recognitions.size());
+            // step through the list of recognitions and display boundary info.
+            int i = 0;
+            for (Recognition recognition : recognitions) {
+                telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                        recognition.getLeft(), recognition.getTop());
+                telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                        recognition.getRight(), recognition.getBottom());
+            }
+            telemetry.update();
+        }
+        if(robotHardware.getRobotVision().getNavigationLocalization() != null){
+
+            for (VuforiaTrackable trackable : robotVision.allTrackables) {
+                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
+                    // getUpdatedRobotLocation() will return null if no new information is available since
+                    // the last time that call was made, or if the trackable is not currently visible.
+                    OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
+                    if (robotLocationTransform != null) {
+                        lastLocation = robotLocationTransform;
+                    }
+                    break;
+                }
+            }
+
+                VectorF translation = lastLocation.getTranslation();
+                telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+
+                // express the rotation of the robot in degrees.
+                Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+                telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+
+        }else {
+            telemetry.addData("Visible Target", "none");
+        }
+        telemetry.update();
+
+
 
         // toggle field mode on/off.
         // Driver 1: left trigger - enable; right trigger - disable
@@ -106,6 +164,7 @@ public class DriverOpMode extends OpMode {
 
         telemetry.addData("Field Mode", fieldMode);
         telemetry.addData("Gyro", gyroCurrAngle);
+
     }
 
     @Override
@@ -115,6 +174,9 @@ public class DriverOpMode extends OpMode {
             Logger.flushToFile();
         } catch (Exception e) {
         }
+
+        robotVision.deactivateNavigationTarget();
+        robotVision.deactivateRecognition();
     }
 
     private void handleMovement() {
@@ -143,6 +205,8 @@ public class DriverOpMode extends OpMode {
         robotHardware.mecanumDriveTest(power, moveAngle, turn, 0);
     }
 
+    
+
     void setupCombos() {
 //        ArrayList<RobotControl> homePositionList = new ArrayList<RobotControl>();
 //        homePositionList.add(new SetLiftPositionTask(robotHardware, robotProfile, robotProfile.hardwareSpec.liftStoneBase +
@@ -155,4 +219,18 @@ public class DriverOpMode extends OpMode {
 //        homePositionTask = new SequentialComboTask();
 //        homePositionTask.setTaskList(homePositionList);
     }
+
+    private void moveToShooting(){
+
+        if(gamepad1.a){
+            currPos = robotVision.getNavigationLocalization();
+        }
+
+        if(gamepad2.b){
+            robotTrajectory.createTrajectory();
+        }
+
+    }
+
+
 }
