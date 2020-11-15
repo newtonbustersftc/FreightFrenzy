@@ -137,6 +137,9 @@ public class DriverOpMode extends OpMode {
     public void stop() {
         // open the clamp to relief the grabber servo
         try {
+            Logger.logFile("DriverOpMode stop() called");
+            robotVision.deactivateRecognition();
+            robotVision.deactivateNavigationTarget();
             Logger.flushToFile();
         } catch (Exception e) {
         }
