@@ -64,8 +64,8 @@ public class RobotHardware {
         imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
         imu1.initialize(parameters);
 
-        frMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rrMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        flMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        rlMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rrMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rlMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
