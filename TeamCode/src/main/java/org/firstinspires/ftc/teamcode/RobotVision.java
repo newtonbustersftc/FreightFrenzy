@@ -8,6 +8,7 @@ import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -33,8 +34,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 
 public class RobotVision {
 
-    List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-    VuforiaTrackables targetsUltimateGoal;
+    private List<VuforiaTrackable> allTrackables;
+    private VuforiaTrackables targetsUltimateGoal;
     // IMPORTANT: If you are using a USB WebCam, you must select CAMERA_CHOICE = BACK; and PHONE_IS_PORTRAIT = false;
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
     private static final boolean PHONE_IS_PORTRAIT = false  ;
@@ -88,28 +89,23 @@ public class RobotVision {
     RobotHardware robotHardware;
     HardwareMap hardwareMap;
 
-   // HardwareMap hardwareMap = new HardwareMap();
-
-
-    public void init(RobotHardware robotHardware, RobotProfile robotProfile){
-
+    public void init(HardwareMap hardwareMap, RobotHardware robotHardware, RobotProfile robotProfile){
+        Logger.logFile("RobotVision init()");
+        this.hardwareMap = hardwareMap;
         webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-        robotHardware.init(hardwareMap, robotProfile);
         initVuforia();
         initTfod();
-        initNavigationTarget();
-        initRingRecognition();
+     }
 
-        if (tfod != null) {
-            tfod.activate();
-        }
-
+    private void initVuforia() {
+        Logger.logFile("initVuforia " + this);
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
          * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
          */
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        cameraMonitorViewId = 0;
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
@@ -129,7 +125,7 @@ public class RobotVision {
 
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
-        VuforiaTrackables targetsUltimateGoal = this.vuforia.loadTrackablesFromAsset("UltimateGoal");
+        targetsUltimateGoal = this.vuforia.loadTrackablesFromAsset("UltimateGoal");
         VuforiaTrackable blueTowerGoalTarget = targetsUltimateGoal.get(0);
         blueTowerGoalTarget.setName("Blue Tower Goal Target");
         VuforiaTrackable redTowerGoalTarget = targetsUltimateGoal.get(1);
@@ -142,7 +138,7 @@ public class RobotVision {
         frontWallTarget.setName("Front Wall Target");
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
-        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+        allTrackables = new ArrayList<VuforiaTrackable>();
         allTrackables.addAll(targetsUltimateGoal);
 
         /**
@@ -223,156 +219,70 @@ public class RobotVision {
         for (VuforiaTrackable trackable : allTrackables) {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
         }
-
-        // WARNING:
-        // In this sample, we do not wait for PLAY to be pressed.  Target Tracking is started immediately when INIT is pressed.
-        // This sequence is used to enable the new remote DS Camera Preview feature to be used with this sample.
-        // CONSEQUENTLY do not put any driving commands in this loop.
-        // To restore the normal opmode structure, just un-comment the following line:
-
-        // waitForStart();
-
-        // Note: To use the remote camera preview:
-        // AFTER you hit Init on the Driver Station, use the "options menu" to select "Camera Stream"
-        // Tap the preview window to receive a fresh image.
-
-
-
-
-
-
-
-    }
-
-
-    private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
     }
 
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        tfodMonitorViewId = 0;
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfodParameters.minResultConfidence = 0.8f;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }
 
-    private void initRingRecognition(){
-        if (tfod != null) {
-            // getUpdatedRecognitions() will return null if no new information is available since
-            // the last time that call was made.
-            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-            if (updatedRecognitions != null) {
-                // step through the list of recognitions and display boundary info.
-                int i = 0;
-            }
-        } if (tfod != null) {
-            tfod.shutdown();
-        }
-    }
-
-    private void initNavigationTarget(){
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-
-        /**
-         * We also indicate which camera on the RC we wish to use.
-         */
-        parameters.cameraName = webcamName;
-
-        // Make sure extended tracking is disabled for this example.
-        parameters.useExtendedTracking = false;
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Load the data sets for the trackable objects. These particular data
-        // sets are stored in the 'assets' part of our application.
-        VuforiaTrackables targetsUltimateGoal = this.vuforia.loadTrackablesFromAsset("UltimateGoal");
-        VuforiaTrackable blueTowerGoalTarget = targetsUltimateGoal.get(0);
-        blueTowerGoalTarget.setName("Blue Tower Goal Target");
-        VuforiaTrackable redTowerGoalTarget = targetsUltimateGoal.get(1);
-        redTowerGoalTarget.setName("Red Tower Goal Target");
-        VuforiaTrackable redAllianceTarget = targetsUltimateGoal.get(2);
-        redAllianceTarget.setName("Red Alliance Target");
-        VuforiaTrackable blueAllianceTarget = targetsUltimateGoal.get(3);
-        blueAllianceTarget.setName("Blue Alliance Target");
-        VuforiaTrackable frontWallTarget = targetsUltimateGoal.get(4);
-        frontWallTarget.setName("Front Wall Target");
-
-        // For convenience, gather together all the trackable objects in one easily-iterable collection */
-
-    }
-
-    public Pose2d getNavigationLocalization(){
-
+    public Pose2d getNavigationLocalization() {
         double x, y, heading;
+        // check all the trackable targets to see which one (if any) is visible.
+        targetVisible = false;
+        for (VuforiaTrackable trackable : allTrackables) {
+            if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
+                targetVisible = true;
 
-
-//        while (!isStopRequested()) {
-
-            // check all the trackable targets to see which one (if any) is visible.
-            targetVisible = false;
-            for (VuforiaTrackable trackable : allTrackables) {
-                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-                    targetVisible = true;
-
-                    // getUpdatedRobotLocation() will return null if no new information is available since
-                    // the last time that call was made, or if the trackable is not currently visible.
-                    OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
-                    if (robotLocationTransform != null) {
-                        lastLocation = robotLocationTransform;
-                    }
-                    break;
+                // getUpdatedRobotLocation() will return null if no new information is available since
+                // the last time that call was made, or if the trackable is not currently visible.
+                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
+                if (robotLocationTransform != null) {
+                    lastLocation = robotLocationTransform;
                 }
+                break;
             }
-
-            // Provide feedback as to where the robot is located (if we know).
-            if (targetVisible) {
-                // express position (translation) of robot in inches.
-                VectorF translation = lastLocation.getTranslation();
-                x = translation.get(0) / mmPerInch;
-                y = translation.get(1) / mmPerInch;
-
-                // express the rotation of the robot in degrees.
-                Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
-                heading = rotation.thirdAngle;
-                return new Pose2d(new Vector2d(x, y), heading);
-            }
-            else {
-                return null;
-            }
-
         }
-//    }
+
+        // Provide feedback as to where the robot is located (if we know).
+        if (targetVisible) {
+            // express position (translation) of robot in inches.
+            VectorF translation = lastLocation.getTranslation();
+            x = translation.get(0) / mmPerInch;
+            y = translation.get(1) / mmPerInch;
+
+            // express the rotation of the robot in degrees.
+            Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, AngleUnit.RADIANS);
+            heading = rotation.thirdAngle;
+            return new Pose2d(new Vector2d(x, y), heading-Math.PI/2);
+        }
+        else {
+            return null;
+        }
+    }
 
     public void activateNavigationTarget(){
+        Logger.logFile("activateNavTarget " + this + " targets " + targetsUltimateGoal);
         targetsUltimateGoal.activate();
     }
 
     public void deactivateNavigationTarget(){
+        Logger.logFile("deactivate navigation " + this + " targets " + targetsUltimateGoal);
         targetsUltimateGoal.deactivate();
     }
 
     public void activateRecognition(){
+        Logger.logFile("activateRecognition " + this + " tfod " + tfod);
         tfod.activate();
     }
 
     public void deactivateRecognition(){
+        Logger.logFile("deactivate recognition " + this + " tfod " + tfod);
         tfod.deactivate();
     }
 

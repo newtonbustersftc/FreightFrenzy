@@ -25,6 +25,7 @@ public class RobotHardware {
     BulkTrackingWheelLocalizer trackingWheelLocalizer;
     RobotVision robotVision;
     //ExpansionHubServo ;
+    RobotVision robotVision;
 
     //Servo ;
     //DigitalChannel ;
@@ -34,6 +35,7 @@ public class RobotHardware {
     BNO055IMU imu1;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
+        Logger.logFile("RobotHardware init()");
         this.profile = profile;
         try {
             if (hardwareMap.get("LiftMotor")!=null) {
@@ -56,8 +58,8 @@ public class RobotHardware {
         imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
         imu1.initialize(parameters);
 
-        frMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rrMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        flMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        rlMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rrMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rlMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -85,7 +87,12 @@ public class RobotHardware {
         mecanumDrive = new BulkMecanumDrive(this, rrMotor, rlMotor, frMotor, flMotor);
         trackingWheelLocalizer = new BulkTrackingWheelLocalizer(this);
         mecanumDrive.setLocalizer(trackingWheelLocalizer);
+        robotVision = new RobotVision();
+        robotVision.init(hardwareMap, this, profile);
+    }
 
+    public RobotVision getRobotVision() {
+        return robotVision;
     }
 
     public BulkMecanumDrive getMecanumDrive() {
@@ -100,8 +107,6 @@ public class RobotHardware {
 
     public void getBulkData1() {
         bulkData1 = expansionHub1.getBulkInputData();
-        Logger.logFile(("getBulkData1: " + bulkData1.getMotorCurrentPosition(rrMotor) + "," + bulkData1.getMotorCurrentPosition(rlMotor)));
-        Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
     }
 
     public void getBulkData2() {

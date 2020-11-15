@@ -30,11 +30,11 @@ import java.util.List;
  */
 @Config
 public class BulkTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
-    public static double TICKS_PER_REV = 720;
-    public static double WHEEL_RADIUS = 0.945/2; // in
-    public static double GEAR_RATIO = -1; // output (wheel) speed / input (encoder) speed
+    public static double TICKS_PER_REV = 4000;
+    public static double WHEEL_RADIUS = 1.467/2; // in
+    public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
-    public static double LATERAL_DISTANCE = 14.2; // in; distance between the left and right wheels
+    public static double LATERAL_DISTANCE = 16.14; // in; distance between the left and right wheels
     public static double FORWARD_OFFSET = 0; // in; offset of the lateral wheel
 
     private BulkEncoder leftEncoder, rightEncoder, frontEncoder;
@@ -61,7 +61,7 @@ public class BulkTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
         return Arrays.asList(
                 encoderTicksToInches(leftEncoder.getCurrentPosition()),
                 encoderTicksToInches(rightEncoder.getCurrentPosition()),
-                -encoderTicksToInches(frontEncoder.getCurrentPosition())
+                encoderTicksToInches(frontEncoder.getCurrentPosition())
         );
     }
 
@@ -75,7 +75,7 @@ public class BulkTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer {
         return Arrays.asList(
                 encoderTicksToInches(leftEncoder.getRawVelocity()),
                 encoderTicksToInches(rightEncoder.getRawVelocity()),
-                -encoderTicksToInches(frontEncoder.getRawVelocity())
+                encoderTicksToInches(frontEncoder.getRawVelocity())
         );
     }
 }
