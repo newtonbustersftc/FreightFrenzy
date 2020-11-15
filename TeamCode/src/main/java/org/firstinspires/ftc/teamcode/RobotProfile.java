@@ -36,13 +36,13 @@ public class RobotProfile {
         rrHeadingPID.i = 0.05;
         rrHeadingPID.d = 0;
         rrTranslationPID = new PIDParam();
-        rrTranslationPID.p = 8;
-        rrTranslationPID.i = 0.05;
+        rrTranslationPID.p = 10;
+        rrTranslationPID.i = 0.1;
         rrTranslationPID.d = 0;
         rrFeedForwardParam = new FeedForwardParam();
         rrFeedForwardParam.kA = 0.00001;
-        rrFeedForwardParam.kV = 0.02765;
-        rrFeedForwardParam.kStatic = 0.03463;
+        rrFeedForwardParam.kV = 0.01588;
+        rrFeedForwardParam.kStatic = 0.04386;
 
         hardwareSpec = new HardwareSpec();
         hardwareSpec.trackWheelDiameter = 3.8;   //cm diameter

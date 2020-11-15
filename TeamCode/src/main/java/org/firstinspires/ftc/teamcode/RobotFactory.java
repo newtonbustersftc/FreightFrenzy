@@ -8,9 +8,13 @@ public class RobotFactory {
 
     static public RobotHardware getRobotHardware(HardwareMap hardwareMap,RobotProfile robotProfile){
         if(theRobot == null){
+            Logger.logFile("Creating new RobotHardware Instance");
             theRobot = new RobotHardware();
             theRobot.init(hardwareMap, robotProfile);
 
+        }
+        else {
+            Logger.logFile("Use existing RobotHardware Instance");
         }
         return theRobot;
     }

@@ -42,6 +42,7 @@ public class RobotHardware {
     BNO055IMU imu1;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
+        Logger.logFile("RobotHardware init()");
         this.profile = profile;
         try {
             if (hardwareMap.get("LiftMotor")!=null) {
@@ -109,8 +110,6 @@ public class RobotHardware {
 
     public void getBulkData1() {
         bulkData1 = expansionHub1.getBulkInputData();
-        Logger.logFile(("getBulkData1: " + bulkData1.getMotorCurrentPosition(rrMotor) + "," + bulkData1.getMotorCurrentPosition(rlMotor)));
-        Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
     }
 
     public void getBulkData2() {

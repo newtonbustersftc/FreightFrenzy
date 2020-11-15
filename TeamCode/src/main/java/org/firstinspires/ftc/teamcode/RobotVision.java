@@ -8,6 +8,7 @@ import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -33,8 +34,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 
 public class RobotVision {
 
-    List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-    VuforiaTrackables targetsUltimateGoal;
+    private List<VuforiaTrackable> allTrackables;
+    private VuforiaTrackables targetsUltimateGoal;
     // IMPORTANT: If you are using a USB WebCam, you must select CAMERA_CHOICE = BACK; and PHONE_IS_PORTRAIT = false;
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
     private static final boolean PHONE_IS_PORTRAIT = false  ;
@@ -89,6 +90,7 @@ public class RobotVision {
     HardwareMap hardwareMap;
 
     public void init(HardwareMap hardwareMap, RobotHardware robotHardware, RobotProfile robotProfile){
+        Logger.logFile("RobotVision init()");
         this.hardwareMap = hardwareMap;
         webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         initVuforia();
@@ -96,12 +98,14 @@ public class RobotVision {
      }
 
     private void initVuforia() {
+        Logger.logFile("initVuforia " + this);
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
          * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
          */
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        cameraMonitorViewId = 0;
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
@@ -220,6 +224,7 @@ public class RobotVision {
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        tfodMonitorViewId = 0;
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfodParameters.minResultConfidence = 0.8f;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
@@ -252,9 +257,9 @@ public class RobotVision {
             y = translation.get(1) / mmPerInch;
 
             // express the rotation of the robot in degrees.
-            Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+            Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, AngleUnit.RADIANS);
             heading = rotation.thirdAngle;
-            return new Pose2d(new Vector2d(x, y), heading);
+            return new Pose2d(new Vector2d(x, y), heading-Math.PI/2);
         }
         else {
             return null;
@@ -262,18 +267,22 @@ public class RobotVision {
     }
 
     public void activateNavigationTarget(){
+        Logger.logFile("activateNavTarget " + this + " targets " + targetsUltimateGoal);
         targetsUltimateGoal.activate();
     }
 
     public void deactivateNavigationTarget(){
+        Logger.logFile("deactivate navigation " + this + " targets " + targetsUltimateGoal);
         targetsUltimateGoal.deactivate();
     }
 
     public void activateRecognition(){
+        Logger.logFile("activateRecognition " + this + " tfod " + tfod);
         tfod.activate();
     }
 
     public void deactivateRecognition(){
+        Logger.logFile("deactivate recognition " + this + " tfod " + tfod);
         tfod.deactivate();
     }
 
