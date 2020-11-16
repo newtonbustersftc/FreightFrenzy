@@ -24,9 +24,6 @@ public class RobotHardware {
     BulkMecanumDrive mecanumDrive;
     BulkTrackingWheelLocalizer trackingWheelLocalizer;
     RobotVision robotVision;
-    //ExpansionHubServo ;
-    RobotVision robotVision;
-
     //Servo ;
     //DigitalChannel ;
     //Rev2mDistanceSensor ;
@@ -98,8 +95,6 @@ public class RobotHardware {
     public BulkMecanumDrive getMecanumDrive() {
         return mecanumDrive;
     }
-
-    public RobotVision getRobotVision(){ return robotVision;}
 
     public BulkTrackingWheelLocalizer getTrackingWheelLocalizer(){
         return trackingWheelLocalizer;

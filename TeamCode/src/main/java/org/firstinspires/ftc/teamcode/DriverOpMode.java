@@ -12,15 +12,14 @@ import java.io.File;
 import static org.firstinspires.ftc.teamcode.AutonomousOptions.START_POS_MODES_PREF;
 
 @TeleOp(name="Newton DriverOpMode", group="Main")
-//@Disabledxxs
 public class DriverOpMode extends OpMode {
     RobotHardware robotHardware;
     RobotNavigator navigator;
     RobotProfile robotProfile;
     DriverOptions driverOptions;
 
-    double gyroCurrAngle;
-    double gyroAngleOffset;
+    Pose2d currPose;
+    double fieldHeadingOffset;
 
     boolean fieldMode;
     boolean xAlreadyPressed = false;
@@ -41,22 +40,15 @@ public class DriverOpMode extends OpMode {
 
         Logger.init();
 
-        robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
+        //robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
+        robotHardware = new RobotHardware();
+        robotHardware.init(hardwareMap, robotProfile);
         robotVision = robotHardware.getRobotVision();
         robotVision.activateRecognition();
         robotVision.activateNavigationTarget();
 
-        // Based on the Autonomous mode starting position, define the gyro offset for field mode
+        // Based on the Autonomous mode starting position, define the heading offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
-
-        gyroAngleOffset = robotHardware.getGyroAngle();
-
-        navigator = new RobotNavigator(robotProfile);
-        navigator.reset();
-        navigator.setInitPosition(0, 0, 0);
-//        if(!robotHardware.imu1.isGyroCalibrated()){
-//
-//        }
         setupCombos();
 
         driverOptions = new DriverOptions();
@@ -96,8 +88,8 @@ public class DriverOpMode extends OpMode {
     public void loop() {
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
-
-        gyroCurrAngle = robotHardware.getGyroAngle();
+        robotHardware.getTrackingWheelLocalizer().update();
+        currPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
 
         // Robot movement
         handleMovement();
@@ -107,7 +99,7 @@ public class DriverOpMode extends OpMode {
         // Driver 1: left trigger - enable; right trigger - disable
         if (gamepad1.left_trigger > 0) {
             fieldMode = true;
-            gyroAngleOffset = gyroCurrAngle;
+            fieldHeadingOffset = currPose.getHeading();
         } else if (gamepad1.right_trigger > 0) {
             fieldMode = false;  //good luck driving
         }
@@ -128,19 +120,17 @@ public class DriverOpMode extends OpMode {
 
         if(gamepad1.b && !bAlreadyPressed){
             bAlreadyPressed = true;
-            Pose2d startPose;
-            startPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
-            Pose2d shootingPose = new Pose2d(-5, -27, Math.toRadians(0));
+            Pose2d shootingPose = new Pose2d(-5, -36, Math.toRadians(0));
             double shootingHeading = 0;
-            Trajectory trajectory = robotHardware.getMecanumDrive().trajectoryBuilder(startPose, false).
+            Trajectory trajectory = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, false).
                     splineToSplineHeading(shootingPose, 0).build();
             currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), trajectory);
             currentTask.prepare();
         } else if(!gamepad1.b && bAlreadyPressed) {
             bAlreadyPressed = false;
         }
+        telemetry.addData("CurrPose", currPose);
         telemetry.addData("Field Mode", fieldMode);
-        telemetry.addData("Gyro", gyroCurrAngle);
     }
 
     @Override
@@ -164,7 +154,7 @@ public class DriverOpMode extends OpMode {
         double moveAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI/4.5;
 
         if (fieldMode) {
-            moveAngle += Math.toRadians(gyroCurrAngle - gyroAngleOffset);
+            moveAngle += currPose.getHeading() - fieldHeadingOffset - Math.PI/2;
         }
 
         if (gamepad1.left_bumper) {
