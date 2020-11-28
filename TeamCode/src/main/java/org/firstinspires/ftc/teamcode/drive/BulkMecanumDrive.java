@@ -122,6 +122,10 @@ public class BulkMecanumDrive extends MecanumDrive {
         return new TrajectoryBuilder(startPose, startHeading, constraints);
     }
 
+    public TrajectoryBuilder trajectoryBuilder(Pose2d startPose, DriveConstraints constraints) {
+        return new TrajectoryBuilder(startPose, constraints);
+    }
+
     public void turnAsync(double angle) {
         double heading = getPoseEstimate().getHeading();
 
@@ -263,6 +267,11 @@ public class BulkMecanumDrive extends MecanumDrive {
         for (DcMotorEx motor : motors) {
             motor.setMode(runMode);
         }
+    }
+
+    public void stopDrive(){
+        mode = Mode.IDLE;
+        setMotorPowers(0,0,0,0);
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
