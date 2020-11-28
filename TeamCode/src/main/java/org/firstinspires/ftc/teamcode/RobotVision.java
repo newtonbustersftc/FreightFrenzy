@@ -105,10 +105,7 @@ public class RobotVision {
          * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
          */
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        cameraMonitorViewId = 0;
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-
-        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
 
@@ -219,16 +216,19 @@ public class RobotVision {
         for (VuforiaTrackable trackable : allTrackables) {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
         }
+        Logger.logFile("Vuforia Initialized");
     }
 
     private void initTfod() {
+        Logger.logFile("initTfod()");
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        tfodMonitorViewId = 0;
+
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfodParameters.minResultConfidence = 0.8f;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+        Logger.logFile("Tfod Initialized");
     }
 
     public Pose2d getNavigationLocalization() {
@@ -279,6 +279,7 @@ public class RobotVision {
     public void activateRecognition(){
         Logger.logFile("activateRecognition " + this + " tfod " + tfod);
         tfod.activate();
+        tfod.setZoom(2, 1.33);
     }
 
     public void deactivateRecognition(){
