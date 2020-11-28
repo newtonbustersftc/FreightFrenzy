@@ -32,12 +32,12 @@ import java.util.List;
 public class OpenCvExample extends LinearOpMode
 {
     public static int MASK_LOWER_BOUND_H = 10;
-    public static int MASK_LOWER_BOUND_S = 80;
-    public static int MASK_LOWER_BOUND_V = 80;
+    public static int MASK_LOWER_BOUND_S = 150;
+    public static int MASK_LOWER_BOUND_V = 100;
     public static int MASK_UPPER_BOUND_H = 20;
     public static int MASK_UPPER_BOUND_S = 255;
     public static int MASK_UPPER_BOUND_V = 255;
-    public static int MIN_AREA = 48;
+    public static int MIN_AREA = 5;
     public static int DRAW_RATIO = 4;
     static Scalar DRAW_COLOR = new Scalar(255, 0, 0);
 
