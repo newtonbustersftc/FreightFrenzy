@@ -14,6 +14,7 @@ public class RobotProfile {
     PIDParam distancePID;
     PIDParam rrHeadingPID;
     PIDParam rrTranslationPID;
+    CVParam cvParam;
     HardwareSpec hardwareSpec;
     FeedForwardParam rrFeedForwardParam;
 
@@ -52,6 +53,15 @@ public class RobotProfile {
         hardwareSpec.rightEncoderForwardSign = 1;
         hardwareSpec.horizontalEncoderForwardSign = 1;
 
+        cvParam = new CVParam();
+        cvParam.cropTop = 20;
+        cvParam.maskLowerH = 20;
+        cvParam.maskLowerS = 150;
+        cvParam.maskLowerV = 100;
+        cvParam.maskUpperH = 30;
+        cvParam.maskUpperS = 255;
+        cvParam.maskUpperV = 255;
+        cvParam.minArea = 5;
     }
 
     public void saveToFile(File file) throws FileNotFoundException {
@@ -69,6 +79,16 @@ public class RobotProfile {
         double d;
     }
 
+    class CVParam {
+        int maskUpperH;
+        int maskUpperS;
+        int maskUpperV;
+        int maskLowerH;
+        int maskLowerS;
+        int maskLowerV;
+        int cropTop;
+        int minArea;
+    }
     class HardwareSpec {
         double trackWheelDiameter;   //cm diameter
         double trackWheelCPR;

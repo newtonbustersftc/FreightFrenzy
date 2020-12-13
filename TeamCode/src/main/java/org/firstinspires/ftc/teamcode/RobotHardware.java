@@ -68,7 +68,6 @@ public class RobotHardware {
         frMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        getRobotVision();
         if (!isPrototype) {
             expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
         }
