@@ -86,6 +86,8 @@ public class AutonomousGeneric extends LinearOpMode {
 
         waitForStart();
 
+        RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition();
+        Logger.logFile("recognition result: " + goal);
         robotHardware.setMotorStopBrake(true);  // so no sliding when we move
         // initial navigator, reset position since the encoder might have moved during adjustment
         robotHardware.getBulkData1();
@@ -102,7 +104,7 @@ public class AutonomousGeneric extends LinearOpMode {
         if (driverOptions.getIsParkOnly().contains("yes")) {                         //5 points - do nothing but parking
             //taskList = builder.buildParkingOnlyTask(driverOptions.getParking());
         }
-
+        taskList.add(new RobotSleep(1000));
         TaskReporter.report(taskList);
         Logger.logFile("Task list items: " + taskList.size());
 
