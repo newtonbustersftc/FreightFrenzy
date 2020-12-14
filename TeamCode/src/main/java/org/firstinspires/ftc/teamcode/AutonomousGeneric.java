@@ -101,9 +101,7 @@ public class AutonomousGeneric extends LinearOpMode {
 
         // do the task list building after click start, which we should have the skystone position
         //AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, skystonePosition, robotHardware, navigator, robotProfile);
-        if (driverOptions.getIsParkOnly().contains("yes")) {                         //5 points - do nothing but parking
-            //taskList = builder.buildParkingOnlyTask(driverOptions.getParking());
-        }
+        taskList = new ArrayList<RobotControl>();
         taskList.add(new RobotSleep(1000));
         TaskReporter.report(taskList);
         Logger.logFile("Task list items: " + taskList.size());

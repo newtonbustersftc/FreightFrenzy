@@ -15,10 +15,13 @@ import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
+import org.openftc.revextensions2.ExpansionHubServo;
 import org.openftc.revextensions2.RevBulkData;
 
 public class RobotHardware {
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
+    ExpansionHubMotor armMotor;
+    ExpansionHubServo grabberServo;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
     BulkMecanumDrive mecanumDrive;
@@ -30,12 +33,13 @@ public class RobotHardware {
     RobotProfile profile;
     boolean isPrototype = false;
     BNO055IMU imu1;
+    ArmPosition armPosition = ArmPosition.INIT;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
         Logger.logFile("RobotHardware init()");
         this.profile = profile;
         try {
-            if (hardwareMap.get("LiftMotor")!=null) {
+            if (hardwareMap.get("ArmMotor")!=null) {
                 isPrototype = false;
             }
         }
@@ -69,7 +73,14 @@ public class RobotHardware {
         flMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         if (!isPrototype) {
-            expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
+            expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub");
+            armMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("ArmMotor");
+            armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            armMotor.setTargetPosition(0);
+            armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            grabberServo =  (ExpansionHubServo) hardwareMap.servo.get("Grabber");
         }
         Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
         getBulkData1();
@@ -122,7 +133,11 @@ public class RobotHardware {
         }
         else if(encoder == EncoderType.HORIZONTAL) {
             return profile.hardwareSpec.horizontalEncoderForwardSign * bulkData1.getMotorCurrentPosition(frMotor);
-        } else {
+        }
+        else if (encoder == EncoderType.ARM) {
+            return bulkData2.getMotorCurrentPosition(armMotor);
+        }
+        else {
             return 0;
         }
     }
@@ -235,10 +250,6 @@ public class RobotHardware {
         rrMotor.setZeroPowerBehavior(brake?DcMotor.ZeroPowerBehavior.BRAKE:DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
-//    public void rotateGrabberOriginPos() {
-//        clampRotationServo.setPosition(profile.hardwareSpec.clampAngleNormal);
-//    }
-
     public float getGyroAngle() {
         float angle1 = -imu1.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle;
         //float angle2 = robotHardware.imu2.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).secondAngle;
@@ -253,6 +264,55 @@ public class RobotHardware {
      * @return
      */
 
-    public enum EncoderType {LEFT, RIGHT, HORIZONTAL}
+    public void stopAll() {
+        setMotorPower(0, 0, 0, 0);
+        setGrabberPosition(true);
+        setArmMotorPos(ArmPosition.INIT);
+        armMotor.setPower(0);
+    }
 
+    public void setGrabberPosition(boolean isOpen) {
+        grabberServo.setPosition(isOpen?profile.hardwareSpec.grabberOpenPos:profile.hardwareSpec.grabberClosePos);
+    }
+
+    public void setArmMotorPos(ArmPosition pos) {
+        armPosition = pos;
+        armMotor.setPower(profile.hardwareSpec.armPower);
+        int newPosNum = 0;
+        switch (pos) {
+            case INIT:
+                newPosNum = profile.hardwareSpec.armInitPos;
+                break;
+            case HOLD:
+                newPosNum = profile.hardwareSpec.armHoldPos;
+                break;
+            case DELIVER:
+                newPosNum = profile.hardwareSpec.armDeliverPos;
+                break;
+            case GRAB:
+                newPosNum = profile.hardwareSpec.armGrabPos;
+                break;
+        }
+        armMotor.setTargetPosition(newPosNum);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void setArmNextPosition() {
+        setArmMotorPos(armPosition.next());
+    }
+
+    public void setArmPrevPosition() {
+        setArmMotorPos(armPosition.prev());
+    }
+
+    public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM}
+    public enum ArmPosition { INIT, HOLD, DELIVER, GRAB;
+        private static ArmPosition[] vals = values();
+        public ArmPosition next() {
+            return vals[(this.ordinal()+1) % vals.length];
+        }
+        public ArmPosition prev() {
+            return (this.ordinal()>0)?vals[this.ordinal()-1]:vals[0];
+        }
+    }
 }

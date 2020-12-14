@@ -47,14 +47,14 @@ public class AutonomousGenericTest extends LinearOpMode {
         initRobot();
         setUpTaskList();
         robotVision = robotHardware.getRobotVision();
-        robotVision.activateRecognition();
+        //robotVision.activateRecognition();
         robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(-66, -33, 0));
 
         waitForStart();
-        List<Recognition> updatedRecognitions = robotVision.getRingRecognition();
+        //List<Recognition> updatedRecognitions = robotVision.getRingRecognition();
 
 
-
+/*
 
         if (updatedRecognitions != null) {
             Logger.logFile("# Object Detected: " + updatedRecognitions.size());
@@ -123,6 +123,8 @@ public class AutonomousGenericTest extends LinearOpMode {
                 }
             }
         }
+
+ */
         try {
             Logger.flushToFile();
         }

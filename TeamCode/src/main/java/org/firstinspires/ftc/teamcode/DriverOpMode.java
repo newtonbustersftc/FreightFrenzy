@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.io.File;
 
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.START_POS_MODES_PREF;
 
 @TeleOp(name="Newton DriverOpMode", group="Main")
 public class DriverOpMode extends OpMode {
@@ -44,7 +43,7 @@ public class DriverOpMode extends OpMode {
         robotHardware = new RobotHardware();
         robotHardware.init(hardwareMap, robotProfile);
         robotVision = robotHardware.getRobotVision();
-        robotVision.activateRecognition();
+        //robotVision.activateRecognition();
         robotVision.activateNavigationTarget();
 
         // Based on the Autonomous mode starting position, define the heading offset for field mode
@@ -53,11 +52,6 @@ public class DriverOpMode extends OpMode {
 
         driverOptions = new DriverOptions();
 
-        try {
-            driverOptions.setStartingPositionModes(prefs.getString(START_POS_MODES_PREF, ""));
-            Logger.logFile("startingPositionModes: "+ driverOptions.getStartingPositionModes());
-        } catch (Exception e) {
-        }
     }
 
     private void handleVision() {
@@ -138,7 +132,6 @@ public class DriverOpMode extends OpMode {
         // open the clamp to relief the grabber servo
         try {
             Logger.logFile("DriverOpMode stop() called");
-            robotVision.deactivateRecognition();
             robotVision.deactivateNavigationTarget();
             Logger.flushToFile();
         } catch (Exception e) {
@@ -161,6 +154,7 @@ public class DriverOpMode extends OpMode {
             power = power/3.5;
             turn = turn/13;
         }
+        /** what is this?!!
         if(gamepad1.x && !xAlreadyPressed){
             xAlreadyPressed = true;
             power = power/3.5;
@@ -170,7 +164,7 @@ public class DriverOpMode extends OpMode {
             power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
             turn = gamepad1.right_stick_x;
         }
-
+        */
 
         robotHardware.mecanumDriveTest(power, moveAngle, turn, 0);
     }

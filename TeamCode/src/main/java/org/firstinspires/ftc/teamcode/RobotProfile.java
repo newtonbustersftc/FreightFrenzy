@@ -52,6 +52,13 @@ public class RobotProfile {
         hardwareSpec.leftEncodeForwardSign = 1;
         hardwareSpec.rightEncoderForwardSign = 1;
         hardwareSpec.horizontalEncoderForwardSign = 1;
+        hardwareSpec.armDeliverPos = -900;
+        hardwareSpec.armGrabPos = -1890;
+        hardwareSpec.armHoldPos = -600;
+        hardwareSpec.armInitPos = 0;
+        hardwareSpec.armPower = 0.3;
+        hardwareSpec.grabberOpenPos = 0.21;
+        hardwareSpec.grabberClosePos = 0.64;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -96,6 +103,13 @@ public class RobotProfile {
         int leftEncodeForwardSign;
         int rightEncoderForwardSign;
         int horizontalEncoderForwardSign;
+        double grabberOpenPos;
+        double grabberClosePos;
+        int armInitPos;
+        int armGrabPos;
+        int armHoldPos;
+        int armDeliverPos;
+        double armPower;
     }
 
     class FeedForwardParam {
