@@ -17,6 +17,7 @@ public class RobotProfile {
     CVParam cvParam;
     HardwareSpec hardwareSpec;
     FeedForwardParam rrFeedForwardParam;
+    HashMap<String, AutoPose> poses;
 
     public static RobotProfile loadFromFile(File file) throws FileNotFoundException {
         Gson gson = new Gson();
@@ -50,8 +51,8 @@ public class RobotProfile {
         hardwareSpec.trackWheelCPR = 4000;
         hardwareSpec.leftRightWheelDist = 41;//cm left right dist, from tuning
         hardwareSpec.leftEncodeForwardSign = 1;
-        hardwareSpec.rightEncoderForwardSign = 1;
-        hardwareSpec.horizontalEncoderForwardSign = 1;
+        hardwareSpec.rightEncoderForwardSign = -1;
+        hardwareSpec.horizontalEncoderForwardSign = -1;
         hardwareSpec.armDeliverPos = -900;
         hardwareSpec.armGrabPos = -1890;
         hardwareSpec.armHoldPos = -600;
@@ -69,6 +70,30 @@ public class RobotProfile {
         cvParam.maskUpperS = 255;
         cvParam.maskUpperV = 255;
         cvParam.minArea = 5;
+
+        poses = new HashMap<String, AutoPose>();
+        poses.put("START", new AutoPose(-66,-18,0));
+        poses.put("SHOOT", new AutoPose(-5, -36, 0));
+        poses.put("A-1", new AutoPose(8, -40, -90));
+        poses.put("WB-2Pre", new AutoPose(-30, -40, -180));
+        poses.put("WB-2", new AutoPose(-38, -40, -180));
+        poses.put("A-2", new AutoPose(-10, -50, -30));
+
+        /*
+        poses = new AutoPose[20];
+        int n = 0;
+        poses[n++] = new AutoPose(-66, -18, 0);   // starting position
+        poses[n++] = new AutoPose(-25, -18, 0);   // transit position
+        poses[n++] = new AutoPose(-5, -33, 0);    // shooting position
+        poses[n++] = new AutoPose(8, -48, -90);   // Zone A - 1
+        poses[n++] = new AutoPose(8, -20, -90);   // Zone A - back
+        poses[n++] = new AutoPose(25, -33, 0);    // Zone B - 1
+        poses[n++] = new AutoPose(17, -33, 0);    // Zone B - back
+        poses[n++] = new AutoPose(49, -48, -90);  // Zone C - 1
+        poses[n++] = new AutoPose(49, -20, -90);  // Zone C - 1
+        poses[n++] = new AutoPose(-10, -48, -180);// Wobble 2 ready
+        poses[n++] = new AutoPose(-33, -48, -195);// Wobble 2 grab
+        */
     }
 
     public void saveToFile(File file) throws FileNotFoundException {
@@ -116,5 +141,17 @@ public class RobotProfile {
         double kA;
         double kV;
         double kStatic;
+    }
+
+    class AutoPose{
+        double x;
+        double y;
+        double heading;
+
+        AutoPose(double x, double y, double heading) {
+            this.x = x;
+            this.y = y;
+            this.heading = heading;
+        }
     }
 }

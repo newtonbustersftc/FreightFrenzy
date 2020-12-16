@@ -48,7 +48,8 @@ public class AutonomousGenericTest extends LinearOpMode {
         setUpTaskList();
         robotVision = robotHardware.getRobotVision();
         //robotVision.activateRecognition();
-        robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(-66, -33, 0));
+        //robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(-66, -33, 0));
+        robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(0, 0, 0));
 
         waitForStart();
         //List<Recognition> updatedRecognitions = robotVision.getRingRecognition();
@@ -90,7 +91,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         else {
             Logger.logFile("getRingRecognition returns null");
         }
-
+*/
 
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
@@ -123,8 +124,6 @@ public class AutonomousGenericTest extends LinearOpMode {
                 }
             }
         }
-
- */
         try {
             Logger.flushToFile();
         }
@@ -134,21 +133,21 @@ public class AutonomousGenericTest extends LinearOpMode {
 
     void setUpTaskList() {
         taskList = new ArrayList<RobotControl>();
-//
-//        Trajectory traj = robotHardware.mecanumDrive.trajectoryBuilder(new Pose2d())
-//                .splineTo(new Vector2d(36, -15), 0)
-//                .splineTo(new Vector2d(48, -15), 0)
-//                .splineTo(new Vector2d(84, 6), 0)
-//                .build();
-//
-//        Trajectory traj2 = robotHardware.mecanumDrive.trajectoryBuilder(traj.end(), true)
-//                        .splineTo(new Vector2d(48, -15), Math.toRadians(180))
-//                        .splineTo(new Vector2d(36, -15), Math.toRadians(180))
-//                        .splineTo(new Vector2d(0, 0), Math.toRadians(180))
-//                        .build();
-//
-//        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, traj));
-//        taskList.add(new RobotSleep(1000));
-//        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, traj2));
+
+        Trajectory traj = robotHardware.mecanumDrive.trajectoryBuilder(new Pose2d())
+                .splineTo(new Vector2d(36, -15), 0)
+                .splineTo(new Vector2d(48, -15), 0)
+                .splineTo(new Vector2d(84, 6), 0)
+                .build();
+
+        Trajectory traj2 = robotHardware.mecanumDrive.trajectoryBuilder(traj.end(), true)
+                        .splineTo(new Vector2d(48, -15), Math.toRadians(180))
+                        .splineTo(new Vector2d(36, -15), Math.toRadians(180))
+                        .splineTo(new Vector2d(0, 0), Math.toRadians(180))
+                        .build();
+
+        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, traj));
+        taskList.add(new RobotSleep(1000));
+        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, traj2));
         }
 }

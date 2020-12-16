@@ -71,9 +71,9 @@ public class DriverOpModeEncoder extends OpMode {
             robotHardware.setGrabberPosition(true);
         }
 
-        //telemetry.addData("LeftE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
-        //telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
-        //telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
+        telemetry.addData("LeftE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
+        telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
+        telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
         telemetry.addData("Pose:", robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
         //telemetry.addData("Velo:", robotHardware.getTrackingWheelLocalizer().getPoseVelocity());
         telemetry.addData("ArmPos", robotHardware.getEncoderCounts(RobotHardware.EncoderType.ARM));

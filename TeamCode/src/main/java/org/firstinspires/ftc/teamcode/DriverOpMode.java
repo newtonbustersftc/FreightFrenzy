@@ -15,7 +15,7 @@ public class DriverOpMode extends OpMode {
     RobotHardware robotHardware;
     RobotNavigator navigator;
     RobotProfile robotProfile;
-    DriverOptions driverOptions;
+
 
     Pose2d currPose;
     double fieldHeadingOffset;
@@ -49,8 +49,6 @@ public class DriverOpMode extends OpMode {
         // Based on the Autonomous mode starting position, define the heading offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
         setupCombos();
-
-        driverOptions = new DriverOptions();
 
     }
 
