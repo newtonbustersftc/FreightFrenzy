@@ -74,18 +74,23 @@ public class RobotProfile {
         poses = new HashMap<String, AutoPose>();
         poses.put("START", new AutoPose(-66,-18,0));
         poses.put("TRANSIT", new AutoPose(-25, -18, 0));
-        poses.put("TRANSIT2", new AutoPose(-25, -18, 180));
-        poses.put("TRANSIT3", new AutoPose(-25, -52, 0));
-        poses.put("SHOOT", new AutoPose(-5, -36, 0));
+        poses.put("TRANSIT2", new AutoPose(-25, -14, 180));
+        poses.put("TRANSIT3", new AutoPose(-25, -48, 0));
+        poses.put("SHOOT", new AutoPose(-5, -32, 0));
+
         poses.put("A-1", new AutoPose(8, -40, -90));
-        poses.put("WB-2Pre", new AutoPose(-30, -40, -180));
-        poses.put("WB-2", new AutoPose(-38, -40, -180));
+        poses.put("A-WB2Pre", new AutoPose(-30, -41, -180));
+        poses.put("A-WB2", new AutoPose(-38, -41, -180));
         poses.put("A-2", new AutoPose(-10, -50, -30));
 
         poses.put("B-1", new AutoPose(20,-36,0));
-        poses.put("B-WB2Pre", new AutoPose(-56,-28,-105));
-        poses.put("B-WB2", new AutoPose(-56,-36,-90));
+        poses.put("B-WB2Pre", new AutoPose(-57,-28,-95));
+        poses.put("B-WB2", new AutoPose(-57,-34,-90));
         poses.put("B-2", new AutoPose(16,-42,0));
+
+        poses.put("C-1", new AutoPose(48,-51,-45));
+        poses.put("C-2", new AutoPose(40,-58,-15));
+
     }
 
     public void saveToFile(File file) throws FileNotFoundException {

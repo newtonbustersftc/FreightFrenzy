@@ -36,6 +36,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -125,6 +127,7 @@ public class RobotVision {
         MASK_UPPER_BOUND_V = robotProfile.cvParam.maskUpperV;
         CROP_TOP_PERCENT = robotProfile.cvParam.cropTop;
         MIN_AREA = robotProfile.cvParam.minArea;
+        picSaved = false;
      }
 
     private void initVuforia() {
@@ -386,6 +389,13 @@ public class RobotVision {
     static Scalar DRAW_COLOR = new Scalar(255, 0, 0);
     static boolean picSaved = false;
 
+    static class RectComparator implements Comparator<Rect> {
+        @Override
+        public int compare(Rect rect, Rect t1) {
+            return t1.x*t1.y - rect.x*rect.y;
+        }
+    }
+
     public static class CVPipeline extends OpenCvPipeline {
         int count;
 
@@ -456,8 +466,15 @@ public class RobotVision {
                 Imgproc.cvtColor(input, mbgr, Imgproc.COLOR_RGB2BGR, 3);
                 Imgcodecs.imwrite("/sdcard/FIRST/S" + timestamp + ".jpg", mbgr);
                 mbgr.release();
-
                 picSaved = true;
+            }
+            for (Rect r : ringRecList) {
+                Logger.logFile("Vision Rec:" + r);
+            }
+            Logger.logFile("Sorting...");
+            Collections.sort(ringRecList, new RectComparator());
+            for (Rect r : ringRecList) {
+                Logger.logFile("Vision Rec:" + r);
             }
             return input;
         }
