@@ -55,7 +55,7 @@ public class RobotProfile {
         hardwareSpec.horizontalEncoderForwardSign = -1;
         hardwareSpec.armDeliverPos = -900;
         hardwareSpec.armGrabPos = -1890;
-        hardwareSpec.armHoldPos = -600;
+        hardwareSpec.armHoldPos = -750;
         hardwareSpec.armInitPos = 0;
         hardwareSpec.armPower = 0.3;
         hardwareSpec.grabberOpenPos = 0.21;
@@ -83,10 +83,10 @@ public class RobotProfile {
         poses.put("A-WB2", new AutoPose(-38, -41, -180));
         poses.put("A-2", new AutoPose(-10, -50, -30));
 
-        poses.put("B-1", new AutoPose(20,-36,0));
+        poses.put("B-1", new AutoPose(18,-36,0));
         poses.put("B-WB2Pre", new AutoPose(-57,-28,-95));
         poses.put("B-WB2", new AutoPose(-57,-34,-90));
-        poses.put("B-2", new AutoPose(16,-42,0));
+        poses.put("B-2", new AutoPose(12,-44,0));
 
         poses.put("C-1", new AutoPose(48,-51,-45));
         poses.put("C-2", new AutoPose(40,-58,-15));

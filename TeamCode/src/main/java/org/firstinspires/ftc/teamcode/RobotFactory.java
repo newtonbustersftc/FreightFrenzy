@@ -11,7 +11,6 @@ public class RobotFactory {
             Logger.logFile("Creating new RobotHardware Instance");
             theRobot = new RobotHardware();
             theRobot.init(hardwareMap, robotProfile);
-
         }
         else {
             Logger.logFile("Use existing RobotHardware Instance");

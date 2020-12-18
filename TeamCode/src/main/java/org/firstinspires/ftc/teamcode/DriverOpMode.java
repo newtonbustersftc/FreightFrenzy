@@ -21,11 +21,13 @@ public class DriverOpMode extends OpMode {
     double fieldHeadingOffset;
 
     boolean fieldMode;
-    boolean xAlreadyPressed = false;
-    boolean yAlreadyPressed = false;
+    int fieldModeSign = 1;  // RED side = 1, BLUE side = -1
+    boolean dpadRightDown = false;
+    boolean dpadLeftDown = false;
     boolean bAlreadyPressed = false;
 
     // DriveThru combos
+    SequentialComboTask grabLift;
     RobotControl currentTask = null;
     RobotVision robotVision;
     @Override
@@ -39,11 +41,11 @@ public class DriverOpMode extends OpMode {
 
         Logger.init();
 
-        //robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
-        robotHardware = new RobotHardware();
-        robotHardware.init(hardwareMap, robotProfile);
+        robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
+        //robotHardware = new RobotHardware();
+        //robotHardware.init(hardwareMap, robotProfile);
+        robotHardware.initRobotVision();
         robotVision = robotHardware.getRobotVision();
-        //robotVision.activateRecognition();
         robotVision.activateNavigationTarget();
 
         // Based on the Autonomous mode starting position, define the heading offset for field mode
@@ -53,27 +55,12 @@ public class DriverOpMode extends OpMode {
     }
 
     private void handleVision() {
-        if(gamepad1.a){
+        if(gamepad1.x){
             Pose2d currentPosition = robotVision.getNavigationLocalization();
             if(currentPosition!=null){
                 robotHardware.getTrackingWheelLocalizer().setPoseEstimate(currentPosition);
             }
         }
-
-//        telemetry.addData("Current Location", currentPosition);
-//        List<Recognition> updatedRecognitions = robotVision.getRingRecognition();
-//        if (updatedRecognitions != null) {
-//            telemetry.addData("# Object Detected", updatedRecognitions.size());
-//            // step through the list of recognitions and display boundary info.
-//            int i = 0;
-//            for (Recognition recognition : updatedRecognitions) {
-//                telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-//                telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-//                        recognition.getLeft(), recognition.getTop());
-//                telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-//                        recognition.getRight(), recognition.getBottom());
-//            }
-//        }
     }
 
     @Override
@@ -96,9 +83,28 @@ public class DriverOpMode extends OpMode {
             fieldMode = false;  //good luck driving
         }
 
-
-        if (!gamepad2.y) {
-            yAlreadyPressed = false;
+        // test controls
+        if (gamepad1.dpad_right && !dpadRightDown) {
+            robotHardware.setArmNextPosition();
+            dpadRightDown = true;
+        }
+        else {
+            dpadRightDown = gamepad1.dpad_right;
+        }
+        if (gamepad1.dpad_left && !dpadLeftDown) {
+            robotHardware.setArmPrevPosition();
+            dpadLeftDown = true;
+        }
+        else {
+            dpadLeftDown = gamepad1.dpad_left;
+        }
+        if (gamepad1.b) {
+            robotHardware.setGrabberPosition(true);
+        }
+        if (gamepad1.a) {
+            //robotHardware.setGrabberPosition(true);
+            currentTask = grabLift;
+            grabLift.prepare();
         }
 
         if (currentTask != null) {
@@ -109,7 +115,7 @@ public class DriverOpMode extends OpMode {
                 currentTask = null;
             }
         }
-
+/*
         if(gamepad1.b && !bAlreadyPressed){
             bAlreadyPressed = true;
             Pose2d shootingPose = new Pose2d(-5, -36, Math.toRadians(0));
@@ -121,6 +127,7 @@ public class DriverOpMode extends OpMode {
         } else if(!gamepad1.b && bAlreadyPressed) {
             bAlreadyPressed = false;
         }
+ */
         telemetry.addData("CurrPose", currPose);
         telemetry.addData("Field Mode", fieldMode);
     }
@@ -142,15 +149,17 @@ public class DriverOpMode extends OpMode {
         }
         double turn = gamepad1.right_stick_x/2;
         double power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-        double moveAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI/4.5;
+        double moveAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI/4;
 
         if (fieldMode) {
-            moveAngle += currPose.getHeading() - fieldHeadingOffset - Math.PI/2;
+            moveAngle += currPose.getHeading() - fieldHeadingOffset + fieldModeSign*Math.PI/2;
         }
 
-        if (gamepad1.left_bumper) {
-            power = power/3.5;
-            turn = turn/13;
+        power = power / 1.5;
+        turn = turn / 4;
+        if (gamepad1.left_bumper) { // further bring it down
+            power = power/2;
+            turn = turn/3;
         }
         /** what is this?!!
         if(gamepad1.x && !xAlreadyPressed){
@@ -168,6 +177,9 @@ public class DriverOpMode extends OpMode {
     }
 
     void setupCombos() {
+        grabLift = new SequentialComboTask();
+        grabLift.addTask(new GrabberTask(robotHardware, robotProfile, false, 500));
+        grabLift.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 500));
 //        ArrayList<RobotControl> homePositionList = new ArrayList<RobotControl>();
 //        homePositionList.add(new SetLiftPositionTask(robotHardware, robotProfile, robotProfile.hardwareSpec.liftStoneBase +
 //                robotProfile.hardwareSpec.liftPerStone + robotProfile.hardwareSpec.liftGrabExtra, 100));

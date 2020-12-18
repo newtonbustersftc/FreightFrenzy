@@ -19,6 +19,7 @@ import org.openftc.revextensions2.ExpansionHubServo;
 import org.openftc.revextensions2.RevBulkData;
 
 public class RobotHardware {
+    HardwareMap hardwareMap;
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
     ExpansionHubMotor armMotor;
     ExpansionHubServo grabberServo;
@@ -37,6 +38,7 @@ public class RobotHardware {
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
         Logger.logFile("RobotHardware init()");
+        this.hardwareMap = hardwareMap;
         this.profile = profile;
         try {
             if (hardwareMap.get("ArmMotor")!=null) {
@@ -95,6 +97,12 @@ public class RobotHardware {
         trackingWheelLocalizer = new BulkTrackingWheelLocalizer(this);
         mecanumDrive.setLocalizer(trackingWheelLocalizer);
         robotVision = new RobotVision();
+    }
+
+    /**
+     * We need this because Vuforia end of OpMode run because losing camera context
+     */
+    public void initRobotVision() {
         robotVision.init(hardwareMap, this, profile);
     }
 
