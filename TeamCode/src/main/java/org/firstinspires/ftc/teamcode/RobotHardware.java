@@ -21,8 +21,9 @@ import org.openftc.revextensions2.RevBulkData;
 public class RobotHardware {
     HardwareMap hardwareMap;
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
+    ExpansionHubMotor shootMotor1, shootMotor2;
     ExpansionHubMotor armMotor;
-    ExpansionHubServo grabberServo;
+    ExpansionHubServo grabberServo, shootServo;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
     BulkMecanumDrive mecanumDrive;
@@ -82,7 +83,13 @@ public class RobotHardware {
             armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             armMotor.setTargetPosition(0);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            shootMotor1 = (ExpansionHubMotor) hardwareMap.dcMotor.get("ShootMotor1");
+            shootMotor2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("ShootMotor2");
+            shootMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            shootMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             grabberServo =  (ExpansionHubServo) hardwareMap.servo.get("Grabber");
+            shootServo =  (ExpansionHubServo) hardwareMap.servo.get("Shooter");
         }
         Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
         getBulkData1();
@@ -322,5 +329,19 @@ public class RobotHardware {
         public ArmPosition prev() {
             return (this.ordinal()>0)?vals[this.ordinal()-1]:vals[0];
         }
+    }
+
+    public void startShootMotor() {
+        shootMotor1.setPower(profile.hardwareSpec.shootPower);
+        shootMotor2.setPower(profile.hardwareSpec.shootPower);
+    }
+
+    public void stopShootMotor() {
+        shootMotor1.setPower(0);
+        shootMotor2.setPower(0);
+    }
+
+    public void setShooterPosition(boolean isOpen) {
+        shootServo.setPosition((isOpen)?profile.hardwareSpec.shooterOpen:profile.hardwareSpec.shooterClose);
     }
 }

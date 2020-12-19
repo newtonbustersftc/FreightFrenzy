@@ -53,13 +53,18 @@ public class RobotProfile {
         hardwareSpec.leftEncodeForwardSign = 1;
         hardwareSpec.rightEncoderForwardSign = -1;
         hardwareSpec.horizontalEncoderForwardSign = -1;
-        hardwareSpec.armDeliverPos = -900;
-        hardwareSpec.armGrabPos = -1890;
-        hardwareSpec.armHoldPos = -750;
+        hardwareSpec.armDeliverPos = -800;
+        hardwareSpec.armGrabPos = -1700;
+        hardwareSpec.armHoldPos = -650;
         hardwareSpec.armInitPos = 0;
         hardwareSpec.armPower = 0.3;
         hardwareSpec.grabberOpenPos = 0.21;
         hardwareSpec.grabberClosePos = 0.64;
+        hardwareSpec.shooterOpen = 0.15;
+        hardwareSpec.shooterClose = 0.65;
+        hardwareSpec.shootPower = -0.50;
+        hardwareSpec.shootServoDelay = 250;
+        hardwareSpec.shootDelay = 2000;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -76,7 +81,7 @@ public class RobotProfile {
         poses.put("TRANSIT", new AutoPose(-25, -18, 0));
         poses.put("TRANSIT2", new AutoPose(-25, -14, 180));
         poses.put("TRANSIT3", new AutoPose(-25, -48, 0));
-        poses.put("SHOOT", new AutoPose(-5, -32, 0));
+        poses.put("SHOOT", new AutoPose(-5, -28, -10));
 
         poses.put("A-1", new AutoPose(8, -40, -90));
         poses.put("A-WB2Pre", new AutoPose(-30, -41, -180));
@@ -132,6 +137,11 @@ public class RobotProfile {
         int armHoldPos;
         int armDeliverPos;
         double armPower;
+        double shooterOpen;
+        double shooterClose;
+        double shootPower;
+        long shootServoDelay;
+        int shootDelay;
     }
 
     class FeedForwardParam {

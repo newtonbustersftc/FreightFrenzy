@@ -168,10 +168,13 @@ public class AutonomousGeneric extends LinearOpMode {
         ParallelComboTask par1 = new ParallelComboTask();
         par1.addTask(moveTask1);
         par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 1000));
+        par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
         taskList.add(par1);
         // Shooting action
-        taskList.add(new RobotSleep(2000)); // pretend we are shooting
-
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
 
         Pose2d p3 = getProfilePose("C-1");
         Trajectory trjWob = robotHardware.mecanumDrive.trajectoryBuilder(p2, moveFast)
@@ -286,10 +289,17 @@ public class AutonomousGeneric extends LinearOpMode {
         ParallelComboTask par1 = new ParallelComboTask();
         par1.addTask(moveTask1);
         par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 1000));
+        par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
         taskList.add(par1);
 
         // Shooting action
-        taskList.add(new RobotSleep(2000)); // pretend we are shooting
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
 
         Pose2d p2 = getProfilePose("A-1");
         Trajectory trjWob = robotHardware.mecanumDrive.trajectoryBuilder(p1, constraints)

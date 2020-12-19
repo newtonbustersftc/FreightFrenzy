@@ -70,7 +70,18 @@ public class DriverOpModeEncoder extends OpMode {
         if (gamepad1.y) {
             robotHardware.setGrabberPosition(true);
         }
-
+        if (gamepad1.a) {
+            robotHardware.setShooterPosition(true);
+        }
+        if (gamepad1.b) {
+            robotHardware.setShooterPosition(false);
+        }
+        if (gamepad1.dpad_up) {
+            robotHardware.startShootMotor();
+        }
+        if (gamepad1.dpad_down) {
+            robotHardware.stopShootMotor();
+        }
         telemetry.addData("LeftE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
         telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
         telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
