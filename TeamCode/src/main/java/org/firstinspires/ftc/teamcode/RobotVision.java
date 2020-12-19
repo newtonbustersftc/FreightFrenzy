@@ -392,7 +392,7 @@ public class RobotVision {
     static class RectComparator implements Comparator<Rect> {
         @Override
         public int compare(Rect rect, Rect t1) {
-            return t1.x*t1.y - rect.x*rect.y;
+            return t1.width*t1.height - rect.width*rect.height;
         }
     }
 

@@ -43,8 +43,8 @@ public class RobotProfile {
         rrTranslationPID.d = 0;
         rrFeedForwardParam = new FeedForwardParam();
         rrFeedForwardParam.kA = 0.00001;
-        rrFeedForwardParam.kV = 0.01588;
-        rrFeedForwardParam.kStatic = 0.04386;
+        rrFeedForwardParam.kV = 0.01692;
+        rrFeedForwardParam.kStatic = 0.061626;
 
         hardwareSpec = new HardwareSpec();
         hardwareSpec.trackWheelDiameter = 3.8;   //cm diameter
@@ -62,7 +62,7 @@ public class RobotProfile {
         hardwareSpec.grabberClosePos = 0.64;
         hardwareSpec.shooterOpen = 0.15;
         hardwareSpec.shooterClose = 0.65;
-        hardwareSpec.shootPower = -0.50;
+        hardwareSpec.shootPower = 0.41;
         hardwareSpec.shootServoDelay = 250;
         hardwareSpec.shootDelay = 2000;
 
@@ -94,6 +94,8 @@ public class RobotProfile {
         poses.put("B-2", new AutoPose(12,-44,0));
 
         poses.put("C-1", new AutoPose(48,-51,-45));
+        poses.put("C-WB2Pre", new AutoPose(-57,-28,-95));
+        poses.put("C-WB2", new AutoPose(-57,-34,-90));
         poses.put("C-2", new AutoPose(40,-58,-15));
 
     }
