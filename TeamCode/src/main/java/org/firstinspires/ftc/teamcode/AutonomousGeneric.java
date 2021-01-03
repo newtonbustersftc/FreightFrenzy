@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import android.content.SharedPreferences;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -11,14 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.io.File;
 import java.util.ArrayList;
-
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.DELAY_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.START_POS_MODES_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.PARKING_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.FOUNDATION_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.DELIVER_ROUTE_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.PARKING_ONLY_PREF;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.STONE_PREF;
 
 /**
  * 2019.10.26
@@ -93,15 +84,18 @@ public class AutonomousGeneric extends LinearOpMode {
         //AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, skystonePosition, robotHardware, navigator, robotProfile);
         taskList = new ArrayList<RobotControl>();
         //prepareTaskList(goal);
-        if (RobotVision.AutonomousGoal.SINGLE==goal) {
-            prepareSingleTaskList();
-        }
-        else if (RobotVision.AutonomousGoal.QUAD==goal) {
-            prepareQuadTaskList();
-        }
-        else {
-            prepareNoneTaskList();
-        }
+
+//        if (RobotVision.AutonomousGoal.SINGLE==goal) {
+//            prepareSingleTaskList();
+//        }
+//        else if (RobotVision.AutonomousGoal.QUAD==goal) {
+//            prepareQuadTaskList();
+//        }
+//        else {
+//            prepareNoneTaskList();
+//        }
+
+        prepareBarTaskList();
 
         TaskReporter.report(taskList);
         Logger.logFile("Task list items: " + taskList.size());
@@ -214,6 +208,44 @@ public class AutonomousGeneric extends LinearOpMode {
                 .back(30)
                 .build();
         taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trjPark));
+    }
+
+    void prepareBarTaskList() {
+        DriveConstraints constraints = new DriveConstraints(20.0, 10.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+
+        // move to shoot
+        Pose2d p0 = getProfilePose("START");
+        Pose2d p1 = getProfilePose("SHOOT-POWER-BAR-1");
+        Pose2d p2 = getProfilePose("SHOOT-POWER-BAR-2");
+        Pose2d p3 = getProfilePose("SHOOT-POWER-BAR-3");
+        Trajectory trjShoot = robotHardware.mecanumDrive.trajectoryBuilder(p0, moveFast)
+                .splineTo(p1.vec(), p1.getHeading(), constraints)
+                .build();
+        SplineMoveTask moveTask1 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot);
+        ParallelComboTask par1 = new ParallelComboTask();
+        par1.addTask(moveTask1);
+        par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 1000));
+        par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
+        taskList.add(par1);
+        // Shooting action
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+
+        Trajectory trjShoot2 = robotHardware.mecanumDrive.trajectoryBuilder(p1, constraints)
+                .splineTo(p2.vec(), p2.getHeading(), constraints)
+                .build();
+        SplineMoveTask moveTask2 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot2);
+        taskList.add(moveTask2);
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+
+        Trajectory trjShoot3 = robotHardware.mecanumDrive.trajectoryBuilder(p2, constraints)
+                .splineTo(p3.vec(), p3.getHeading(), constraints)
+                .build();
+        SplineMoveTask moveTask3 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot3);
+        taskList.add(moveTask3);
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+
+        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
     }
 
     void prepareSingleTaskList() {
