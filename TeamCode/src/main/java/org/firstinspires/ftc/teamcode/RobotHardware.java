@@ -332,8 +332,12 @@ public class RobotHardware {
     }
 
     public void startShootMotor() {
-        shootMotor1.setPower(profile.hardwareSpec.shootPower);
-        shootMotor2.setPower(profile.hardwareSpec.shootPower);
+        startShootMotor(profile.hardwareSpec.shootPower);
+    }
+
+    public void startShootMotor(double power){
+        shootMotor1.setPower(power);
+        shootMotor2.setPower(power);
     }
 
     public void stopShootMotor() {
