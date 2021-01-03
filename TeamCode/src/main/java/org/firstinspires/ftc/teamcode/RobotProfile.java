@@ -63,8 +63,10 @@ public class RobotProfile {
         hardwareSpec.shooterOpen = 0.15;
         hardwareSpec.shooterClose = 0.65;
         hardwareSpec.shootPower = -0.50;
+        hardwareSpec.shootPowerBar = -0.45;
         hardwareSpec.shootServoDelay = 250;
         hardwareSpec.shootDelay = 2000;
+
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -82,6 +84,9 @@ public class RobotProfile {
         poses.put("TRANSIT2", new AutoPose(-25, -14, 180));
         poses.put("TRANSIT3", new AutoPose(-25, -48, 0));
         poses.put("SHOOT", new AutoPose(-5, -28, -10));
+        poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -5, -7));
+        poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -5, -10));
+        poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -5, -13));
 
         poses.put("A-1", new AutoPose(8, -40, -90));
         poses.put("A-WB2Pre", new AutoPose(-30, -41, -180));
@@ -95,6 +100,7 @@ public class RobotProfile {
 
         poses.put("C-1", new AutoPose(48,-51,-45));
         poses.put("C-2", new AutoPose(40,-58,-15));
+
 
     }
 
@@ -140,6 +146,7 @@ public class RobotProfile {
         double shooterOpen;
         double shooterClose;
         double shootPower;
+        double shootPowerBar;
         long shootServoDelay;
         int shootDelay;
     }
