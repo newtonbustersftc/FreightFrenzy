@@ -3,12 +3,21 @@ package org.firstinspires.ftc.teamcode;
 public class ShooterMotorTask implements RobotControl {
     transient RobotHardware robot;
     transient RobotProfile profile;
+    transient double power;
     boolean isOn;
 
     public ShooterMotorTask(RobotHardware robot, RobotProfile profile, boolean isOn) {
         this.robot = robot;
         this.profile = profile;
         this.isOn = isOn;
+        this.power = profile.hardwareSpec.shootPower;
+    }
+
+    public ShooterMotorTask(RobotHardware robot, RobotProfile profile, boolean isOn, double power){
+        this.robot = robot;
+        this.profile = profile;
+        this.isOn = isOn;
+        this.power = power;
     }
 
     public String toString() {
@@ -17,7 +26,7 @@ public class ShooterMotorTask implements RobotControl {
 
     public void prepare(){
         if (isOn) {
-            robot.startShootMotor();
+            robot.startShootMotor(power);
         }
         else {
             robot.stopShootMotor();
