@@ -229,24 +229,26 @@ public class AutonomousGeneric extends LinearOpMode {
         ParallelComboTask par1 = new ParallelComboTask();
         par1.addTask(moveTask1);
         par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 1000));
-        par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
+        par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootPowerBar));
         taskList.add(par1);
         // Shooting action
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
 
-        Trajectory trjShoot2 = robotHardware.mecanumDrive.trajectoryBuilder(p1, constraints)
-                .splineTo(p2.vec(), p2.getHeading(), constraints)
-                .build();
-        SplineMoveTask moveTask2 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot2);
-        taskList.add(moveTask2);
+        ParallelComboTask par2 = new ParallelComboTask();
+        MecanumRotateTask rotateTask1 = new MecanumRotateTask(robotHardware.mecanumDrive, p2.getHeading() - p1.getHeading());
+        par2.addTask(rotateTask1);
+        par2.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList.add(par2);
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
 
-        Trajectory trjShoot3 = robotHardware.mecanumDrive.trajectoryBuilder(p2, constraints)
-                .splineTo(p3.vec(), p3.getHeading(), constraints)
-                .build();
-        SplineMoveTask moveTask3 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot3);
-        taskList.add(moveTask3);
+        ParallelComboTask par3 = new ParallelComboTask();
+        MecanumRotateTask rotateTask2 = new MecanumRotateTask(robotHardware.mecanumDrive, p3.getHeading() - p2.getHeading());
+        par3.addTask(rotateTask2);
+        par3.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList.add(par3);
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+
+        taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
 
         taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
     }

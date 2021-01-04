@@ -166,7 +166,11 @@ public class RobotHardware {
         }
         else if(encoder == EncoderType.HORIZONTAL) {
             return profile.hardwareSpec.horizontalEncoderForwardSign * bulkData1.getMotorVelocity(frMotor);
-        } else {
+        }
+        else if (encoder == EncoderType.SHOOTER) {
+            return bulkData2.getMotorVelocity(shootMotor1);
+        }
+        else {
             return 0;
         }
     }
@@ -320,7 +324,7 @@ public class RobotHardware {
         setArmMotorPos(armPosition.prev());
     }
 
-    public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM}
+    public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM, SHOOTER}
     public enum ArmPosition { INIT, HOLD, DELIVER, GRAB;
         private static ArmPosition[] vals = values();
         public ArmPosition next() {
