@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -45,13 +48,15 @@ public class AutonomousGenericTest extends LinearOpMode {
     public void runOpMode() {
 
         initRobot();
-        setUpTaskList();
+
         robotVision = robotHardware.getRobotVision();
         //robotVision.activateRecognition();
         //robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(-66, -33, 0));
-        robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(0, 0, 0));
+        robotHardware.getTrackingWheelLocalizer().update();
+        robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START"));
 
         waitForStart();
+        setUpTaskList();
         //List<Recognition> updatedRecognitions = robotVision.getRingRecognition();
 
 
@@ -99,7 +104,11 @@ public class AutonomousGenericTest extends LinearOpMode {
         }
         // run until the end of the match (driver presses STOP)
         // run until the end of the match (driver presses STOP)
+        long startTime = System.currentTimeMillis();
+        int cnt = 100;
+        double veloSum = 0;
         Logger.logFile("Main Task Loop started");
+
         while (opModeIsActive()) {
             loopCount++;
             robotHardware.getBulkData1();
@@ -109,7 +118,16 @@ public class AutonomousGenericTest extends LinearOpMode {
             }
             catch (Exception ex) {
             }
-
+            /*Specific test for motor velocity */
+            if ((System.currentTimeMillis() - startTime > 4000) && (cnt>0)) {
+                veloSum += robotHardware.getEncoderVelocity(RobotHardware.EncoderType.SHOOTER);
+                cnt--;
+                if (cnt==0) {
+                    Log.d("Shooter Velocity", "" + veloSum/100);
+                    Logger.logFile("Shooter Velocity " + veloSum/100);
+                }
+            }
+            /* End Testing code */
             if (taskList.size() > 0) {
                 taskList.get(0).execute();
                 if (taskList.get(0).isDone()) {
@@ -133,8 +151,42 @@ public class AutonomousGenericTest extends LinearOpMode {
 
     void setUpTaskList() {
         taskList = new ArrayList<RobotControl>();
-        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, true));
+        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootVelocity));
         taskList.add(new RobotSleep(5000));
+        // Shooting action
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
+    }
+
+    Pose2d getProfilePose(String name) {
+        RobotProfile.AutoPose ap = robotProfile.poses.get(name);
+        return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
+    }
+
+    void setUpTaskList1() {
+        taskList = new ArrayList<RobotControl>();
+
+        DriveConstraints constraints = new DriveConstraints(20.0, 10.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        // move to shoot
+        Pose2d p0 = getProfilePose("START");
+        Pose2d p1 = getProfilePose("TRANSIT");
+        Pose2d p2 = getProfilePose("SHOOT");
+        Trajectory trjShoot = robotHardware.mecanumDrive.trajectoryBuilder(p0, moveFast)
+                .splineTo(p1.vec(), p1.getHeading())
+                .splineToSplineHeading(p2, p2.getHeading(), constraints)
+                .build();
+        SplineMoveTask moveTask1 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot);
+        ParallelComboTask par1 = new ParallelComboTask();
+        par1.addTask(moveTask1);
+        par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 1000));
+        par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
+        taskList.add(par1);
         // Shooting action
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));

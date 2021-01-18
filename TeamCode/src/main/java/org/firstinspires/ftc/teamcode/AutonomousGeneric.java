@@ -229,7 +229,7 @@ public class AutonomousGeneric extends LinearOpMode {
         ParallelComboTask par1 = new ParallelComboTask();
         par1.addTask(moveTask1);
         par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 1000));
-        par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootPowerBar));
+        par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootBarVelocity));
         taskList.add(par1);
         // Shooting action
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));

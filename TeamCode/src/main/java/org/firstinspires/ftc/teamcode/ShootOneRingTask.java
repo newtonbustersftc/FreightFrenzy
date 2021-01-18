@@ -18,6 +18,7 @@ public class ShootOneRingTask implements RobotControl {
     public void prepare(){
         startTime = System.currentTimeMillis();
         done = false;
+        Logger.logFile("Shoot with velocity:" + robot.getEncoderVelocity(RobotHardware.EncoderType.SHOOTER));
         robot.setShooterPosition(true);
     }
 

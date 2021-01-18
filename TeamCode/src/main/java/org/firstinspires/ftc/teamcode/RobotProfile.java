@@ -62,8 +62,8 @@ public class RobotProfile {
         hardwareSpec.grabberClosePos = 0.64;
         hardwareSpec.shooterOpen = 0.15;
         hardwareSpec.shooterClose = 0.65;
-        hardwareSpec.shootPower = 0.41;
-        hardwareSpec.shootPowerBar = 0.390;
+        hardwareSpec.shootVelocity = 1900;
+        hardwareSpec.shootBarVelocity = 1750;
         hardwareSpec.shootServoDelay = 250;
         hardwareSpec.shootDelay = 2000;
 
@@ -145,8 +145,8 @@ public class RobotProfile {
         double armPower;
         double shooterOpen;
         double shooterClose;
-        double shootPower;
-        double shootPowerBar;
+        int shootVelocity;
+        int shootBarVelocity;
         long shootServoDelay;
         int shootDelay;
     }

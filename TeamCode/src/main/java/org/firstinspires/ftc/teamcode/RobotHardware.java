@@ -134,6 +134,7 @@ public class RobotHardware {
             bulkData2 = expansionHub2.getBulkInputData();
         }
         else {
+
             // so we have something
             bulkData2 = expansionHub1.getBulkInputData();
         }
@@ -336,12 +337,12 @@ public class RobotHardware {
     }
 
     public void startShootMotor() {
-        startShootMotor(profile.hardwareSpec.shootPower);
+        startShootMotor(profile.hardwareSpec.shootVelocity);
     }
 
-    public void startShootMotor(double power){
-        shootMotor1.setPower(power);
-        shootMotor2.setPower(power);
+    public void startShootMotor(int velocity){
+        shootMotor1.setVelocity(velocity);
+        shootMotor2.setPower(velocity);
     }
 
     public void stopShootMotor() {
