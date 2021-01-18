@@ -21,9 +21,9 @@ import org.openftc.revextensions2.RevBulkData;
 public class RobotHardware {
     HardwareMap hardwareMap;
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
-    ExpansionHubMotor shootMotor1, shootMotor2;
+    ExpansionHubMotor shootMotor1, shootMotor2, intakeMotor;
     ExpansionHubMotor armMotor;
-    ExpansionHubServo grabberServo, shootServo;
+    ExpansionHubServo grabberServo, shootServo, ringHolderServo;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
     BulkMecanumDrive mecanumDrive;
@@ -86,10 +86,13 @@ public class RobotHardware {
 
             shootMotor1 = (ExpansionHubMotor) hardwareMap.dcMotor.get("ShootMotor1");
             shootMotor2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("ShootMotor2");
+            intakeMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("IntakeMotor");
             shootMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             shootMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             grabberServo =  (ExpansionHubServo) hardwareMap.servo.get("Grabber");
             shootServo =  (ExpansionHubServo) hardwareMap.servo.get("Shooter");
+            ringHolderServo = (ExpansionHubServo) hardwareMap.servo.get("RingHolder");
         }
         Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
         getBulkData1();
@@ -268,6 +271,26 @@ public class RobotHardware {
         frMotor.setZeroPowerBehavior(brake?DcMotor.ZeroPowerBehavior.BRAKE:DcMotor.ZeroPowerBehavior.FLOAT);
         rlMotor.setZeroPowerBehavior(brake?DcMotor.ZeroPowerBehavior.BRAKE:DcMotor.ZeroPowerBehavior.FLOAT);
         rrMotor.setZeroPowerBehavior(brake?DcMotor.ZeroPowerBehavior.BRAKE:DcMotor.ZeroPowerBehavior.FLOAT);
+    }
+
+    public void startIntake() {
+        intakeMotor.setPower(profile.hardwareSpec.intakePower);
+    }
+
+    public void reverseIntake() {
+        intakeMotor.setPower(-profile.hardwareSpec.intakePower);
+    }
+
+    public void stopIntake() {
+        intakeMotor.setPower(0);
+    }
+
+    public void ringHolderUp() {
+        ringHolderServo.setPosition(profile.hardwareSpec.ringHolderUp);
+    }
+
+    public void ringHolderDown() {
+        ringHolderServo.setPosition(profile.hardwareSpec.ringHolderDown);
     }
 
     public float getGyroAngle() {

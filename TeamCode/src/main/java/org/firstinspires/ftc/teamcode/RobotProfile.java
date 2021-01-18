@@ -60,12 +60,15 @@ public class RobotProfile {
         hardwareSpec.armPower = 0.3;
         hardwareSpec.grabberOpenPos = 0.21;
         hardwareSpec.grabberClosePos = 0.64;
-        hardwareSpec.shooterOpen = 0.15;
-        hardwareSpec.shooterClose = 0.65;
+        hardwareSpec.shooterOpen = 0.39;
+        hardwareSpec.shooterClose = 0.645;
         hardwareSpec.shootVelocity = 1900;
         hardwareSpec.shootBarVelocity = 1750;
         hardwareSpec.shootServoDelay = 250;
         hardwareSpec.shootDelay = 2000;
+        hardwareSpec.intakePower = 0.8;
+        hardwareSpec.ringHolderUp = 0.33;
+        hardwareSpec.ringHolderDown = 0.575;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -149,6 +152,9 @@ public class RobotProfile {
         int shootBarVelocity;
         long shootServoDelay;
         int shootDelay;
+        double intakePower;
+        double ringHolderUp;
+        double ringHolderDown;
     }
 
     class FeedForwardParam {

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import android.content.SharedPreferences;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -16,15 +15,19 @@ public class DriverOpMode extends OpMode {
     RobotNavigator navigator;
     RobotProfile robotProfile;
 
+    enum ActionMode{INTAKE, SHOOTING, REVERSE, STOP};
+    ActionMode currentMode = ActionMode.STOP;
 
     Pose2d currPose;
     double fieldHeadingOffset;
 
     boolean fieldMode;
     int fieldModeSign = 1;  // RED side = 1, BLUE side = -1
-    boolean dpadRightDown = false;
-    boolean dpadLeftDown = false;
-    boolean bAlreadyPressed = false;
+    boolean dpadRightPressed = false;
+    boolean dpadLeftPressed = false;
+    boolean aPressed = false;
+    boolean dpadUpPressed = false;
+    boolean dpadDownPressed = false;
 
     // DriveThru combos
     SequentialComboTask grabLift;
@@ -73,39 +76,8 @@ public class DriverOpMode extends OpMode {
         // Robot movement
         handleMovement();
         handleVision();
-
-        // toggle field mode on/off.
-        // Driver 1: left trigger - enable; right trigger - disable
-        if (gamepad1.left_trigger > 0) {
-            fieldMode = true;
-            fieldHeadingOffset = currPose.getHeading();
-        } else if (gamepad1.right_trigger > 0) {
-            fieldMode = false;  //good luck driving
-        }
-
-        // test controls
-        if (gamepad1.dpad_right && !dpadRightDown) {
-            robotHardware.setArmNextPosition();
-            dpadRightDown = true;
-        }
-        else {
-            dpadRightDown = gamepad1.dpad_right;
-        }
-        if (gamepad1.dpad_left && !dpadLeftDown) {
-            robotHardware.setArmPrevPosition();
-            dpadLeftDown = true;
-        }
-        else {
-            dpadLeftDown = gamepad1.dpad_left;
-        }
-        if (gamepad1.b) {
-            robotHardware.setGrabberPosition(true);
-        }
-        if (gamepad1.a) {
-            //robotHardware.setGrabberPosition(true);
-            currentTask = grabLift;
-            grabLift.prepare();
-        }
+        handleIntakeAndShoot();
+        handleArmAndGrabber();
 
         if (currentTask != null) {
             currentTask.execute();
@@ -174,6 +146,88 @@ public class DriverOpMode extends OpMode {
         */
 
         robotHardware.mecanumDriveTest(power, moveAngle, turn, 0);
+
+        // toggle field mode on/off.
+        // Driver 1: left trigger - enable; right trigger - disable
+        if (gamepad1.left_trigger > 0) {
+            fieldMode = true;
+            fieldHeadingOffset = currPose.getHeading();
+        } else if (gamepad1.right_trigger > 0) {
+            fieldMode = false;  //good luck driving
+        }
+    }
+
+    private void handleIntakeAndShoot() {
+        if (!dpadUpPressed && gamepad1.dpad_up) {
+            switch (currentMode) {
+                case STOP:
+                case SHOOTING:
+                case REVERSE:
+                    robotHardware.startIntake();
+                    robotHardware.stopShootMotor();
+                    robotHardware.ringHolderDown();
+                    robotHardware.setShooterPosition(true);
+                    currentMode = ActionMode.INTAKE;
+                    break;
+                case INTAKE:
+                    robotHardware.stopIntake();
+                    robotHardware.startShootMotor((gamepad1.right_bumper)?robotProfile.hardwareSpec.shootBarVelocity:robotProfile.hardwareSpec.shootVelocity);
+                    robotHardware.ringHolderUp();
+                    robotHardware.setShooterPosition(true);
+                    currentMode = ActionMode.SHOOTING;
+                    break;
+            }
+        }
+        dpadUpPressed = gamepad1.dpad_up;
+        if (!dpadDownPressed && gamepad1.dpad_down) {
+            switch (currentMode) {
+                case SHOOTING:
+                case REVERSE:
+                    robotHardware.stopIntake();
+                    robotHardware.stopShootMotor();
+                    robotHardware.ringHolderDown();
+                    robotHardware.setShooterPosition(true);
+                    currentMode = ActionMode.STOP;
+                    break;
+                case INTAKE:
+                case STOP:
+                    robotHardware.reverseIntake();
+                    robotHardware.stopShootMotor();
+                    robotHardware.ringHolderDown();
+                    robotHardware.setShooterPosition(true);
+                    currentMode = ActionMode.REVERSE;
+                    break;
+            }
+        }
+        dpadDownPressed = gamepad1.dpad_down;
+        if (gamepad1.x) {
+            robotHardware.setShooterPosition(false);
+        }
+        else {
+            robotHardware.setShooterPosition(true);
+        }
+    }
+
+    private void handleArmAndGrabber() {
+        if (gamepad1.dpad_right && !dpadRightPressed) {
+            robotHardware.setArmNextPosition();
+            dpadRightPressed = true;
+        }
+        dpadRightPressed = gamepad1.dpad_right;
+        if (gamepad1.dpad_left && !dpadLeftPressed) {
+            robotHardware.setArmPrevPosition();
+            dpadLeftPressed = true;
+        }
+        dpadLeftPressed = gamepad1.dpad_left;
+        if (gamepad1.b) {
+            robotHardware.setGrabberPosition(true);
+        }
+        if (!aPressed && gamepad1.a) {
+            //robotHardware.setGrabberPosition(true);
+            currentTask = grabLift;
+            grabLift.prepare();
+        }
+        aPressed = gamepad1.a;
     }
 
     void setupCombos() {
