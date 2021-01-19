@@ -100,16 +100,12 @@ public class RobotVision {
     private float phoneYRotate    = 0;
     private float phoneZRotate    = 0;
 
-
-    private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
-    private static final String LABEL_FIRST_ELEMENT = "Quad";
-    private static final String LABEL_SECOND_ELEMENT = "Single";
-
     private static final String VUFORIA_KEY = "AYqWjPr/////AAABmVMnC//AfkUUkkIWPJCncdsd7jeXMOENyhdSo1YOFElDrSAX3ZjibeHioHvx6055Ou8XzrLlhT/hQI2RrcVJpNwu/4xvxHWJPuPBcObXHLy47ami7MaV9rOIInppWCsnx33TqjSocCCscnGTclFAbbJRomvczCo9cLB63jZ77kReVF7VNX4GmOxyNx3xsHCI79EptzqpJDIEoGcL87I4u58lszEZ6JpTW1AEkb927VmmeDPpmo9st/+1G4I4IvudLtdqAQX5Pvepu5m8wXClOE4SWW09HK1qENij6IbGjaPS+HK4Go0dcSeFR4nCH/QQZos66R4cSRE1mrqBGsmsVqwU2Jcm7YSEvZwTWCk6M6Pz";
 
     private TFObjectDetector tfod;
 
     RobotHardware robotHardware;
+    RobotProfile robotProfile;
     HardwareMap hardwareMap;
 
     CVPipeline pipeline = new CVPipeline();
@@ -117,6 +113,7 @@ public class RobotVision {
     public void init(HardwareMap hardwareMap, RobotHardware robotHardware, RobotProfile robotProfile){
         Logger.logFile("RobotVision init()");
         this.hardwareMap = hardwareMap;
+        this.robotProfile = robotProfile;
         webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         initVuforia();
         MASK_LOWER_BOUND_H = robotProfile.cvParam.maskLowerH;
@@ -241,10 +238,13 @@ public class RobotVision {
 
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
-        final float CAMERA_FORWARD_DISPLACEMENT  = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
-        final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
-        final float CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
-
+        final float CAMERA_FORWARD_DISPLACEMENT  = robotProfile.hardwareSpec.cameraForwardDisplacement * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
+        final float CAMERA_VERTICAL_DISPLACEMENT = robotProfile.hardwareSpec.cameraVerticalDisplacement * mmPerInch;   // eg: Camera is 8 Inches above ground
+        final float CAMERA_LEFT_DISPLACEMENT     = robotProfile.hardwareSpec.cameraLeftDisplacement * mmPerInch;     // eg: Camera is ON the robot's center line
+        phoneZRotate = robotProfile.hardwareSpec.cameraHeadingOffset;
+        Logger.logFile("Camera Heading Offset:" + phoneZRotate);
+        Logger.logFile("Camera Forward:" + CAMERA_FORWARD_DISPLACEMENT);
+        Logger.logFile("Camera Left:" + CAMERA_LEFT_DISPLACEMENT);
         OpenGLMatrix robotFromCamera = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
@@ -255,19 +255,7 @@ public class RobotVision {
         }
         Logger.logFile("Vuforia Initialized");
     }
-/*
-    private void initTfod() {
-        Logger.logFile("initTfod()");
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minResultConfidence = 0.8f;
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
-        Logger.logFile("Tfod Initialized");
-    }
-*/
     public Pose2d getNavigationLocalization() {
         double x, y, heading;
         // check all the trackable targets to see which one (if any) is visible.

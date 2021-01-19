@@ -57,46 +57,6 @@ public class AutonomousGenericTest extends LinearOpMode {
 
         waitForStart();
         setUpTaskList();
-        //List<Recognition> updatedRecognitions = robotVision.getRingRecognition();
-
-
-/*
-
-        if (updatedRecognitions != null) {
-            Logger.logFile("# Object Detected: " + updatedRecognitions.size());
-
-            // step through the list of recognitions and display boundary info.
-            int i = 0;
-            pos = new Pose2d(0, -48, -Math.PI/2);
-            for (Recognition recognition : updatedRecognitions) {
-                Logger.logFile(String.format("label (%d) ", i) + ", " + recognition.getLabel());
-                Logger.logFile("  left,top (%d) " + i +" %.03f , %.03f "+
-                        recognition.getLeft() + ", " + recognition.getTop());
-                Logger.logFile("  right,bottom (%d) "+ i+ " %.03f , %.03f "+
-                        recognition.getRight() + ", " + recognition.getBottom());
-
-
-                if(recognition.getLabel() == "Quad"){
-                    Logger.logFile("got quad");
-                    pos = new Pose2d(49, -48, -Math.PI/2);
-                } else if(recognition.getLabel() == "Single") {
-                    Logger.logFile(("got single"));
-                    pos = new Pose2d(25, -33, 0);
-                }
-
-
-            }
-            Trajectory moveRobot = robotHardware.mecanumDrive.trajectoryBuilder(new Pose2d(-66, -33, 0))
-                    .splineTo(new Vector2d(-21, -9), 0)
-                    .splineTo(pos.vec(), pos.getHeading())
-                    .build();
-
-            taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, moveRobot));
-        }
-        else {
-            Logger.logFile("getRingRecognition returns null");
-        }
-*/
 
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
@@ -151,6 +111,8 @@ public class AutonomousGenericTest extends LinearOpMode {
 
     void setUpTaskList() {
         taskList = new ArrayList<RobotControl>();
+        taskList.add(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
+
         taskList.add(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootVelocity));
         taskList.add(new RobotSleep(5000));
         // Shooting action
@@ -184,7 +146,10 @@ public class AutonomousGenericTest extends LinearOpMode {
         SplineMoveTask moveTask1 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot);
         ParallelComboTask par1 = new ParallelComboTask();
         par1.addTask(moveTask1);
-        par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 1000));
+        SequentialComboTask seq1 = new SequentialComboTask();
+        seq1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 1000));
+        seq1.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
+        par1.addTask(seq1);
         par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
         taskList.add(par1);
         // Shooting action

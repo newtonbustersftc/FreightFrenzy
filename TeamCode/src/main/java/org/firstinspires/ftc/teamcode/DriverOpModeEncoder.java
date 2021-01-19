@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -32,6 +33,7 @@ public class DriverOpModeEncoder extends OpMode {
         Logger.init();
         robotHardware = new RobotHardware();
         robotHardware.init(hardwareMap, robotProfile);
+        SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
     }
 
     @Override

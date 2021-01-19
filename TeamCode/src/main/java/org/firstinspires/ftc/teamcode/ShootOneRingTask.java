@@ -19,12 +19,12 @@ public class ShootOneRingTask implements RobotControl {
         startTime = System.currentTimeMillis();
         done = false;
         Logger.logFile("Shoot with velocity:" + robot.getEncoderVelocity(RobotHardware.EncoderType.SHOOTER));
-        robot.setShooterPosition(true);
+        robot.setShooterPosition(false);
     }
 
     public void execute() {
         if (System.currentTimeMillis() - startTime > profile.hardwareSpec.shootServoDelay) {
-            robot.setShooterPosition(false);
+            robot.setShooterPosition(true);
             done = true;
         }
     }

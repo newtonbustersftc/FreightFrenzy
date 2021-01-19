@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.File;
@@ -53,22 +54,26 @@ public class RobotProfile {
         hardwareSpec.leftEncodeForwardSign = 1;
         hardwareSpec.rightEncoderForwardSign = -1;
         hardwareSpec.horizontalEncoderForwardSign = -1;
-        hardwareSpec.armDeliverPos = -800;
-        hardwareSpec.armGrabPos = -1700;
-        hardwareSpec.armHoldPos = -650;
+        hardwareSpec.armDeliverPos = -1166;
+        hardwareSpec.armGrabPos = -1358;
+        hardwareSpec.armHoldPos = -328;
         hardwareSpec.armInitPos = 0;
         hardwareSpec.armPower = 0.3;
         hardwareSpec.grabberOpenPos = 0.21;
         hardwareSpec.grabberClosePos = 0.64;
         hardwareSpec.shooterOpen = 0.39;
         hardwareSpec.shooterClose = 0.645;
-        hardwareSpec.shootVelocity = 1900;
-        hardwareSpec.shootBarVelocity = 1750;
-        hardwareSpec.shootServoDelay = 250;
-        hardwareSpec.shootDelay = 2000;
-        hardwareSpec.intakePower = 0.8;
-        hardwareSpec.ringHolderUp = 0.33;
-        hardwareSpec.ringHolderDown = 0.575;
+        hardwareSpec.shootVelocity = 1330;
+        hardwareSpec.shootBarVelocity = 1240;
+        hardwareSpec.shootServoDelay = 400;
+        hardwareSpec.shootDelay = 800;
+        hardwareSpec.intakePower = 1.0;
+        hardwareSpec.ringHolderUp = 0.30;
+        hardwareSpec.ringHolderDown = 0.555;
+        hardwareSpec.cameraForwardDisplacement = 3.0f;
+        hardwareSpec.cameraVerticalDisplacement = 16.5f;
+        hardwareSpec.cameraLeftDisplacement = -0.0f;
+        hardwareSpec.cameraHeadingOffset = -3.0f;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -105,6 +110,11 @@ public class RobotProfile {
         poses.put("C-WB2", new AutoPose(-57,-34,-90));
         poses.put("C-2", new AutoPose(40,-58,-15));
 
+    }
+
+    public Pose2d getProfilePose(String name) {
+        RobotProfile.AutoPose ap = poses.get(name);
+        return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
     }
 
     public void saveToFile(File file) throws FileNotFoundException {
@@ -155,6 +165,10 @@ public class RobotProfile {
         double intakePower;
         double ringHolderUp;
         double ringHolderDown;
+        float cameraForwardDisplacement;
+        float cameraVerticalDisplacement;
+        float cameraLeftDisplacement;
+        float cameraHeadingOffset;
     }
 
     class FeedForwardParam {

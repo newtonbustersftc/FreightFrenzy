@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.content.SharedPreferences;
+import static org.firstinspires.ftc.teamcode.AutonomousOptions.START_POS_MODES_PREF;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,13 +15,13 @@ import java.io.File;
 @TeleOp(name="Newton DriverOpMode", group="Main")
 public class DriverOpMode extends OpMode {
     RobotHardware robotHardware;
-    RobotNavigator navigator;
     RobotProfile robotProfile;
 
     enum ActionMode{INTAKE, SHOOTING, REVERSE, STOP};
     ActionMode currentMode = ActionMode.STOP;
 
     Pose2d currPose;
+    Pose2d shootingPose;
     double fieldHeadingOffset;
 
     boolean fieldMode;
@@ -26,6 +29,7 @@ public class DriverOpMode extends OpMode {
     boolean dpadRightPressed = false;
     boolean dpadLeftPressed = false;
     boolean aPressed = false;
+    boolean yPressed = false;
     boolean dpadUpPressed = false;
     boolean dpadDownPressed = false;
 
@@ -45,25 +49,55 @@ public class DriverOpMode extends OpMode {
         Logger.init();
 
         robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
-        //robotHardware = new RobotHardware();
-        //robotHardware.init(hardwareMap, robotProfile);
         robotHardware.initRobotVision();
         robotVision = robotHardware.getRobotVision();
         robotVision.activateNavigationTarget();
 
         // Based on the Autonomous mode starting position, define the heading offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
+        if (prefs.getString(START_POS_MODES_PREF, "RED_1").startsWith("RED")) {
+            fieldModeSign = 1;
+        }
+        else {
+            fieldModeSign = -1;
+        }
+
+        shootingPose = robotProfile.getProfilePose("SHOOT");
         setupCombos();
 
     }
 
     private void handleVision() {
-        if(gamepad1.x){
+        if(!yPressed && gamepad1.y){
             Pose2d currentPosition = robotVision.getNavigationLocalization();
             if(currentPosition!=null){
                 robotHardware.getTrackingWheelLocalizer().setPoseEstimate(currentPosition);
+                Logger.logFile("PoseEstimate:" + currentPosition);
+                if (gamepad1.left_bumper) {
+                    // determine if we want to go backward or foward based on currPose
+                    // calculate the angle from current position to the shooting position
+                    double ang = Math.atan2(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
+                    boolean forward = Math.abs(currPose.getHeading() - ang) < Math.PI / 2;
+                    boolean turn180 = false;
+                    if (currPose.getX() > shootingPose.getX()) {
+                        turn180 = !forward;
+                    }
+                    else {
+                        turn180 = !forward;
+                    }
+                    Logger.logFile("From " + currPose + " F:" + forward + " T:" + turn180);
+                    Logger.flushToFile();
+                    Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, !forward)
+                            .splineTo(shootingPose.vec(), turn180 ? Math.toRadians(180) : 0).build();
+                    if (currentTask != null) {
+                        currentTask.cleanUp();
+                    }
+                    currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), traj);
+                    currentTask.prepare();
+                }
             }
         }
+        yPressed = gamepad1.y;
     }
 
     @Override
@@ -124,7 +158,7 @@ public class DriverOpMode extends OpMode {
         double moveAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI/4;
 
         if (fieldMode) {
-            moveAngle += currPose.getHeading() - fieldHeadingOffset + fieldModeSign*Math.PI/2;
+            moveAngle += -currPose.getHeading() - fieldHeadingOffset + fieldModeSign*Math.PI/2;
         }
 
         power = power / 1.5;
@@ -133,18 +167,6 @@ public class DriverOpMode extends OpMode {
             power = power/2;
             turn = turn/3;
         }
-        /** what is this?!!
-        if(gamepad1.x && !xAlreadyPressed){
-            xAlreadyPressed = true;
-            power = power/3.5;
-            turn = turn/13;
-        } else if(gamepad1.x && xAlreadyPressed){
-            xAlreadyPressed = false;
-            power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-            turn = gamepad1.right_stick_x;
-        }
-        */
-
         robotHardware.mecanumDriveTest(power, moveAngle, turn, 0);
 
         // toggle field mode on/off.
