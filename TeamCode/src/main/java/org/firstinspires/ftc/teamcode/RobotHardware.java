@@ -5,6 +5,8 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -93,6 +95,22 @@ public class RobotHardware {
             grabberServo =  (ExpansionHubServo) hardwareMap.servo.get("Grabber");
             shootServo =  (ExpansionHubServo) hardwareMap.servo.get("Shooter");
             ringHolderServo = (ExpansionHubServo) hardwareMap.servo.get("RingHolder");
+
+            // Display PID values
+            PIDFCoefficients coeff = shootMotor1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+            PIDFCoefficients coeffNew = new PIDFCoefficients();
+            coeffNew.algorithm = MotorControlAlgorithm.PIDF;
+            coeffNew.p = profile.shootPID.p;
+            coeffNew.i = profile.shootPID.i;
+            coeffNew.d = profile.shootPID.d;
+            coeffNew.f = profile.shootPID.f;
+
+            shootMotor1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, coeffNew);
+            shootMotor2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, coeffNew);
+            Logger.logFile("DefaultPIDF - algo:" + coeff.algorithm + " p:" + coeff.p + " i:" + coeff.i +
+                    " d:" + coeff.d + " f:" + coeff.f);
+            Logger.logFile("NewPIDF - algo:" + coeffNew.algorithm + " p:" + coeffNew.p + " i:" + coeffNew.i +
+                    " d:" + coeffNew.d + " f:" + coeffNew.f);
         }
         Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
         getBulkData1();
@@ -173,6 +191,13 @@ public class RobotHardware {
         }
         else if (encoder == EncoderType.SHOOTER) {
             return bulkData2.getMotorVelocity(shootMotor1);
+        }
+        //test
+        else if(encoder == EncoderType.SHOOTER1){
+            return bulkData2.getMotorVelocity(shootMotor1);
+        }
+        else if(encoder == EncoderType.SHOOTER2){
+            return bulkData2.getMotorVelocity(shootMotor2);
         }
         else {
             return 0;
@@ -348,7 +373,10 @@ public class RobotHardware {
         setArmMotorPos(armPosition.prev());
     }
 
-    public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM, SHOOTER}
+    //public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM, SHOOTER}
+    //test
+    public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM, SHOOTER, SHOOTER1, SHOOTER2}
+
     public enum ArmPosition { INIT, HOLD, DELIVER, GRAB;
         private static ArmPosition[] vals = values();
         public ArmPosition next() {
@@ -365,7 +393,7 @@ public class RobotHardware {
 
     public void startShootMotor(int velocity){
         shootMotor1.setVelocity(velocity);
-        shootMotor2.setPower(velocity);
+        shootMotor2.setVelocity(velocity);
     }
 
     public void stopShootMotor() {
@@ -375,5 +403,13 @@ public class RobotHardware {
 
     public void setShooterPosition(boolean isOpen) {
         shootServo.setPosition((isOpen)?profile.hardwareSpec.shooterOpen:profile.hardwareSpec.shooterClose);
+    }
+
+    public void setShootMotor1(double power){
+        shootMotor1.setPower(power);
+    }
+
+    public void setShootMotor2(double power){
+        shootMotor2.setPower(power);
     }
 }

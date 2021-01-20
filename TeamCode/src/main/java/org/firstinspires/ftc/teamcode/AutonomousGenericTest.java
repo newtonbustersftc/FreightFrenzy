@@ -114,7 +114,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         taskList.add(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
 
         taskList.add(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootVelocity));
-        taskList.add(new RobotSleep(5000));
+        taskList.add(new RobotSleep(3000));
         // Shooting action
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));

@@ -62,7 +62,7 @@ public class DriverOpMode extends OpMode {
             fieldModeSign = -1;
         }
 
-        shootingPose = robotProfile.getProfilePose("SHOOT");
+        shootingPose = robotProfile.getProfilePose("SHOOT-DRIVER");
         setupCombos();
 
     }
@@ -76,19 +76,15 @@ public class DriverOpMode extends OpMode {
                 if (gamepad1.left_bumper) {
                     // determine if we want to go backward or foward based on currPose
                     // calculate the angle from current position to the shooting position
+                    robotHardware.stopIntake();
+                    robotHardware.startShootMotor();
+                    robotHardware.ringHolderUp();
                     double ang = Math.atan2(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
                     boolean forward = Math.abs(currPose.getHeading() - ang) < Math.PI / 2;
-                    boolean turn180 = false;
-                    if (currPose.getX() > shootingPose.getX()) {
-                        turn180 = !forward;
-                    }
-                    else {
-                        turn180 = !forward;
-                    }
-                    Logger.logFile("From " + currPose + " F:" + forward + " T:" + turn180);
+                    Logger.logFile("From " + currPose + " F:" + forward);
                     Logger.flushToFile();
                     Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, !forward)
-                            .splineTo(shootingPose.vec(), turn180 ? Math.toRadians(180) : 0).build();
+                            .splineToSplineHeading(shootingPose, shootingPose.getHeading()).build();
                     if (currentTask != null) {
                         currentTask.cleanUp();
                     }

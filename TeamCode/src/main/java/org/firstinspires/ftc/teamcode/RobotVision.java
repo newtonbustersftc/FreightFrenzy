@@ -241,7 +241,7 @@ public class RobotVision {
         final float CAMERA_FORWARD_DISPLACEMENT  = robotProfile.hardwareSpec.cameraForwardDisplacement * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
         final float CAMERA_VERTICAL_DISPLACEMENT = robotProfile.hardwareSpec.cameraVerticalDisplacement * mmPerInch;   // eg: Camera is 8 Inches above ground
         final float CAMERA_LEFT_DISPLACEMENT     = robotProfile.hardwareSpec.cameraLeftDisplacement * mmPerInch;     // eg: Camera is ON the robot's center line
-        phoneZRotate = robotProfile.hardwareSpec.cameraHeadingOffset;
+        //phoneZRotate = robotProfile.hardwareSpec.cameraHeadingOffset;
         Logger.logFile("Camera Heading Offset:" + phoneZRotate);
         Logger.logFile("Camera Forward:" + CAMERA_FORWARD_DISPLACEMENT);
         Logger.logFile("Camera Left:" + CAMERA_LEFT_DISPLACEMENT);
@@ -251,6 +251,7 @@ public class RobotVision {
 
         /**  Let all the trackable listeners know where the phone is.  */
         for (VuforiaTrackable trackable : allTrackables) {
+            //((VuforiaTrackableDefaultListener) trackable.getListener()).setCameraLocationOnRobot(webcamName, robotFromCamera);
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
         }
         Logger.logFile("Vuforia Initialized");
@@ -284,6 +285,8 @@ public class RobotVision {
             // express the rotation of the robot in degrees.
             Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, AngleUnit.RADIANS);
             heading = rotation.thirdAngle;
+            Logger.logFile("Orientation:" + Math.toDegrees(rotation.firstAngle) + ", " +
+                    Math.toDegrees(rotation.secondAngle) + ", " +  Math.toDegrees(rotation.thirdAngle));
             return new Pose2d(new Vector2d(x, y), heading-Math.PI/2);
         }
         else {

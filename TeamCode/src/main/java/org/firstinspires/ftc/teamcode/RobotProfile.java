@@ -13,6 +13,7 @@ public class RobotProfile {
 
     PIDParam headingPID;
     PIDParam distancePID;
+    PIDParam shootPID;
     PIDParam rrHeadingPID;
     PIDParam rrTranslationPID;
     CVParam cvParam;
@@ -34,6 +35,11 @@ public class RobotProfile {
         distancePID.p = 0.5;
         distancePID.i = 0.01;
         distancePID.d = 0.0;
+        shootPID = new PIDParam();
+        shootPID.p = 10.0;
+        shootPID.i = 3.0;
+        shootPID.d = 0.0;
+        shootPID.f = 3.0;
         rrHeadingPID = new PIDParam();
         rrHeadingPID.p = 8;
         rrHeadingPID.i = 0.05;
@@ -70,10 +76,10 @@ public class RobotProfile {
         hardwareSpec.intakePower = 1.0;
         hardwareSpec.ringHolderUp = 0.30;
         hardwareSpec.ringHolderDown = 0.555;
-        hardwareSpec.cameraForwardDisplacement = 3.0f;
+        hardwareSpec.cameraForwardDisplacement = 1.5f;
         hardwareSpec.cameraVerticalDisplacement = 16.5f;
-        hardwareSpec.cameraLeftDisplacement = -0.0f;
-        hardwareSpec.cameraHeadingOffset = -3.0f;
+        hardwareSpec.cameraLeftDisplacement = -1.5f;
+        hardwareSpec.cameraHeadingOffset = -2.5f;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -91,6 +97,7 @@ public class RobotProfile {
         poses.put("TRANSIT2", new AutoPose(-25, -14, 180));
         poses.put("TRANSIT3", new AutoPose(-25, -48, 0));
         poses.put("SHOOT", new AutoPose(-5, -28, -10));
+        poses.put("SHOOT-DRIVER", new AutoPose(-5, -38, -10));
         poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -5, -4));
         poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -5, -7));
         poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -5, -10));
@@ -130,6 +137,7 @@ public class RobotProfile {
         double p;
         double i;
         double d;
+        double f;
     }
 
     class CVParam {
