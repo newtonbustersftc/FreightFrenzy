@@ -343,6 +343,24 @@ public class RobotHardware {
         grabberServo.setPosition(isOpen?profile.hardwareSpec.grabberOpenPos:profile.hardwareSpec.grabberClosePos);
     }
 
+    /**
+     * This function is used for backing up the arm till stop position
+     * @param pos
+     */
+    public void setDirectArmMotorPos(int pos) {
+        armMotor.setPower(profile.hardwareSpec.armPower);
+        armMotor.setTargetPosition(pos);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void resetArmMotorPosition() {
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armMotor.setTargetPosition(0);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
     public void setArmMotorPos(ArmPosition pos) {
         armPosition = pos;
         armMotor.setPower(profile.hardwareSpec.armPower);

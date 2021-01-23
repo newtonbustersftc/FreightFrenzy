@@ -326,7 +326,7 @@ public class RobotVision {
             return AutonomousGoal.NONE;
         }
         Rect r = rects.get(0);
-        if(r.height > 50){
+        if(r.height > 65){
             return AutonomousGoal.QUAD;
         }
         else {

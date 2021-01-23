@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_RPM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.rpmToVelocity;
+
 public class ShooterMotorTask implements RobotControl {
     transient RobotHardware robot;
     transient RobotProfile profile;
@@ -35,7 +38,7 @@ public class ShooterMotorTask implements RobotControl {
 
     public void execute() {
         // already did in prepare
-    }
+   }
 
     public void cleanUp(){
     }

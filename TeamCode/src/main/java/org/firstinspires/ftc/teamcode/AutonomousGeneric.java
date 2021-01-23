@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -62,6 +63,50 @@ public class AutonomousGeneric extends LinearOpMode {
     public void runOpMode() {
         initRobot();
         robotHardware.setMotorStopBrake(false); // so we can adjust the robot
+        robotHardware.ringHolderDown();
+        robotHardware.setShooterPosition(true);
+        robotHardware.setGrabberPosition(false);
+
+        // reset arm position
+        int warningSoundID = hardwareMap.appContext.getResources().getIdentifier("backing_up", "raw", hardwareMap.appContext.getPackageName());
+        if (warningSoundID != 0) {
+            Logger.logFile("Found warning sound backing_up");
+            if (SoundPlayer.getInstance().preload(hardwareMap.appContext, warningSoundID)) {
+                SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, warningSoundID);
+            }
+        }
+        int lastArmPos = 0;
+
+        boolean firstTime = true;
+        while (true) {
+            robotHardware.getBulkData1();
+            robotHardware.getBulkData2();
+            int currArmPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.ARM);
+            if (!firstTime) {
+                if (currArmPos == lastArmPos) {
+                    // stop moving, we move up a bit then reset Arm motor to 0 position
+                    robotHardware.setDirectArmMotorPos(lastArmPos+robotProfile.hardwareSpec.armReverseDelta);
+                    try {
+                        Thread.sleep(robotProfile.hardwareSpec.armReverseDelay);
+                    }
+                    catch (Exception e) {
+                    }
+                    robotHardware.resetArmMotorPosition();
+                    break;  // done
+                }
+            }
+            lastArmPos = currArmPos;
+            robotHardware.setDirectArmMotorPos(lastArmPos - robotProfile.hardwareSpec.armReverseDelta);
+            firstTime = false;
+            try {
+                Thread.sleep(robotProfile.hardwareSpec.armReverseDelay);
+            }
+            catch (Exception e) {
+            }
+        }
+        if (warningSoundID!=0) {
+            SoundPlayer.getInstance().stopPlayingAll();
+        }
         robotHardware.setGrabberPosition(true);
         try {
             Thread.sleep(3000); // put the wobble goal on
@@ -85,17 +130,17 @@ public class AutonomousGeneric extends LinearOpMode {
         taskList = new ArrayList<RobotControl>();
         //prepareTaskList(goal);
 
-//        if (RobotVision.AutonomousGoal.SINGLE==goal) {
-//            prepareSingleTaskList();
-//        }
-//        else if (RobotVision.AutonomousGoal.QUAD==goal) {
-//            prepareQuadTaskList();
-//        }
-//        else {
-//            prepareNoneTaskList();
-//        }
+        if (RobotVision.AutonomousGoal.SINGLE==goal) {
+            prepareSingleTaskList();
+        }
+        else if (RobotVision.AutonomousGoal.QUAD==goal) {
+            prepareQuadTaskList();
+        }
+        else {
+            prepareNoneTaskList();
+        }
 
-        prepareBarTaskList();
+        //prepareBarTaskList();
 
         TaskReporter.report(taskList);
         Logger.logFile("Task list items: " + taskList.size());
@@ -161,7 +206,7 @@ public class AutonomousGeneric extends LinearOpMode {
         SplineMoveTask moveTask1 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot);
         ParallelComboTask par1 = new ParallelComboTask();
         par1.addTask(moveTask1);
-        par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 1000));
+        par1.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
         par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
         taskList.add(par1);
         // Shooting action
@@ -172,6 +217,7 @@ public class AutonomousGeneric extends LinearOpMode {
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
         taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
+        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 10));
 
         Pose2d p3 = getProfilePose("C-1");
         Trajectory trjWob = robotHardware.mecanumDrive.trajectoryBuilder(p2, moveFast)
@@ -205,6 +251,7 @@ public class AutonomousGeneric extends LinearOpMode {
         // Drop wobble 2
         taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.GRAB, 500));
         taskList.add(new GrabberTask(robotHardware, robotProfile, true, 500));
+        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
 
         // move to parking
         Trajectory trjPark = robotHardware.mecanumDrive.trajectoryBuilder(p7, moveFast)
@@ -267,7 +314,7 @@ public class AutonomousGeneric extends LinearOpMode {
         SplineMoveTask moveTask1 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot);
         ParallelComboTask par1 = new ParallelComboTask();
         par1.addTask(moveTask1);
-        par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 1000));
+        par1.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
         par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
         taskList.add(par1);
         // Shooting action
@@ -279,41 +326,58 @@ public class AutonomousGeneric extends LinearOpMode {
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
         taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
         // move to drop wobble 1
+        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 10));
         Pose2d p3 = getProfilePose("B-1");;
         Trajectory trjWob = robotHardware.mecanumDrive.trajectoryBuilder(p2, moveFast)
                 .splineToSplineHeading(p3, p3.getHeading())
                 .build();
         taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trjWob));
         // Wobble goal dropping
-        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.GRAB, 500));
-        taskList.add(new GrabberTask(robotHardware, robotProfile, true, 500));
+        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.GRAB, 1000));
+        taskList.add(new GrabberTask(robotHardware, robotProfile, true, 200));
+        // pick up ring
+        taskList.add(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
+        taskList.add(new IntakeMotorTask(robotHardware, robotProfile, IntakeMotorTask.IntakeMode.NORMAL));
         // Move to grab wobble 2
-        Pose2d p4 = getProfilePose("TRANSIT2");
+        Pose2d p4 = getProfilePose("B-PICK");
         Pose2d p5 = getProfilePose("B-WB2Pre");
         Pose2d p6 = getProfilePose("B-WB2");
         Trajectory pickUp = robotHardware.mecanumDrive.trajectoryBuilder(p3, true)
-                .splineToSplineHeading(p4, p4.getHeading(), moveFast)
-                .splineTo(p5.vec(), p5.getHeading(), moveFast)
-                .splineTo(p6.vec(), p6.getHeading(), constraints)
+                .splineToSplineHeading(p4, p4.getHeading())
+                .splineTo(p5.vec(), p5.getHeading())
+                .splineTo(p6.vec(), p6.getHeading())
                 .build();
         taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, pickUp));
+
         // Grab wobble 2
         taskList.add(new GrabberTask(robotHardware, robotProfile, false, 500));
-        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 500));
+        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
+        // Move to shoot
+        taskList.add(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
+        taskList.add(new IntakeMotorTask(robotHardware, robotProfile, IntakeMotorTask.IntakeMode.STOP));
+        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, true));
+        Pose2d p7 = getProfilePose("SHOOT-DRIVER");
+        Trajectory trjShoot2 = robotHardware.mecanumDrive.trajectoryBuilder(p6, true)
+                .splineToSplineHeading(p7, p7.getHeading())
+                .build();
+        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trjShoot2));
+        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
+        taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
+
         // Move to drop wobble 2
-        Pose2d p7pre = getProfilePose("TRANSIT3");
-        Pose2d p7 = getProfilePose("B-2");
-        Trajectory trjWob2 = robotHardware.mecanumDrive.trajectoryBuilder(p6, moveFast)
-                .splineTo(p7pre.vec(), p7pre.getHeading())
-                .splineTo(p7.vec(), p7.getHeading())
+        Pose2d p8 = getProfilePose("B-2");
+        Trajectory trjWob2 = robotHardware.mecanumDrive.trajectoryBuilder(p7, moveFast)
+                .splineTo(p8.vec(), p8.getHeading())
                 .build();
         taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trjWob2));
         // Drop wobble 2
-        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.GRAB, 500));
+        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.GRAB, 1500));
         taskList.add(new GrabberTask(robotHardware, robotProfile, true, 500));
+        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
 
         // move to parking
-        Trajectory trjPark = robotHardware.mecanumDrive.trajectoryBuilder(p7, moveFast)
+        Trajectory trjPark = robotHardware.mecanumDrive.trajectoryBuilder(p8, moveFast)
                 .back(10)
                 .build();
         taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trjPark));
@@ -375,5 +439,6 @@ public class AutonomousGeneric extends LinearOpMode {
         // Drop wobble 2
         taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.GRAB, 500));
         taskList.add(new GrabberTask(robotHardware, robotProfile, true, 500));
+        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
     }
 }

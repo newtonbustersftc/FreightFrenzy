@@ -50,8 +50,8 @@ public class RobotProfile {
         rrTranslationPID.d = 0;
         rrFeedForwardParam = new FeedForwardParam();
         rrFeedForwardParam.kA = 0.00001;
-        rrFeedForwardParam.kV = 0.01692;
-        rrFeedForwardParam.kStatic = 0.061626;
+        rrFeedForwardParam.kV = 0.01578;
+        rrFeedForwardParam.kStatic = 0.06141;
 
         hardwareSpec = new HardwareSpec();
         hardwareSpec.trackWheelDiameter = 3.8;   //cm diameter
@@ -60,20 +60,22 @@ public class RobotProfile {
         hardwareSpec.leftEncodeForwardSign = 1;
         hardwareSpec.rightEncoderForwardSign = -1;
         hardwareSpec.horizontalEncoderForwardSign = -1;
-        hardwareSpec.armDeliverPos = -1166;
-        hardwareSpec.armGrabPos = -1358;
-        hardwareSpec.armHoldPos = -328;
+        hardwareSpec.armDeliverPos = 1400;
+        hardwareSpec.armGrabPos = 1700;
+        hardwareSpec.armHoldPos = 328;
         hardwareSpec.armInitPos = 0;
         hardwareSpec.armPower = 0.3;
+        hardwareSpec.armReverseDelay = 100;
+        hardwareSpec.armReverseDelta = 30;
         hardwareSpec.grabberOpenPos = 0.21;
         hardwareSpec.grabberClosePos = 0.64;
         hardwareSpec.shooterOpen = 0.39;
         hardwareSpec.shooterClose = 0.645;
-        hardwareSpec.shootVelocity = 1330;
-        hardwareSpec.shootBarVelocity = 1240;
+        hardwareSpec.shootVelocity = -1330;
+        hardwareSpec.shootBarVelocity = -1240;
         hardwareSpec.shootServoDelay = 400;
         hardwareSpec.shootDelay = 800;
-        hardwareSpec.intakePower = 1.0;
+        hardwareSpec.intakePower = -1.0;
         hardwareSpec.ringHolderUp = 0.30;
         hardwareSpec.ringHolderDown = 0.555;
         hardwareSpec.cameraForwardDisplacement = 1.5f;
@@ -92,12 +94,12 @@ public class RobotProfile {
         cvParam.minArea = 5;
 
         poses = new HashMap<String, AutoPose>();
-        poses.put("START", new AutoPose(-66,-18,0));
-        poses.put("TRANSIT", new AutoPose(-25, -18, 0));
+        poses.put("START", new AutoPose(-66,-20,0));
+        poses.put("TRANSIT", new AutoPose(-25, -20, 0));
         poses.put("TRANSIT2", new AutoPose(-25, -14, 180));
         poses.put("TRANSIT3", new AutoPose(-25, -48, 0));
         poses.put("SHOOT", new AutoPose(-5, -28, -10));
-        poses.put("SHOOT-DRIVER", new AutoPose(-5, -38, -10));
+        poses.put("SHOOT-DRIVER", new AutoPose(-5, -38, -5));
         poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -5, -4));
         poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -5, -7));
         poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -5, -10));
@@ -107,10 +109,13 @@ public class RobotProfile {
         poses.put("A-WB2", new AutoPose(-38, -41, -180));
         poses.put("A-2", new AutoPose(-10, -50, -30));
 
-        poses.put("B-1", new AutoPose(18,-36,0));
-        poses.put("B-WB2Pre", new AutoPose(-57,-28,-95));
-        poses.put("B-WB2", new AutoPose(-57,-34,-90));
-        poses.put("B-2", new AutoPose(12,-44,0));
+        poses.put("B-1", new AutoPose(18,-34,0));
+        poses.put("B-PICK", new AutoPose(-12, -36, -180));
+        poses.put("B-WB2Pre", new AutoPose(-30,-41,-180));
+        poses.put("B-WB2", new AutoPose(-38,-41,-180));
+        //poses.put("B-WB2Pre", new AutoPose(-57,-28,-95));
+        //poses.put("B-WB2", new AutoPose(-57,-34,-90));
+        poses.put("B-2", new AutoPose(12,-38,0));
 
         poses.put("C-1", new AutoPose(48,-51,-45));
         poses.put("C-WB2Pre", new AutoPose(-57,-28,-95));
@@ -163,6 +168,8 @@ public class RobotProfile {
         int armGrabPos;
         int armHoldPos;
         int armDeliverPos;
+        long armReverseDelay;
+        int armReverseDelta;
         double armPower;
         double shooterOpen;
         double shooterClose;
