@@ -74,7 +74,7 @@ public class RobotProfile {
         hardwareSpec.shooterClose = 0.645;
         hardwareSpec.shootVelocity = -1330;
         hardwareSpec.shootBarVelocity = -1240;
-        hardwareSpec.shootServoDelay = 400;
+        hardwareSpec.shootServoDelay = 500;
         hardwareSpec.shootDelay = 800;
         hardwareSpec.intakePower = -1.0;
         hardwareSpec.ringHolderUp = 0.30;

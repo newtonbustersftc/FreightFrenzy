@@ -37,7 +37,7 @@ public class DriverOpMode extends OpMode {
     boolean dpadDownPressed = false;
 
     // DriveThru combos
-    SequentialComboTask grabLift;
+    SequentialComboTask grabLift, dropWobble;
     SequentialComboTask powerBar;
     RobotControl currentTask = null;
     RobotVision robotVision;
@@ -85,6 +85,7 @@ public class DriverOpMode extends OpMode {
                     robotHardware.stopIntake();
                     robotHardware.startShootMotor();
                     robotHardware.ringHolderUp();
+                    currentMode = ActionMode.SHOOTING;
                     double ang = Math.atan2(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
                     double dist = Math.hypot(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
                     if (dist>30 || Math.abs(currPose.getHeading() - shootingPose.getHeading()) < Math.PI / 4) {
@@ -94,9 +95,6 @@ public class DriverOpMode extends OpMode {
                         Logger.flushToFile();
                         Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, !forward)
                                 .splineToSplineHeading(shootingPose, shootingPose.getHeading()).build();
-                        if (currentTask != null) {
-                            currentTask.cleanUp();
-                        }
                         currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), traj);
                     }
                     else {
@@ -106,9 +104,6 @@ public class DriverOpMode extends OpMode {
 
                         Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, constraints)
                                 .lineToLinearHeading(shootingPose).build();
-                        if (currentTask != null) {
-                            currentTask.cleanUp();
-                        }
                         currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), traj);
                     }
                     currentTask.prepare();
@@ -125,13 +120,6 @@ public class DriverOpMode extends OpMode {
         robotHardware.getTrackingWheelLocalizer().update();
         currPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
 
-        // Robot movement
-        handleMovement();
-        handlePowerBar();
-        handleVision();
-        handleIntakeAndShoot();
-        handleArmAndGrabber();
-
         if (currentTask != null) {
             currentTask.execute();
             if (currentTask.isDone()) {
@@ -140,19 +128,14 @@ public class DriverOpMode extends OpMode {
                 currentTask = null;
             }
         }
-/*
-        if(gamepad1.b && !bAlreadyPressed){
-            bAlreadyPressed = true;
-            Pose2d shootingPose = new Pose2d(-5, -36, Math.toRadians(0));
-            double shootingHeading = 0;
-            Trajectory trajectory = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, false).
-                    splineToSplineHeading(shootingPose, 0).build();
-            currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), trajectory);
-            currentTask.prepare();
-        } else if(!gamepad1.b && bAlreadyPressed) {
-            bAlreadyPressed = false;
+        else {
+            handleMovement();
+            handlePowerBar();
+            handleVision();
+            handleIntakeAndShoot();
+            handleArmAndGrabber();
         }
- */
+
         telemetry.addData("CurrPose", currPose);
         telemetry.addData("Field Mode", fieldMode);
     }
@@ -169,7 +152,6 @@ public class DriverOpMode extends OpMode {
         }
     }
 
-
     Pose2d getProfilePose(String name) {
         RobotProfile.AutoPose ap = robotProfile.poses.get(name);
         return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
@@ -177,48 +159,45 @@ public class DriverOpMode extends OpMode {
 
     private void handlePowerBar(){
         if(!yPressed && gamepad1.y) {
-                if (gamepad1.right_bumper) {
-                    DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
-                    DriveConstraints constraints = new DriveConstraints(10.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
-                    powerBar = new SequentialComboTask();
-                    robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("SHOOT-START"));
-                    Pose2d p0 = getProfilePose("SHOOT-START");
-                    Pose2d p1 = getProfilePose("SHOOT-POWER-BAR-1");
-                    Trajectory traj1 = robotHardware.getMecanumDrive().trajectoryBuilder(p0, moveFast)
-                            .splineToSplineHeading(p1, p1.getHeading())
-                            .build();
-                    powerBar.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
-                    powerBar.addTask(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootBarVelocity));
-                    powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj1));
-                    powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
-                    powerBar.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+            if (gamepad1.right_bumper) {
+                DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+                DriveConstraints constraints = new DriveConstraints(20.0, 10.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+                powerBar = new SequentialComboTask();
+                robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("SHOOT-START"));
+                Pose2d p0 = getProfilePose("SHOOT-START");
+                Pose2d p1 = getProfilePose("SHOOT-POWER-BAR-1");
+                Trajectory traj1 = robotHardware.getMecanumDrive().trajectoryBuilder(p0, moveFast)
+                        .splineToSplineHeading(p1, p1.getHeading())
+                        .build();
+                powerBar.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 1));
+                powerBar.addTask(new IntakeMotorTask(robotHardware, robotProfile,  IntakeMotorTask.IntakeMode.STOP));
+                powerBar.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
+                powerBar.addTask(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootBarVelocity));
+                powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj1));
+                powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
 
-                    Pose2d p2 = getProfilePose("SHOOT-POWER-BAR-2");
-                    Trajectory traj2 = robotHardware.getMecanumDrive().trajectoryBuilder(p1, constraints)
-                            .lineToLinearHeading(p2, constraints)
-                            .build();
-                    powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj2));
-                    powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
-                    powerBar.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+                Pose2d p2 = getProfilePose("SHOOT-POWER-BAR-2");
+                Trajectory traj2 = robotHardware.getMecanumDrive().trajectoryBuilder(p1, constraints)
+                        .lineToLinearHeading(p2, constraints)
+                        .build();
+                powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj2));
+                powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
 
-                    Pose2d p3 = getProfilePose("SHOOT-POWER-BAR-3");
-                    Trajectory traj3 = robotHardware.getMecanumDrive().trajectoryBuilder(p2, constraints)
-                            .lineToLinearHeading(p3, constraints)
-                            .build();
-                    powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj3));
-                    powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
-                    powerBar.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
-                    currentTask = powerBar;
-                    currentTask.prepare();
-                }
+                Pose2d p3 = getProfilePose("SHOOT-POWER-BAR-3");
+                Trajectory traj3 = robotHardware.getMecanumDrive().trajectoryBuilder(p2, constraints)
+                        .lineToLinearHeading(p3, constraints)
+                        .build();
+                powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj3));
+                powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+                currentTask = powerBar;
+                currentTask.prepare();
+                currentMode = ActionMode.SHOOTING;
             }
         }
+    }
 
 
     private void handleMovement() {
-        if(currentTask!=null){
-            return;
-        }
         double turn = gamepad1.right_stick_x/2;
         double power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
         double moveAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI/4;
@@ -246,9 +225,6 @@ public class DriverOpMode extends OpMode {
     }
 
     private void handleIntakeAndShoot() {
-        if(currentTask!=null){
-            return;
-        }
         if (!dpadUpPressed && gamepad1.dpad_up) {
             switch (currentMode) {
                 case STOP:
@@ -291,11 +267,9 @@ public class DriverOpMode extends OpMode {
             }
         }
         dpadDownPressed = gamepad1.dpad_down;
-        if (gamepad1.x) {
-            robotHardware.setShooterPosition(false);
-        }
-        else {
-            robotHardware.setShooterPosition(true);
+        if (gamepad1.x && currentMode==ActionMode.SHOOTING) {
+            currentTask = new ShootOneRingTask(robotHardware, robotProfile);
+            currentTask.prepare();
         }
     }
 
@@ -311,7 +285,8 @@ public class DriverOpMode extends OpMode {
         }
         dpadLeftPressed = gamepad1.dpad_left;
         if (gamepad1.b) {
-            robotHardware.setGrabberPosition(true);
+            currentTask = dropWobble;
+            currentTask.prepare();
         }
         if (!aPressed && gamepad1.a) {
             //robotHardware.setGrabberPosition(true);
@@ -324,7 +299,12 @@ public class DriverOpMode extends OpMode {
     void setupCombos() {
         grabLift = new SequentialComboTask();
         grabLift.addTask(new GrabberTask(robotHardware, robotProfile, false, 500));
-        grabLift.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 500));
+        grabLift.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 300));
+        dropWobble = new SequentialComboTask();
+        dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 300));
+        dropWobble.addTask(new GrabberTask(robotHardware, robotProfile, true, 300));
+        dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
+
 //        ArrayList<RobotControl> homePositionList = new ArrayList<RobotControl>();
 //        homePositionList.add(new SetLiftPositionTask(robotHardware, robotProfile, robotProfile.hardwareSpec.liftStoneBase +
 //                robotProfile.hardwareSpec.liftPerStone + robotProfile.hardwareSpec.liftGrabExtra, 100));
