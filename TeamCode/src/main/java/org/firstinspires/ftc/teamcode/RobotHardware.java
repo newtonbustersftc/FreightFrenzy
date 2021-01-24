@@ -348,7 +348,7 @@ public class RobotHardware {
      * @param pos
      */
     public void setDirectArmMotorPos(int pos) {
-        armMotor.setPower(profile.hardwareSpec.armPower);
+        armMotor.setPower(profile.hardwareSpec.armPowerLow);
         armMotor.setTargetPosition(pos);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }

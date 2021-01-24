@@ -64,7 +64,8 @@ public class RobotProfile {
         hardwareSpec.armGrabPos = 1700;
         hardwareSpec.armHoldPos = 328;
         hardwareSpec.armInitPos = 0;
-        hardwareSpec.armPower = 0.3;
+        hardwareSpec.armPower = 0.5;
+        hardwareSpec.armPowerLow = 0.3;
         hardwareSpec.armReverseDelay = 100;
         hardwareSpec.armReverseDelta = 30;
         hardwareSpec.grabberOpenPos = 0.21;
@@ -99,10 +100,11 @@ public class RobotProfile {
         poses.put("TRANSIT2", new AutoPose(-25, -14, 180));
         poses.put("TRANSIT3", new AutoPose(-25, -48, 0));
         poses.put("SHOOT", new AutoPose(-5, -28, -10));
-        poses.put("SHOOT-DRIVER", new AutoPose(-5, -38, -5));
-        poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -5, -4));
-        poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -5, -7));
-        poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -5, -10));
+        poses.put("SHOOT-DRIVER", new AutoPose(-5, -42, -5));
+        poses.put("SHOOT-START", new AutoPose(-60, 12, 0));
+        poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -12.5, -5));
+        poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -20, -5));
+        poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -27.5, -5));
 
         poses.put("A-1", new AutoPose(8, -40, -90));
         poses.put("A-WB2Pre", new AutoPose(-30, -41, -180));
@@ -118,9 +120,14 @@ public class RobotProfile {
         poses.put("B-2", new AutoPose(12,-38,0));
 
         poses.put("C-1", new AutoPose(48,-51,-45));
+        poses.put("C-PICK", new AutoPose(-12, -37, -180));
+        poses.put("C-PICK2", new AutoPose(-20, -37, -180));
+        poses.put("C-PICK3Back", new AutoPose(-15, -37, -180));
         poses.put("C-WB2Pre", new AutoPose(-57,-28,-95));
         poses.put("C-WB2", new AutoPose(-57,-34,-90));
         poses.put("C-2", new AutoPose(40,-58,-15));
+
+        poses.put("PARKING", new AutoPose(12, -32, 0));
 
     }
 
@@ -171,6 +178,7 @@ public class RobotProfile {
         long armReverseDelay;
         int armReverseDelta;
         double armPower;
+        double armPowerLow;
         double shooterOpen;
         double shooterClose;
         int shootVelocity;

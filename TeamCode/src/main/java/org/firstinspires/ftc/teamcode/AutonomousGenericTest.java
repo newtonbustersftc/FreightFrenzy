@@ -56,7 +56,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START"));
 
         waitForStart();
-        setUpTaskList();
+        setUpTaskList2();
 
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
@@ -107,6 +107,41 @@ public class AutonomousGenericTest extends LinearOpMode {
         }
         catch (Exception ex) {
         }
+    }
+
+    void setUpTaskList2() {
+        DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        DriveConstraints constraints = new DriveConstraints(10.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        SequentialComboTask powerBar = new SequentialComboTask();
+        robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("SHOOT-START"));
+        Pose2d p0 = getProfilePose("SHOOT-START");
+        Pose2d p1 = getProfilePose("SHOOT-POWER-BAR-1");
+        Trajectory traj1 = robotHardware.getMecanumDrive().trajectoryBuilder(p0, moveFast)
+                .splineToSplineHeading(p1, p1.getHeading())
+                .build();
+        powerBar.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
+        powerBar.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
+        powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj1));
+        powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+        powerBar.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+
+        Pose2d p2 = getProfilePose("SHOOT-POWER-BAR-2");
+        Trajectory traj2 = robotHardware.getMecanumDrive().trajectoryBuilder(p1, constraints)
+                .lineToLinearHeading(p2, constraints)
+                .build();
+        powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj2));
+        powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+        powerBar.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+
+        Pose2d p3 = getProfilePose("SHOOT-POWER-BAR-3");
+        Trajectory traj3 = robotHardware.getMecanumDrive().trajectoryBuilder(p2, constraints)
+                .lineToLinearHeading(p3, constraints)
+                .build();
+        powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj3));
+        powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+        powerBar.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        taskList = new ArrayList<RobotControl>();
+        taskList.add(powerBar);
     }
 
     void setUpTaskList() {

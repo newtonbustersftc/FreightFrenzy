@@ -49,9 +49,16 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV = 0.01588; //1.0 / rpmToVelocity(MAX_RPM);
+    public static double kV = 0.01578; //1.0 / rpmToVelocity(MAX_RPM);
     public static double kA = 0.00001;
-    public static double kStatic = 0.04386;
+    public static double kStatic = 0.06141;
+
+    //test by BL
+    public static double MAX_ACCEL = 30;
+    public static double MAX_VEL = 30;   //need to verify about 30 : MAX_VEL = rpmToVelocity(MAX_RPM); AutomaticFeedforwardTuner.java
+    public static double kP = 0.01588;
+    public static double kI = 0.00001;
+    public static double kD = 0.04386;
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,

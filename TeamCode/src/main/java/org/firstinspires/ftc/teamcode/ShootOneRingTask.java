@@ -12,7 +12,7 @@ public class ShootOneRingTask implements RobotControl {
     }
 
     public String toString() {
-        return "Shoot on Ring";
+        return "Shoot one Ring";
     }
 
     public void prepare(){
