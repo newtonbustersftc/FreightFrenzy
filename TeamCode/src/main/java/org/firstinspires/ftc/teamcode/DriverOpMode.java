@@ -206,10 +206,10 @@ public class DriverOpMode extends OpMode {
             moveAngle += -currPose.getHeading() - fieldHeadingOffset + fieldModeSign*Math.PI/2;
         }
 
-        power = power / 1.5;
+        //power = power;
         turn = turn / 4;
         if (gamepad1.left_bumper) { // further bring it down
-            power = power/2;
+            power = power/3;
             turn = turn/3;
         }
         robotHardware.mecanumDriveTest(power, moveAngle, turn, 0);

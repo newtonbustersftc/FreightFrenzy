@@ -61,7 +61,7 @@ public class RobotProfile {
         hardwareSpec.rightEncoderForwardSign = -1;
         hardwareSpec.horizontalEncoderForwardSign = -1;
         hardwareSpec.armDeliverPos = 1400;
-        hardwareSpec.armGrabPos = 1700;
+        hardwareSpec.armGrabPos = 1800;
         hardwareSpec.armHoldPos = 328;
         hardwareSpec.armInitPos = 0;
         hardwareSpec.armPower = 0.5;
@@ -71,11 +71,11 @@ public class RobotProfile {
         hardwareSpec.grabberOpenPos = 0.21;
         hardwareSpec.grabberClosePos = 0.64;
         hardwareSpec.shooterOpen = 0.39;
-        hardwareSpec.shooterClose = 0.645;
+        hardwareSpec.shooterClose = 0.67;
         hardwareSpec.shootVelocity = -1330;
         hardwareSpec.shootBarVelocity = -1240;
-        hardwareSpec.shootServoDelay = 500;
-        hardwareSpec.shootDelay = 800;
+        hardwareSpec.shootServoDelay = 700;
+        hardwareSpec.shootDelay = 700;
         hardwareSpec.intakePower = -1.0;
         hardwareSpec.ringHolderUp = 0.30;
         hardwareSpec.ringHolderDown = 0.555;
@@ -99,7 +99,7 @@ public class RobotProfile {
         poses.put("TRANSIT", new AutoPose(-25, -20, 0));
         poses.put("TRANSIT2", new AutoPose(-25, -14, 180));
         poses.put("TRANSIT3", new AutoPose(-25, -48, 0));
-        poses.put("SHOOT", new AutoPose(-5, -28, -10));
+        poses.put("SHOOT", new AutoPose(-5, -30, -10));
         poses.put("SHOOT-DRIVER", new AutoPose(-5, -42, -5));
         poses.put("SHOOT-START", new AutoPose(-60, 12, 0));
         poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -12.5, -5));
@@ -111,13 +111,13 @@ public class RobotProfile {
         poses.put("A-WB2", new AutoPose(-38, -41, -180));
         poses.put("A-2", new AutoPose(-10, -50, -30));
 
-        poses.put("B-1", new AutoPose(18,-34,0));
+        poses.put("B-1", new AutoPose(19,-33,0));
         poses.put("B-PICK", new AutoPose(-12, -36, -180));
         poses.put("B-WB2Pre", new AutoPose(-30,-41,-180));
         poses.put("B-WB2", new AutoPose(-38,-41,-180));
         //poses.put("B-WB2Pre", new AutoPose(-57,-28,-95));
         //poses.put("B-WB2", new AutoPose(-57,-34,-90));
-        poses.put("B-2", new AutoPose(12,-38,0));
+        poses.put("B-2", new AutoPose(14,-40,0));
 
         poses.put("C-1", new AutoPose(48,-51,-45));
         poses.put("C-PICK", new AutoPose(-12, -37, -180));
