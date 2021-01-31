@@ -335,6 +335,11 @@ public class RobotVision {
 
     }
 
+    public ArrayList<Rect> getRings() {
+        processCV();
+        return pipeline.getRingRecList();
+    }
+
     private void processCV() {
     try {
         Image rgb = null;
