@@ -1,16 +1,16 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.content.SharedPreferences;
-import static org.firstinspires.ftc.teamcode.AutonomousOptions.START_POS_MODES_PREF;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.io.File;
+
+import static org.firstinspires.ftc.teamcode.AutonomousOptions.START_POS_MODES_PREF;
 
 
 @TeleOp(name="Newton DriverOpMode", group="Main")
@@ -33,12 +33,14 @@ public class DriverOpMode extends OpMode {
     boolean dpadLeftPressed = false;
     boolean aPressed = false;
     boolean yPressed = false;
+    boolean xPressed = false;
     boolean dpadUpPressed = false;
     boolean dpadDownPressed = false;
 
     // DriveThru combos
     SequentialComboTask grabLift, dropWobble;
     SequentialComboTask powerBar;
+    SequentialComboTask autoDriveDemo;
     RobotControl currentTask = null;
     RobotVision robotVision;
 
@@ -268,8 +270,14 @@ public class DriverOpMode extends OpMode {
         }
         dpadDownPressed = gamepad1.dpad_down;
         if (gamepad1.x && currentMode==ActionMode.SHOOTING) {
-            currentTask = new ShootOneRingTask(robotHardware, robotProfile);
-            currentTask.prepare();
+            if(gamepad1.left_bumper){
+                currentTask = autoDriveDemo;
+                currentTask.prepare();
+            } else {
+                currentTask = new ShootOneRingTask(robotHardware, robotProfile);
+                currentTask.prepare();
+            }
+
         }
     }
 
@@ -304,6 +312,25 @@ public class DriverOpMode extends OpMode {
         dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 300));
         dropWobble.addTask(new GrabberTask(robotHardware, robotProfile, true, 300));
         dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
+        autoDriveDemo = new SequentialComboTask();
+        autoDriveDemo.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC));
+        autoDriveDemo.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));
+        autoDriveDemo.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC));
+        autoDriveDemo.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));
+        autoDriveDemo.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC));
+        autoDriveDemo.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));
+        autoDriveDemo.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC));
+        autoDriveDemo.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
+        autoDriveDemo.addTask(new IntakeMotorTask(robotHardware, robotProfile, IntakeMotorTask.IntakeMode.NORMAL));
+        autoDriveDemo.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
+        autoDriveDemo.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.DRIVE));
+        autoDriveDemo.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+        autoDriveDemo.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        autoDriveDemo.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+        autoDriveDemo.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        autoDriveDemo.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+        autoDriveDemo.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
+        autoDriveDemo.addTask(new ShooterMotorTask(robotHardware, robotProfile, false));
 
 //        ArrayList<RobotControl> homePositionList = new ArrayList<RobotControl>();
 //        homePositionList.add(new SetLiftPositionTask(robotHardware, robotProfile, robotProfile.hardwareSpec.liftStoneBase +
