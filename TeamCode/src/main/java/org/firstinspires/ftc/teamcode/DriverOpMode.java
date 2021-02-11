@@ -79,35 +79,40 @@ public class DriverOpMode extends OpMode {
             if (currentPosition != null) {
                 robotHardware.getTrackingWheelLocalizer().setPoseEstimate(currentPosition);
                 Logger.logFile("PoseEstimate:" + currentPosition);
-                if (gamepad1.left_bumper) {
-                    // determine if we want to go backward or foward based on currPose
-                    // calculate the angle from current position to the shooting position
-                    robotHardware.stopIntake();
-                    robotHardware.startShootMotor();
-                    robotHardware.ringHolderUp();
-                    currentMode = ActionMode.SHOOTING;
-                    double ang = Math.atan2(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
-                    double dist = Math.hypot(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
-                    if (dist>30 || Math.abs(currPose.getHeading() - shootingPose.getHeading()) < Math.PI / 4) {
-                        // use spline move is greater than 20 inch away or the handle is not too much different
-                        boolean forward = Math.abs(currPose.getHeading() - ang) < Math.PI / 2;
-                        Logger.logFile("Spline From " + currPose + " F:" + forward);
-                        Logger.flushToFile();
-                        Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, !forward)
-                                .splineToSplineHeading(shootingPose, shootingPose.getHeading()).build();
-                        currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), traj);
-                    }
-                    else {
-                        Logger.logFile("Line From " + currPose);
-                        Logger.flushToFile();
-                        DriveConstraints constraints = new DriveConstraints(10.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
-
-                        Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, constraints)
-                                .lineToLinearHeading(shootingPose).build();
-                        currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), traj);
-                    }
-                    currentTask.prepare();
+            }
+            else {
+                currentPosition = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
+            }
+            if (gamepad1.left_bumper) {
+                // determine if we want to go backward or foward based on currPose
+                // calculate the angle from current position to the shooting position
+                robotHardware.stopIntake();
+                robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.SHOOT);
+                robotHardware.startShootMotor();
+                robotHardware.ringHolderUp();
+                robotHardware.setShooterPosition(true);
+                currentMode = ActionMode.SHOOTING;
+                double ang = Math.atan2(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
+                double dist = Math.hypot(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
+                if (dist>30 || Math.abs(currPose.getHeading() - shootingPose.getHeading()) < Math.PI / 4) {
+                    // use spline move is greater than 20 inch away or the handle is not too much different
+                    boolean forward = Math.abs(currPose.getHeading() - ang) < Math.PI / 2;
+                    Logger.logFile("Spline From " + currPose + " F:" + forward);
+                    Logger.flushToFile();
+                    Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, !forward)
+                            .splineToSplineHeading(shootingPose, shootingPose.getHeading()).build();
+                    currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), traj);
                 }
+                else {
+                    Logger.logFile("Line From " + currPose);
+                    Logger.flushToFile();
+                    DriveConstraints constraints = new DriveConstraints(10.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+
+                    Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, constraints)
+                            .lineToLinearHeading(shootingPose).build();
+                    currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), traj);
+                }
+                currentTask.prepare();
             }
         }
         yPressed = gamepad1.y;
@@ -233,7 +238,7 @@ public class DriverOpMode extends OpMode {
                     robotHardware.startIntake();
                     robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
                     robotHardware.ringHolderDown();
-                    robotHardware.setShooterPosition(true);
+                    robotHardware.setShooterPosition(false);
                     currentMode = ActionMode.INTAKE;
                     break;
                 case INTAKE:
@@ -255,7 +260,7 @@ public class DriverOpMode extends OpMode {
                     robotHardware.stopShootMotor();
                     robotHardware.ringHolderDown();
                     robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
-                    robotHardware.setShooterPosition(true);
+                    robotHardware.setShooterPosition(false);
                     currentMode = ActionMode.STOP;
                     break;
                 case INTAKE:
@@ -264,21 +269,19 @@ public class DriverOpMode extends OpMode {
                     robotHardware.stopShootMotor();
                     robotHardware.ringHolderDown();
                     robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
-                    robotHardware.setShooterPosition(true);
+                    robotHardware.setShooterPosition(false);
                     currentMode = ActionMode.REVERSE;
                     break;
             }
         }
         dpadDownPressed = gamepad1.dpad_down;
-        if (gamepad1.x && currentMode==ActionMode.SHOOTING) {
-            if(gamepad1.left_bumper){
-                currentTask = autoDriveShoot;
-                currentTask.prepare();
-            } else {
-                currentTask = new ShootOneRingTask(robotHardware, robotProfile);
-                currentTask.prepare();
-            }
-
+        if (gamepad1.x && gamepad1.left_bumper) {  // Auto Drive & Shoot
+            currentTask = autoDriveShoot;
+            currentTask.prepare();
+        }
+        else if (gamepad1.x && currentMode==ActionMode.SHOOTING) {
+            currentTask = new ShootOneRingTask(robotHardware, robotProfile);
+            currentTask.prepare();
         }
     }
 
