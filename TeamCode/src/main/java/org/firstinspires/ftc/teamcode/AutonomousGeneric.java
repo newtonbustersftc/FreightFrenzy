@@ -50,6 +50,7 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
         robotHardware.initRobotVision();
         robotHardware.setMotorStopBrake(true);
+        robotHardware.setShooterPosition(false);
 
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
