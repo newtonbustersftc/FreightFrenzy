@@ -48,10 +48,10 @@ public class AutoDriveShootTask implements RobotControl{
         ArrayList<Point> imgList = new ArrayList<Point>();
         ArrayList<Point> fieldList = new ArrayList<Point>();
 
-        imgList.add(new Point(284, 141));
-        imgList.add(new Point(50, 209));
-        imgList.add(new Point(561, 203));
-        imgList.add(new Point(267, 361));
+        imgList.add(new Point(282, 139));
+        imgList.add(new Point(43, 203));
+        imgList.add(new Point(560, 203));
+        imgList.add(new Point(264, 357));
 
         fieldList.add(new Point(180 + ROBOT_WIDTH/2 * 2.54, 0));
         fieldList.add(new Point(120 + ROBOT_WIDTH/2 * 2.54, 40));
