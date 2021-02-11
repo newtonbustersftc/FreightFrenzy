@@ -9,7 +9,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Segment;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-
+import org.firstinspires.ftc.teamcode.Logger;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,11 +25,17 @@ public class RingPickupPathGenerator {
     static Line[] walls = new Line[4];
 
     static {
-        walls[0] = new Line(new Vector2D(FIELD_WIDTH/2, FIELD_WIDTH/2), new Vector2D(FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);      // we don't have full
-        walls[1] = new Line(new Vector2D(FIELD_WIDTH/2, FIELD_WIDTH/2), new Vector2D(-FIELD_WIDTH/2, FIELD_WIDTH/2), 0);
-        walls[2] = new Line(new Vector2D(-FIELD_WIDTH/2, FIELD_WIDTH/2), new Vector2D(-FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);
+        // TOP
+        walls[0] = new Line(new Vector2D(FIELD_WIDTH/2, FIELD_WIDTH/3), new Vector2D(FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);
+        // LEFT
+        walls[1] = new Line(new Vector2D(FIELD_WIDTH/2, FIELD_WIDTH/3), new Vector2D(-FIELD_WIDTH/2, FIELD_WIDTH/3), 0);
+        // BOTTOM
+        walls[2] = new Line(new Vector2D(-FIELD_WIDTH/2, FIELD_WIDTH/3), new Vector2D(-FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);
+        // RIGHT
         walls[3] = new Line(new Vector2D(-FIELD_WIDTH/2, -FIELD_WIDTH/2), new Vector2D(FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);
     }
+
+    static double NEAR_WALL_EXTRA = ROBOT_WIDTH * 3/2;
 
     public RingPickupPathGenerator(Pose2d startPose, Pose2d endPose) {
         this.startPose = startPose;
@@ -40,17 +46,31 @@ public class RingPickupPathGenerator {
      * We are at starting p1, need to add the move to p2 with p3 as next point
      */
     void addMove(Pose2d p1, Vector2d p2, Vector2d p3) {
-        System.out.println("Add Move " + p1 + " -> " + p2 + " -> " + p3);
+        Logger.logFile("Add Move " + p1 + " -> " + p2 + " -> " + p3);
         Line p1ToP2 = new Line(new Vector2D(p1.getX(), p1.getY()), new Vector2D(p2.getX(), p2.getY()), 0);
         Line p2ToP3 = new Line(new Vector2D(p2.getX(), p2.getY()), new Vector2D(p3.getX(), p3.getY()), 0 );
-        boolean reverse = Math.abs((p1.getHeading() - p1ToP2.getAngle()))>Math.PI/2;  // when the angle of more than 90 degree, reverse
-        // The angle should try to pass P2 to P3
-        if (Math.abs(p1ToP2.getAngle() - p2ToP3.getAngle())>Math.PI) {
-            lastHeading = (p2ToP3.getAngle() - p1ToP2.getAngle())/2 + Math.signum(p1ToP2.getAngle() - p2ToP3.getAngle()) * Math.PI;
-        }
-        else {
-            lastHeading = (p1ToP2.getAngle() + p2ToP3.getAngle()) / 2;
-        }
+        //boolean reverse = Math.abs((p1.getHeading() - p1ToP2.getAngle()))>Math.PI/2;  // when the angle of more than 90 degree, reverse
+
+        Line p2ToP1 = new Line(toVector2D(p2), toVector2D(p1), 0);
+        double d1 = Math.min(p2.distTo(p1.vec()), ROBOT_WIDTH*2);
+        double d2 = Math.min(p3.distTo(p2), ROBOT_WIDTH*2);
+        double ang1 = p2ToP1.getAngle();
+        double ang2 = p2ToP3.getAngle();
+        Vector2D tmpP1 = new Vector2D(p2.getX() + d2 * Math.cos(ang1), p2.getY() + d2 * Math.sin(ang1));
+        Vector2D tmpP2 = new Vector2D(p2.getX() + d1 * Math.cos(ang2), p2.getY() + d1 * Math.sin(ang2));
+        Segment seg = new Segment(tmpP1, tmpP2, new Line(tmpP1, tmpP2, 0));
+        lastHeading = seg.getLine().getAngle();
+        Vector2D tmpP1a = new Vector2D(p1.getX() + Math.cos(p1.getHeading()), p1.getY() + Math.sin(p1.getHeading()));
+        double d1p = tmpP1a.distance(toVector2D(p2));
+        boolean reverse = (d1p>d1);
+
+// The angle should try to pass P2 to P3
+//        if (Math.abs(p1ToP2.getAngle() - p2ToP3.getAngle())>Math.PI) {
+//            lastHeading = (p2ToP3.getAngle() - p1ToP2.getAngle())/2 + Math.signum(p1ToP2.getAngle() - p2ToP3.getAngle()) * Math.PI;
+//        }
+//        else {
+//            lastHeading = (p1ToP2.getAngle() + p2ToP3.getAngle()) / 2;
+//        }
         if (currBuilder==null) {
             currBuilder = new TrajectoryBuilder(p1, reverse, constraints);
         }
@@ -58,7 +78,7 @@ public class RingPickupPathGenerator {
     }
 
     ArrayList<Trajectory> pickUpAndShoot(Vector2d r1, Vector2d r2, Vector2d r3) {
-        System.out.println("pickUpAndShoot " + r1 + "," + r2 + ", " + r3);
+        Logger.logFile("pickUpAndShoot " + r1 + "," + r2 + ", " + r3);
         ArrayList<Trajectory> moves = new ArrayList<Trajectory>();
         currBuilder = null;
         addMove(startPose, r1, r2);
@@ -84,38 +104,81 @@ public class RingPickupPathGenerator {
         ArrayList<Vector2d> tmp = new ArrayList<Vector2d>(rings);
         tmp.sort(comp);
         ArrayList<Vector2d> resp = new ArrayList<Vector2d>();
-        for(int i=0; i<Math.min(4, tmp.size()); i++) {
+        for(int i=0; i<Math.min(6, tmp.size()); i++) {
             resp.add(tmp.get(i));
         }
         return resp;
     }
 
+    Vector2D toVector2D(Pose2d p) {
+        return new Vector2D(p.getX(), p.getY());
+    }
+
+    Vector2D toVector2D(Vector2d v) {
+        return new Vector2D(v.getX(), v.getY());
+    }
+
+    Segment toSegment(Vector2D v1, Vector2D v2) {
+        return new Segment(v1, v2, new Line(v1, v2, 0.0));
+    }
+
+    Vector2D move(Pose2d pose, double dist) {
+        double x = pose.getX() + dist * Math.cos(pose.getHeading());
+        double y = pose.getY() + dist * Math.sin(pose.getHeading());
+        return new Vector2D(x, y);
+    }
+
     // Enumerate all chosen ring possible pick up order and get quickest one
     public ArrayList<Trajectory> generatePath(ArrayList<Vector2d> rings) {
+        Vector2D newStart = move(startPose, ROBOT_WIDTH);
+        Vector2D newEnd = move(endPose, -ROBOT_WIDTH);
         ArrayList<Vector2d> chosen = selectRings(rings);
-        System.out.println("GeneratePath rings - " + chosen.size());
+        Logger.logFile("GeneratePath rings - " + chosen.size());
         for(Vector2d v : chosen) {
-            System.out.println("Ring:" + v.getX() + ", " + v.getY());
+            Logger.logFile("Ring:" + v.getX() + ", " + v.getY());
         }
         // build a path for different pick up orders
         ArrayList<Trajectory> bestMove = new ArrayList<Trajectory>();
         int moveExamined = 0;
         long startTime = System.currentTimeMillis();
-        double bestDuration = 10000;
+        double bestCost = 10000;
+        int bestA = 1, bestB = 2, bestC = 3;
+        // if number of rings seen is not 3
+        if (chosen.size()==2) {
+            chosen.add(new Vector2d(endPose.getX()-19, endPose.getY()));
+        }
+        if (chosen.size()==1) {
+            chosen.add(new Vector2d(endPose.getX()-19, endPose.getY()));
+            chosen.add(new Vector2d(endPose.getX()-20, endPose.getY()));
+        }
+        if (chosen.size()==0) {
+            chosen.add(new Vector2d(endPose.getX()+5, endPose.getY()+5));
+            chosen.add(new Vector2d(endPose.getX()-5, endPose.getY()));
+            chosen.add(new Vector2d(endPose.getX()-8, endPose.getY()));
+        }
         for (int a = 0; a < chosen.size(); a++) {
             for (int b = 0; b < chosen.size(); b++) {
                 if (a != b) {
                     for (int c = 0; c < chosen.size(); c++) {
                         if (a != b && a != c && b != c) {
-                            double currDuration = 0;
-                            moveExamined++;
-                            ArrayList<Trajectory> move = pickUpAndShoot(chosen.get(a), chosen.get(b), chosen.get(c));
-                            for(Trajectory t : move) {
-                                currDuration = currDuration + t.duration();
+                            double currCost = newStart.distance(toVector2D(chosen.get(a))) +
+                                    chosen.get(a).distTo(chosen.get(b)) +
+                                    chosen.get(b).distTo(chosen.get(c)) +
+                                    newEnd.distance(toVector2D(chosen.get(c)));
+                            if (isNearWall(chosen.get(a))>0) {
+                                currCost += NEAR_WALL_EXTRA;
                             }
-                            if (bestDuration > currDuration) {
-                                bestDuration = currDuration;
-                                bestMove = move;
+                            if (isNearWall(chosen.get(b))>0) {
+                                currCost += NEAR_WALL_EXTRA;
+                            }
+                            if (isNearWall(chosen.get(c))>0) {
+                                currCost += NEAR_WALL_EXTRA;
+                            }
+                            moveExamined++;
+
+                            if (bestCost > currCost) {
+                                bestCost = currCost;
+                                bestA = a; bestB = b; bestC = c;
                             }
                         }
                     }
@@ -123,8 +186,21 @@ public class RingPickupPathGenerator {
             }
         }
         long timeSpent = System.currentTimeMillis() - startTime;
-        System.out.println("Example " + moveExamined + " time: " + timeSpent + " avg: " + 1.0*timeSpent/moveExamined);
+        Logger.logFile("Example " + moveExamined + " time: " + timeSpent + " avg: " + 1.0*timeSpent/moveExamined);
+        Logger.logFile("rings.add(new Vector2d" + chosen.get(bestA) + ");");
+        Logger.logFile("rings.add(new Vector2d" + chosen.get(bestB) + ");");
+        Logger.logFile("rings.add(new Vector2d" + chosen.get(bestC) + ");");
+        bestMove = pickUpAndShoot(chosen.get(bestA), chosen.get(bestB), chosen.get(bestC));
         return bestMove;
+    }
+
+    int isNearWall(Vector2d r) {
+        for(int i=0; i<walls.length; i++) {
+            if (walls[i].distance(toVector2D(r)) < ROBOT_WIDTH*5/8) {     // if too close to the wall, add adjustment
+                return i + 1;
+            }
+        }
+        return 0;
     }
 
     class DistToSeg implements Comparator<Vector2d> {

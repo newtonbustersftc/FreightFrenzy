@@ -4,7 +4,9 @@ import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
@@ -25,7 +27,8 @@ public class RobotHardware {
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
     ExpansionHubMotor shootMotor1, shootMotor2, intakeMotor;
     ExpansionHubMotor armMotor;
-    ExpansionHubServo grabberServo, shootServo, ringHolderServo;
+    DigitalChannel led1, led2, led3;
+    ExpansionHubServo grabberServo, shootServo, ringHolderServo, ringPusherServo;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
     BulkMecanumDrive mecanumDrive;
@@ -95,6 +98,13 @@ public class RobotHardware {
             grabberServo =  (ExpansionHubServo) hardwareMap.servo.get("Grabber");
             shootServo =  (ExpansionHubServo) hardwareMap.servo.get("Shooter");
             ringHolderServo = (ExpansionHubServo) hardwareMap.servo.get("RingHolder");
+            ringPusherServo = (ExpansionHubServo) hardwareMap.servo.get("RingPusher");
+            led1 = hardwareMap.digitalChannel.get("LED1");
+            led1.setMode(DigitalChannel.Mode.OUTPUT);
+            led2 = hardwareMap.digitalChannel.get("LED2");
+            led2.setMode(DigitalChannel.Mode.OUTPUT);
+            led3 = hardwareMap.digitalChannel.get("LED3");
+            led3.setMode(DigitalChannel.Mode.OUTPUT);
 
             // Display PID values
             PIDFCoefficients coeff = shootMotor1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -423,6 +433,33 @@ public class RobotHardware {
         shootServo.setPosition((isOpen)?profile.hardwareSpec.shooterOpen:profile.hardwareSpec.shooterClose);
     }
 
+    public enum RingPusherPosition { UP, SHOOT, DOWN }
+
+    public void setRingPusherPosition(RingPusherPosition pos) {
+        if (pos==RingPusherPosition.UP) {
+            ringPusherServo.setPosition(profile.hardwareSpec.ringPusherUp);
+        }
+        else if (pos==RingPusherPosition.DOWN){
+            ringPusherServo.setPosition(profile.hardwareSpec.ringPusherDown);
+        }
+        else {
+            ringPusherServo.setPosition(profile.hardwareSpec.ringPusherShoot);
+        }
+    }
+
+    public void setLed1(boolean on) {
+        led1.setState(!on);
+    }
+
+    public void setLed2(boolean on) {
+        led2.setState(!on);
+    }
+
+    public void setLed3(boolean on) {
+        led3.setState(!on);
+    }
+
+    /****/
     public void setShootMotor1(double power){
         shootMotor1.setPower(power);
     }

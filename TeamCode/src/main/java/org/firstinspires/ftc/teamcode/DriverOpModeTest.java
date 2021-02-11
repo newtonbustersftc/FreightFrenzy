@@ -11,9 +11,8 @@ import java.io.File;
 
 @TeleOp(name="DriverOpMode Test", group="Test")
 //@Disabled
-public class DriverOpModeEncoder extends OpMode {
+public class DriverOpModeTest extends OpMode {
     RobotHardware robotHardware;
-    RobotNavigator navigator;
     boolean fieldMode;
     RobotProfile robotProfile;
 
@@ -21,6 +20,11 @@ public class DriverOpModeEncoder extends OpMode {
     double fieldHeadingOffset;
     boolean dpadLeftDown = false;
     boolean dpadRightDown = false;
+    double ringPusherPos = 0.5;
+    int ledNum = 0;
+    boolean yPressed = false;
+    boolean aPressed = false;
+    boolean bPressed = false;
 
     @Override
     public void init() {
@@ -66,29 +70,40 @@ public class DriverOpModeEncoder extends OpMode {
         else {
             dpadLeftDown = gamepad1.dpad_left;
         }
-        if (gamepad1.x) {
-            robotHardware.setGrabberPosition(false);
+
+        robotHardware.setShooterPosition(gamepad1.x);
+
+        robotHardware.setLed1(ledNum==0);
+        robotHardware.setLed2(ledNum==1);
+        robotHardware.setLed3(ledNum==2);
+        if (gamepad1.y && !yPressed) {
+            ledNum = (ledNum+1) % 3;
         }
-        if (gamepad1.y) {
-            robotHardware.setGrabberPosition(true);
+        yPressed = gamepad1.y;
+        if (gamepad1.a && !aPressed) {
+            ringPusherPos -= 0.02;
+            robotHardware.ringPusherServo.setPosition(ringPusherPos);
         }
-        if (gamepad1.a) {
-            robotHardware.setShooterPosition(true);
+        aPressed = gamepad1.a;
+        if (gamepad1.b && !bPressed) {
+            ringPusherPos += 0.02;
+            robotHardware.ringPusherServo.setPosition(ringPusherPos);
         }
-        if (gamepad1.b) {
-            robotHardware.setShooterPosition(false);
-        }
+        bPressed = gamepad1.b;
         if (gamepad1.dpad_up) {
             robotHardware.startShootMotor();
+            robotHardware.ringHolderUp();
         }
         if (gamepad1.dpad_down) {
             robotHardware.stopShootMotor();
+            robotHardware.ringHolderDown();
         }
         telemetry.addData("LeftE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
         telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
         telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
         telemetry.addData("Pose:", robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
-        //telemetry.addData("Velo:", robotHardware.getTrackingWheelLocalizer().getPoseVelocity());
+        telemetry.addData("RingPusher:", ringPusherPos);
+        telemetry.addData("LEDNum:", ledNum);
         telemetry.addData("ArmPos", robotHardware.getEncoderCounts(RobotHardware.EncoderType.ARM));
    }
 

@@ -56,7 +56,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START"));
 
         waitForStart();
-        setUpTaskList2();
+        setUpTaskList3();
 
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
@@ -195,5 +195,18 @@ public class AutonomousGenericTest extends LinearOpMode {
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
         taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
+    }
+
+    void setUpTaskList3() {
+        taskList = new ArrayList<RobotControl>();
+        taskList.add(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
+        taskList.add(new RingPusherPosTask(robotHardware, robotProfile, RobotHardware.RingPusherPosition.DOWN));
+        taskList.add(new IntakeMotorTask(robotHardware, robotProfile, IntakeMotorTask.IntakeMode.NORMAL));
+        Pose2d p0 = getProfilePose("START");
+        Pose2d p1 = new Pose2d(p0.getX()+30, p0.getY(), p0.getHeading());
+        Trajectory trjMov = robotHardware.mecanumDrive.trajectoryBuilder(p0)
+                .splineTo(p1.vec(), p1.getHeading()).build();
+        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trjMov));
+        taskList.add(new RingPusherPosTask(robotHardware, robotProfile, RobotHardware.RingPusherPosition.UP));
     }
 }
