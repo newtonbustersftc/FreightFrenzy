@@ -105,6 +105,9 @@ public class RobotHardware {
             led2.setMode(DigitalChannel.Mode.OUTPUT);
             led3 = hardwareMap.digitalChannel.get("LED3");
             led3.setMode(DigitalChannel.Mode.OUTPUT);
+            setLed1(false);
+            setLed2(false);
+            setLed3(false);
 
             // Display PID values
             PIDFCoefficients coeff = shootMotor1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);

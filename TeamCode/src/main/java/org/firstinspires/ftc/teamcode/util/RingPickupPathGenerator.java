@@ -62,17 +62,14 @@ public class RingPickupPathGenerator {
         lastHeading = seg.getLine().getAngle();
         Vector2D tmpP1a = new Vector2D(p1.getX() + Math.cos(p1.getHeading()), p1.getY() + Math.sin(p1.getHeading()));
         double d1p = tmpP1a.distance(toVector2D(p2));
-        boolean reverse = (d1p>d1);
+        boolean reverse = (currBuilder==null)?(d1p>d1):false;   // only first segment allow reverse
 
-// The angle should try to pass P2 to P3
-//        if (Math.abs(p1ToP2.getAngle() - p2ToP3.getAngle())>Math.PI) {
-//            lastHeading = (p2ToP3.getAngle() - p1ToP2.getAngle())/2 + Math.signum(p1ToP2.getAngle() - p2ToP3.getAngle()) * Math.PI;
-//        }
-//        else {
-//            lastHeading = (p1ToP2.getAngle() + p2ToP3.getAngle()) / 2;
-//        }
         if (currBuilder==null) {
             currBuilder = new TrajectoryBuilder(p1, reverse, constraints);
+        }
+        if (reverse) {  // make sure it get the angle right if had to reverse on first leg
+            Vector2D preP2 = new Vector2D(p2.getX() - Math.cos(lastHeading) * ROBOT_WIDTH/2, p2.getY() - Math.sin(lastHeading)*ROBOT_WIDTH/2);
+            currBuilder.splineToSplineHeading(new Pose2d(preP2.getX(), preP2.getY(), lastHeading), lastHeading);
         }
         currBuilder.splineToSplineHeading(new Pose2d(p2.getX(), p2.getY(), lastHeading), lastHeading);
     }

@@ -27,9 +27,11 @@ public class RingHolderPosTask implements RobotControl {
     public void execute() {
         if (pos==RingHolderPosition.UP) {
             robot.ringHolderUp();
+            robot.setShooterPosition(true);
         }
         else {
             robot.ringHolderDown();
+            robot.setShooterPosition(false);
         }
     }
 

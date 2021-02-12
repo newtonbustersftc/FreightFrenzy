@@ -75,7 +75,7 @@ public class RobotProfile {
         hardwareSpec.shootVelocity = -1180;
         hardwareSpec.shootBarVelocity = -1080;
         hardwareSpec.shootServoDelay = 800;
-        hardwareSpec.shootDelay = 500;
+        hardwareSpec.shootDelay = 300;
         hardwareSpec.intakePower = -1.0;
         hardwareSpec.ringHolderUp = 0.31;
         hardwareSpec.ringHolderDown = 0.555;
@@ -122,10 +122,10 @@ public class RobotProfile {
         //poses.put("B-WB2", new AutoPose(-57,-34,-90));
         poses.put("B-2", new AutoPose(14,-40,0));
 
-        poses.put("C-1", new AutoPose(48,-51,-45));
-        poses.put("C-PICK", new AutoPose(-12, -37, -180));
-        poses.put("C-PICK2", new AutoPose(-20, -37, -180));
-        poses.put("C-PICK3Back", new AutoPose(-15, -37, -180));
+        poses.put("C-1", new AutoPose(37,-48,-45));
+        poses.put("C-PICK", new AutoPose(-12, -35, -180));
+        poses.put("C-PICK2", new AutoPose(-20, -35, -180));
+        poses.put("C-PICK3Back", new AutoPose(-23, -35, -180));
         poses.put("C-WB2Pre", new AutoPose(-57,-28,-95));
         poses.put("C-WB2", new AutoPose(-57,-34,-90));
         poses.put("C-2", new AutoPose(40,-58,-15));

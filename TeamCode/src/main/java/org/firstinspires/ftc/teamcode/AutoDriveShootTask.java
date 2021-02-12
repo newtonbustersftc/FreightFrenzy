@@ -96,36 +96,38 @@ public class AutoDriveShootTask implements RobotControl{
         if(taskMode == TaskMode.MORE_PIC || taskMode == TaskMode.FIRST_PIC) {
             ArrayList<Rect> ringRecArray = robotHardware.getRobotVision().getRings();
             Logger.logFile("Robot see " + ringRecArray.size() + " rings");
-
-            // now let's translate from image pixel to field
-            Mat transformed = new Mat();
-            ArrayList<Point> imgPosList = new ArrayList<Point>();
-            for(Rect r : ringRecArray) {
-                Logger.logFile("Ring Image at " + (r.x + r.width/2) + ", " + (r.y + r.height/2));
-                imgPosList.add(new Point(r.x + r.width/2, r.y+r.height/2));
-            }
-            Core.perspectiveTransform(Converters.vector_Point2f_to_Mat(imgPosList), transformed, trans);
-            ArrayList<Point> transPoints = new ArrayList<Point>();
-            Converters.Mat_to_vector_Point2f(transformed, transPoints);
-            for(Point p:transPoints) {
-                Log.d("Point", p.toString());
-                Logger.logFile("Ring robot coordinate at (cm) " + p.x + ", " + p.y);
-            }
-
-            // translate to field coordinate and add to array
-            for(Point p:transPoints) {
-                Vector2d worldCorr = getFieldCoordinate(robotHardware.getTrackingWheelLocalizer().getPoseEstimate(), p);
-                Logger.logFile("Ring field coordinate at (inch) " + worldCorr.getX() + ", " + worldCorr.getY());
-                int n = 0;
-                while(n < rings.size()){
-                    Vector2d r = rings.get(n);
-                    if(r.distTo(worldCorr) < 3){
-                        rings.remove(n);
-                    } else {
-                        n++;
-                    }
+            if (ringRecArray.size()!=0) {
+                // now let's translate from image pixel to field
+                Mat transformed = new Mat();
+                ArrayList<Point> imgPosList = new ArrayList<Point>();
+                for (Rect r : ringRecArray) {
+                    Logger.logFile("Ring Image at " + (r.x + r.width / 2) + ", " + (r.y + r.height / 2));
+                    imgPosList.add(new Point(r.x + r.width / 2, r.y + r.height / 2));
                 }
-                rings.add(worldCorr);
+                Core.perspectiveTransform(Converters.vector_Point2f_to_Mat(imgPosList), transformed, trans);
+                ArrayList<Point> transPoints = new ArrayList<Point>();
+                Converters.Mat_to_vector_Point2f(transformed, transPoints);
+                for (Point p : transPoints) {
+                    Log.d("Point", p.toString());
+                    Logger.logFile("Ring robot coordinate at (cm) " + p.x + ", " + p.y);
+                }
+
+                // translate to field coordinate and add to array
+                for (Point p : transPoints) {
+                    Vector2d worldCorr = getFieldCoordinate(robotHardware.getTrackingWheelLocalizer().getPoseEstimate(), p);
+                    Logger.logFile("Ring field coordinate at (inch) " + worldCorr.getX() + ", " + worldCorr.getY());
+                    int n = 0;
+                    while (n < rings.size()) {
+                        Vector2d r = rings.get(n);
+                        if (r.distTo(worldCorr) < 3) {
+                            rings.remove(n);
+                        }
+                        else {
+                            n++;
+                        }
+                    }
+                    rings.add(worldCorr);
+                }
             }
         }
         else {
