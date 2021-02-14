@@ -257,6 +257,15 @@ public class RobotVision {
         Logger.logFile("Vuforia Initialized");
     }
 
+    public boolean isTargetVisible() {
+        for (VuforiaTrackable trackable : allTrackables) {
+            if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                return true;
+
+            }
+        }
+        return false;
+    }
     public Pose2d getNavigationLocalization() {
         double x, y, heading;
         // check all the trackable targets to see which one (if any) is visible.

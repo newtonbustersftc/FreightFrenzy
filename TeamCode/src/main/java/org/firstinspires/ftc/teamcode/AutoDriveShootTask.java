@@ -82,7 +82,7 @@ public class AutoDriveShootTask implements RobotControl{
             rings.clear();
         } else if(taskMode == TaskMode.DRIVE){
             RingPickupPathGenerator ringPickupPathGenerator = new RingPickupPathGenerator(robotHardware.getTrackingWheelLocalizer().getPoseEstimate(),
-                    robotProfile.getProfilePose("SHOOT-DRIVER"));
+                    robotProfile.getProfilePose("SHOOT"));
             long start = System.currentTimeMillis();
             ArrayList<Trajectory> arrayTraj = ringPickupPathGenerator.generatePath(rings);
             Logger.logFile("Path Gen Time: " + (System.currentTimeMillis() - start));

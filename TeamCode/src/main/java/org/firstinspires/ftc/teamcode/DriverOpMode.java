@@ -58,6 +58,7 @@ public class DriverOpMode extends OpMode {
         robotHardware.initRobotVision();
         robotVision = robotHardware.getRobotVision();
         robotVision.activateNavigationTarget();
+        robotHardware.initLeds();   // need to init everytime
 
         // Based on the Autonomous mode starting position, define the heading offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
@@ -71,6 +72,12 @@ public class DriverOpMode extends OpMode {
         shootingPose = robotProfile.getProfilePose("SHOOT-DRIVER");
         setupCombos();
 
+    }
+
+    private void handleLED(){
+        robotHardware.setLed1(currentTask != null || !fieldMode);
+        robotHardware.setLed2(robotVision.isTargetVisible());
+        robotHardware.setLed3(robotHardware.isShootingSpeedWithinRange());
     }
 
     private void handleVision() {
@@ -125,8 +132,8 @@ public class DriverOpMode extends OpMode {
         robotHardware.getTrackingWheelLocalizer().update();
         currPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
 
+        handleLED();
         if (currentTask != null) {
-            robotHardware.setLed1(true);
             currentTask.execute();
             if (currentTask.isDone()) {
                 currentTask.cleanUp();
@@ -135,16 +142,13 @@ public class DriverOpMode extends OpMode {
             }
         }
         else {
-            robotHardware.setLed1(false);
             handleMovement();
             handlePowerBar();
             handleVision();
             handleIntakeAndShoot();
             handleArmAndGrabber();
         }
-
         telemetry.addData("CurrPose", currPose);
-        telemetry.addData("Field Mode", fieldMode);
     }
 
     @Override
@@ -172,29 +176,34 @@ public class DriverOpMode extends OpMode {
                 powerBar = new SequentialComboTask();
                 robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("SHOOT-START"));
                 Pose2d p0 = getProfilePose("SHOOT-START");
-                Pose2d p1 = getProfilePose("SHOOT-POWER-BAR-1");
-                Trajectory traj1 = robotHardware.getMecanumDrive().trajectoryBuilder(p0, moveFast)
-                        .splineToSplineHeading(p1, p1.getHeading())
+                Pose2d p1 = getProfilePose("SHOOT-LEFT");
+                Trajectory traj1 = robotHardware.getMecanumDrive().trajectoryBuilder(p0, constraints)
+                        .lineToLinearHeading(p1, constraints)
+                        .build();
+                powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj1));
+                Pose2d p2 = getProfilePose("SHOOT-POWER-BAR-3");
+                Trajectory traj2 = robotHardware.getMecanumDrive().trajectoryBuilder(p1, moveFast)
+                        .splineToSplineHeading(p2, p2.getHeading())
                         .build();
                 powerBar.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 1));
                 powerBar.addTask(new IntakeMotorTask(robotHardware, robotProfile,  IntakeMotorTask.IntakeMode.STOP));
                 powerBar.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
                 powerBar.addTask(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootBarVelocity));
-                powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj1));
-                powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
-
-                Pose2d p2 = getProfilePose("SHOOT-POWER-BAR-2");
-                Trajectory traj2 = robotHardware.getMecanumDrive().trajectoryBuilder(p1, constraints)
-                        .lineToLinearHeading(p2, constraints)
-                        .build();
                 powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj2));
                 powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
 
-                Pose2d p3 = getProfilePose("SHOOT-POWER-BAR-3");
+                Pose2d p3 = getProfilePose("SHOOT-POWER-BAR-2");
                 Trajectory traj3 = robotHardware.getMecanumDrive().trajectoryBuilder(p2, constraints)
                         .lineToLinearHeading(p3, constraints)
                         .build();
                 powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj3));
+                powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+
+                Pose2d p4 = getProfilePose("SHOOT-POWER-BAR-1");
+                Trajectory traj4 = robotHardware.getMecanumDrive().trajectoryBuilder(p3, constraints)
+                        .lineToLinearHeading(p4, constraints)
+                        .build();
+                powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj4));
                 powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
                 currentTask = powerBar;
                 currentTask.prepare();
@@ -240,7 +249,7 @@ public class DriverOpMode extends OpMode {
                     robotHardware.startIntake();
                     robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
                     robotHardware.ringHolderDown();
-                    robotHardware.setShooterPosition(false);
+                    robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.INTAKE;
                     break;
                 case INTAKE:
@@ -262,7 +271,7 @@ public class DriverOpMode extends OpMode {
                     robotHardware.stopShootMotor();
                     robotHardware.ringHolderDown();
                     robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
-                    robotHardware.setShooterPosition(false);
+                    robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.STOP;
                     break;
                 case INTAKE:
@@ -271,7 +280,7 @@ public class DriverOpMode extends OpMode {
                     robotHardware.stopShootMotor();
                     robotHardware.ringHolderDown();
                     robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
-                    robotHardware.setShooterPosition(false);
+                    robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.REVERSE;
                     break;
             }

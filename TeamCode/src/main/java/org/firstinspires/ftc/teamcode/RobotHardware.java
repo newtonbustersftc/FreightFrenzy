@@ -34,6 +34,7 @@ public class RobotHardware {
     BulkMecanumDrive mecanumDrive;
     BulkTrackingWheelLocalizer trackingWheelLocalizer;
     RobotVision robotVision;
+
     //Servo ;
     //DigitalChannel ;
     //Rev2mDistanceSensor ;
@@ -41,6 +42,8 @@ public class RobotHardware {
     boolean isPrototype = false;
     BNO055IMU imu1;
     ArmPosition armPosition = ArmPosition.INIT;
+    int ShootVelocityTenthBelow;
+    int ShootVelocityTenthAbove;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
         Logger.logFile("RobotHardware init()");
@@ -100,14 +103,9 @@ public class RobotHardware {
             ringHolderServo = (ExpansionHubServo) hardwareMap.servo.get("RingHolder");
             ringPusherServo = (ExpansionHubServo) hardwareMap.servo.get("RingPusher");
             led1 = hardwareMap.digitalChannel.get("LED1");
-            led1.setMode(DigitalChannel.Mode.OUTPUT);
             led2 = hardwareMap.digitalChannel.get("LED2");
-            led2.setMode(DigitalChannel.Mode.OUTPUT);
             led3 = hardwareMap.digitalChannel.get("LED3");
-            led3.setMode(DigitalChannel.Mode.OUTPUT);
-            setLed1(false);
-            setLed2(false);
-            setLed3(false);
+            initLeds();
 
             // Display PID values
             PIDFCoefficients coeff = shootMotor1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -129,6 +127,9 @@ public class RobotHardware {
         getBulkData1();
         getBulkData2();
 
+        ShootVelocityTenthAbove = profile.hardwareSpec.shootVelocity - profile.hardwareSpec.shootVelocity / 10;
+        ShootVelocityTenthBelow = profile.hardwareSpec.shootVelocity + profile.hardwareSpec.shootVelocity / 10;
+
         DriveConstants.kA = profile.rrFeedForwardParam.kA;
         DriveConstants.kV = profile.rrFeedForwardParam.kV;
         DriveConstants.kStatic = profile.rrFeedForwardParam.kStatic;
@@ -149,6 +150,15 @@ public class RobotHardware {
 
     public RobotVision getRobotVision() {
         return robotVision;
+    }
+
+    public void initLeds() {
+        led1.setMode(DigitalChannel.Mode.OUTPUT);
+        led2.setMode(DigitalChannel.Mode.OUTPUT);
+        led3.setMode(DigitalChannel.Mode.OUTPUT);
+        led1.setState(true);
+        led2.setState(true);
+        led3.setState(true);
     }
 
     public BulkMecanumDrive getMecanumDrive() {
@@ -203,7 +213,12 @@ public class RobotHardware {
             return profile.hardwareSpec.horizontalEncoderForwardSign * bulkData1.getMotorVelocity(frMotor);
         }
         else if (encoder == EncoderType.SHOOTER) {
-            return bulkData2.getMotorVelocity(shootMotor1);
+            if (bulkData2 != null) {
+                return bulkData2.getMotorVelocity(shootMotor1);
+            }
+            else {
+                return 0;
+            }
         }
         //test
         else if(encoder == EncoderType.SHOOTER1){
@@ -469,5 +484,10 @@ public class RobotHardware {
 
     public void setShootMotor2(double power){
         shootMotor2.setPower(power);
+    }
+
+    public boolean isShootingSpeedWithinRange(){
+        double currVelocity = getEncoderVelocity(EncoderType.SHOOTER);;
+        return (currVelocity >= ShootVelocityTenthBelow && currVelocity <= ShootVelocityTenthAbove);
     }
 }

@@ -30,6 +30,7 @@ public class RingPusherPosTask implements RobotControl {
     }
 
     public boolean isDone() {
-        return System.currentTimeMillis() - startTime > profile.hardwareSpec.shootServoDelay;
+        return true;
+        //return System.currentTimeMillis() - startTime > profile.hardwareSpec.shootServoDelay;
     }
 }
