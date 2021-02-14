@@ -16,7 +16,7 @@ import java.util.Comparator;
 
 public class RingPickupPathGenerator {
     static TrajectoryBuilder currBuilder;
-    static DriveConstraints constraints = new DriveConstraints(20.0, 15.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+    static DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
     static double lastHeading = 0;
     public static double FIELD_WIDTH = 144.0; // 12'
     static double ROBOT_WIDTH = 18.0;
@@ -61,17 +61,20 @@ public class RingPickupPathGenerator {
         Segment seg = new Segment(tmpP1, tmpP2, new Line(tmpP1, tmpP2, 0));
         lastHeading = seg.getLine().getAngle();
         Vector2D tmpP1a = new Vector2D(p1.getX() + Math.cos(p1.getHeading()), p1.getY() + Math.sin(p1.getHeading()));
-        double d1p = tmpP1a.distance(toVector2D(p2));
+        double d1p = tmpP1a.distance(toVector2D(p1));
         boolean reverse = (currBuilder==null)?(d1p>d1):false;   // only first segment allow reverse
 
         if (currBuilder==null) {
             currBuilder = new TrajectoryBuilder(p1, reverse, constraints);
+            Logger.logFile("ADS Spline reverse from " + p1);
         }
         if (reverse) {  // make sure it get the angle right if had to reverse on first leg
-            Vector2D preP2 = new Vector2D(p2.getX() - Math.cos(lastHeading) * ROBOT_WIDTH/2, p2.getY() - Math.sin(lastHeading)*ROBOT_WIDTH/2);
-            currBuilder.splineToSplineHeading(new Pose2d(preP2.getX(), preP2.getY(), lastHeading), lastHeading);
+            Pose2d preP2 = new Pose2d(p2.getX() - Math.cos(lastHeading) * ROBOT_WIDTH/2, p2.getY() - Math.sin(lastHeading)*ROBOT_WIDTH/2, lastHeading);
+            currBuilder.splineToSplineHeading(preP2, lastHeading);
+            Logger.logFile("ADS Spline to " + preP2 + " reverse");
         }
         currBuilder.splineToSplineHeading(new Pose2d(p2.getX(), p2.getY(), lastHeading), lastHeading);
+        Logger.logFile("ADS Spline to " + p2);
     }
 
     ArrayList<Trajectory> pickUpAndShoot(Vector2d r1, Vector2d r2, Vector2d r3) {
@@ -145,8 +148,14 @@ public class RingPickupPathGenerator {
             chosen.add(new Vector2d(endPose.getX()-19, endPose.getY()));
         }
         if (chosen.size()==1) {
-            chosen.add(new Vector2d(endPose.getX()-19, endPose.getY()));
-            chosen.add(new Vector2d(endPose.getX()-20, endPose.getY()));
+            Vector2d r = chosen.get(0);
+            Line p2ToP1 = new Line(toVector2D(r), toVector2D(startPose), 0);
+            Line p2ToP3 = new Line(toVector2D(r), toVector2D(endPose), 0 );
+            double ang1 = p2ToP1.getAngle();
+            double ang2 = p2ToP3.getAngle();
+
+            chosen.add(new Vector2d(r.getX() + Math.cos(ang1), r.getY() + Math.sin(ang1)));
+            chosen.add(new Vector2d(r.getX() + Math.cos(ang1)*2, r.getY() + Math.sin(ang1)*2));
         }
         if (chosen.size()==0) {
             chosen.add(new Vector2d(endPose.getX()+5, endPose.getY()+5));
