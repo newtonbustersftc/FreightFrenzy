@@ -49,7 +49,6 @@ public class RingPickupPathGenerator {
         Logger.logFile("Add Move " + p1 + " -> " + p2 + " -> " + p3);
         Line p1ToP2 = new Line(new Vector2D(p1.getX(), p1.getY()), new Vector2D(p2.getX(), p2.getY()), 0);
         Line p2ToP3 = new Line(new Vector2D(p2.getX(), p2.getY()), new Vector2D(p3.getX(), p3.getY()), 0 );
-        //boolean reverse = Math.abs((p1.getHeading() - p1ToP2.getAngle()))>Math.PI/2;  // when the angle of more than 90 degree, reverse
 
         Line p2ToP1 = new Line(toVector2D(p2), toVector2D(p1), 0);
         double d1 = Math.min(p2.distTo(p1.vec()), ROBOT_WIDTH*2);
@@ -66,7 +65,7 @@ public class RingPickupPathGenerator {
 
         if (currBuilder==null) {
             currBuilder = new TrajectoryBuilder(p1, reverse, constraints);
-            Logger.logFile("ADS Spline reverse from " + p1);
+            Logger.logFile("ADS Spline from " + p1);
         }
         if (reverse) {  // make sure it get the angle right if had to reverse on first leg
             Pose2d preP2 = new Pose2d(p2.getX() - Math.cos(lastHeading) * ROBOT_WIDTH/2, p2.getY() - Math.sin(lastHeading)*ROBOT_WIDTH/2, lastHeading);
@@ -77,6 +76,13 @@ public class RingPickupPathGenerator {
         Logger.logFile("ADS Spline to " + p2);
     }
 
+    /**
+     * Generate trajectory from startPos to ring 1, ring 2, ring 3 to endPos
+     * @param r1 Ring 1 coordinate
+     * @param r2 Ring 2 coordinate
+     * @param r3 Ring 3 coordinate
+     * @return Trajectory
+     */
     ArrayList<Trajectory> pickUpAndShoot(Vector2d r1, Vector2d r2, Vector2d r3) {
         Logger.logFile("pickUpAndShoot " + r1 + "," + r2 + ", " + r3);
         ArrayList<Trajectory> moves = new ArrayList<Trajectory>();
@@ -93,7 +99,7 @@ public class RingPickupPathGenerator {
      * Define a line segment from the current robot position to shooting position, select
      * the rings that are close to this line segment.  If ring is too close to the wall, add
      * distance adjustment to that ring before ranking
-     * @return
+     * @return selected rings
      */
     ArrayList<Vector2d> selectRings(ArrayList<Vector2d> rings) {
         Line segLine = new Line(new Vector2D(startPose.getX(), startPose.getY()), new Vector2D(endPose.getX(), endPose.getY()), 0);
@@ -192,8 +198,8 @@ public class RingPickupPathGenerator {
             }
         }
         long timeSpent = System.currentTimeMillis() - startTime;
-        Logger.logFile("Example " + moveExamined + " time: " + timeSpent + " avg: " + 1.0*timeSpent/moveExamined);
-        Logger.logFile("rings.add(new Vector2d" + chosen.get(bestA) + ");");
+        Logger.logFile("Moves compared: " + moveExamined + " time: " + timeSpent + " avg: " + 1.0*timeSpent/moveExamined);
+        Logger.logFile("rings.add(new Vector2d" + chosen.get(bestA) + ");");    // to be used in simulator if needed
         Logger.logFile("rings.add(new Vector2d" + chosen.get(bestB) + ");");
         Logger.logFile("rings.add(new Vector2d" + chosen.get(bestC) + ");");
         bestMove = pickUpAndShoot(chosen.get(bestA), chosen.get(bestB), chosen.get(bestC));

@@ -287,8 +287,8 @@ public class DriverOpMode extends OpMode {
         }
         dpadDownPressed = gamepad1.dpad_down;
         if (gamepad1.x && gamepad1.left_bumper) {  // Auto Drive & Shoot
-//            currentTask = autoDriveShoot;
-//            currentTask.prepare();
+            currentTask = autoDriveShoot;
+            currentTask.prepare();
         }
         else if (gamepad1.x && currentMode==ActionMode.SHOOTING) {
             currentTask = new ShootOneRingTask(robotHardware, robotProfile);
@@ -354,6 +354,9 @@ public class DriverOpMode extends OpMode {
         autoDriveShoot.addTask(oneAds);
         autoDriveShoot.addTask(oneAds);
         autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+
 
 //        ArrayList<RobotControl> homePositionList = new ArrayList<RobotControl>();
 //        homePositionList.add(new SetLiftPositionTask(robotHardware, robotProfile, robotProfile.hardwareSpec.liftStoneBase +

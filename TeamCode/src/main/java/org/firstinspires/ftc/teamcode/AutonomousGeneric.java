@@ -109,6 +109,7 @@ public class AutonomousGeneric extends LinearOpMode {
         if (warningSoundID!=0) {
             SoundPlayer.getInstance().stopPlayingAll();
         }
+        robotHardware.setArmMotorPos(RobotHardware.ArmPosition.INIT);
         robotHardware.setGrabberPosition(true);
         try {
             Thread.sleep(3000); // put the wobble goal on
@@ -232,7 +233,7 @@ public class AutonomousGeneric extends LinearOpMode {
     }
 
     void prepareQuadTaskList() {
-        DriveConstraints constraints = new DriveConstraints(20.0, 10.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
         DriveConstraints extraSlowConstraints = new DriveConstraints(5.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
         DriveConstraints moveFast = new DriveConstraints(40.0, 30.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
 
@@ -240,7 +241,7 @@ public class AutonomousGeneric extends LinearOpMode {
         Pose2d p0 = getProfilePose("START");
         Pose2d p1 = getProfilePose("TRANSIT");
         Pose2d p2 = getProfilePose("SHOOT");
-        Trajectory trjShoot = robotHardware.mecanumDrive.trajectoryBuilder(p0, moveFast)
+        Trajectory trjShoot = robotHardware.mecanumDrive.trajectoryBuilder(p0, constraints)
                 .splineTo(p1.vec(), p1.getHeading())
                 .splineToSplineHeading(p2, p2.getHeading(), constraints)
                 .build();
