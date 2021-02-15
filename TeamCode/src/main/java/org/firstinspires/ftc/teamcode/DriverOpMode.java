@@ -53,7 +53,7 @@ public class DriverOpMode extends OpMode {
         fieldMode = true; //robot starts in field orientation
 
         Logger.init();
-
+        //Obtain the RobotHardware object from factory
         robotHardware = RobotFactory.getRobotHardware(hardwareMap, robotProfile);
         robotHardware.initRobotVision();
         robotVision = robotHardware.getRobotVision();
@@ -74,12 +74,22 @@ public class DriverOpMode extends OpMode {
 
     }
 
+    /**
+     * handleLED sets LED lights based on
+     * Red(Led1) is when it is on robot oriented mode or when we are in an automated task
+     * Green(Led2) is when the tracking target is visible
+     * Blue(Led3) is when the shooting motor is within the shooting velocity range
+     */
     private void handleLED(){
         robotHardware.setLed1(currentTask != null || !fieldMode);
         robotHardware.setLed2(robotVision.isTargetVisible());
         robotHardware.setLed3(robotHardware.isShootingSpeedWithinRange());
     }
 
+    /**
+     * Resets the current localization position based on the tracking target by pressing Y
+     * and drives to optimal shooting location by pressing left bumper and Y
+     */
     private void handleVision() {
         if (!yPressed && gamepad1.y) {
             Pose2d currentPosition = robotVision.getNavigationLocalization();
@@ -101,8 +111,9 @@ public class DriverOpMode extends OpMode {
                 currentMode = ActionMode.SHOOTING;
                 double ang = Math.atan2(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
                 double dist = Math.hypot(shootingPose.getX() - currPose.getX(), shootingPose.getY() - currPose.getY());
+
                 if (dist>30 || Math.abs(currPose.getHeading() - shootingPose.getHeading()) < Math.PI / 4) {
-                    // use spline move is greater than 20 inch away or the handle is not too much different
+                    // use spline move if distance to shooting location is greater than 30 inch away or when we are using the tracking target in the front
                     boolean forward = Math.abs(currPose.getHeading() - ang) < Math.PI / 2;
                     Logger.logFile("Spline From " + currPose + " F:" + forward);
                     Logger.flushToFile();
@@ -111,6 +122,7 @@ public class DriverOpMode extends OpMode {
                     currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), traj);
                 }
                 else {
+                    //When is looking at the side target, use the straight line trajectory
                     Logger.logFile("Line From " + currPose);
                     Logger.flushToFile();
                     DriveConstraints constraints = new DriveConstraints(10.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
@@ -125,14 +137,20 @@ public class DriverOpMode extends OpMode {
         yPressed = gamepad1.y;
     }
 
+    /**
+     * Main loop for the code
+     */
     @Override
     public void loop() {
+        //Read values from the control hub
         robotHardware.getBulkData1();
+        //Read values from the expansion hub
         robotHardware.getBulkData2();
         robotHardware.getTrackingWheelLocalizer().update();
         currPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
 
         handleLED();
+        //Handling autonomous task loop
         if (currentTask != null) {
             currentTask.execute();
             if (currentTask.isDone()) {
@@ -153,7 +171,6 @@ public class DriverOpMode extends OpMode {
 
     @Override
     public void stop() {
-        // open the clamp to relief the grabber servo
         try {
             Logger.logFile("DriverOpMode stop() called");
             robotVision.deactivateNavigationTarget();
@@ -163,11 +180,19 @@ public class DriverOpMode extends OpMode {
         }
     }
 
+    /**
+     * Retrieve set pose from profile
+     * @param name name of the robot position
+     * @return
+     */
     Pose2d getProfilePose(String name) {
         RobotProfile.AutoPose ap = robotProfile.poses.get(name);
         return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
     }
 
+    /**
+     * Gamepad Y and right bumper to trigger the endgame sequence
+     */
     private void handlePowerBar(){
         if(!yPressed && gamepad1.y) {
             if (gamepad1.right_bumper) {
@@ -212,7 +237,11 @@ public class DriverOpMode extends OpMode {
         }
     }
 
-
+    /**
+     * Joystick Driving Controls
+     * Left bumper for slow motion
+     * Left trigger to enable field mode, right trigger to enable robot-oriented mode
+     */
     private void handleMovement() {
         double turn = gamepad1.right_stick_x/2;
         double power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
@@ -240,6 +269,9 @@ public class DriverOpMode extends OpMode {
         }
     }
 
+    /**
+     * Uses up  down keypad to switch to different modes between shooting, stop, reverse, and intake
+     */
     private void handleIntakeAndShoot() {
         if (!dpadUpPressed && gamepad1.dpad_up) {
             switch (currentMode) {
@@ -296,6 +328,12 @@ public class DriverOpMode extends OpMode {
         }
     }
 
+    /**
+     * Wobble goal pick up and drop
+     * Left right dpad to move arm back and forward
+     * A key to trigger the pick up sequence
+     * B key to trigger the drop sequence
+     */
     private void handleArmAndGrabber() {
         if (gamepad1.dpad_right && !dpadRightPressed) {
             robotHardware.setArmNextPosition();
@@ -319,6 +357,9 @@ public class DriverOpMode extends OpMode {
         aPressed = gamepad1.a;
     }
 
+    /**
+     * Define combo task for driver op mode
+     */
     void setupCombos() {
         grabLift = new SequentialComboTask();
         grabLift.addTask(new GrabberTask(robotHardware, robotProfile, false, 500));
@@ -327,6 +368,7 @@ public class DriverOpMode extends OpMode {
         dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 300));
         dropWobble.addTask(new GrabberTask(robotHardware, robotProfile, true, 300));
         dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
+        //Full auto drive sequence
         SequentialComboTask oneAds = new SequentialComboTask();
         oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC));
         oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));

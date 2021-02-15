@@ -41,8 +41,8 @@ public class RobotHardware {
     boolean isPrototype = false;
     BNO055IMU imu1;
     ArmPosition armPosition = ArmPosition.INIT;
-    int ShootVelocityLowLimit;
-    int ShootVelocityHighLimit;
+    int shootVelocityLowLimit;
+    int shootVelocityHighLimit;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
         Logger.logFile("RobotHardware init()");
@@ -126,8 +126,8 @@ public class RobotHardware {
         getBulkData1();
         getBulkData2();
 
-        ShootVelocityHighLimit = profile.hardwareSpec.shootVelocity - profile.hardwareSpec.shootVelocity / 20;
-        ShootVelocityLowLimit = profile.hardwareSpec.shootVelocity + profile.hardwareSpec.shootVelocity / 20;
+        shootVelocityHighLimit = profile.hardwareSpec.shootVelocity - profile.hardwareSpec.shootVelocity / 20;
+        shootVelocityLowLimit = profile.hardwareSpec.shootVelocity + profile.hardwareSpec.shootVelocity / 20;
 
         DriveConstants.kA = profile.rrFeedForwardParam.kA;
         DriveConstants.kV = profile.rrFeedForwardParam.kV;
@@ -485,8 +485,12 @@ public class RobotHardware {
         shootMotor2.setPower(power);
     }
 
+    /**
+     *
+     * @return true if current velocity is within 5%
+     */
     public boolean isShootingSpeedWithinRange(){
         double currVelocity = getEncoderVelocity(EncoderType.SHOOTER);;
-        return (currVelocity >= ShootVelocityLowLimit && currVelocity <= ShootVelocityHighLimit);
+        return (currVelocity >= shootVelocityLowLimit && currVelocity <= shootVelocityHighLimit);
     }
 }
