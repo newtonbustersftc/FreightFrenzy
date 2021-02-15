@@ -471,7 +471,7 @@ public class RobotVision {
                 Imgproc.cvtColor(input, mbgr, Imgproc.COLOR_RGB2BGR, 3);
                 Imgcodecs.imwrite("/sdcard/FIRST/S" + timestamp + ".jpg", mbgr);
                 mbgr.release();
-                picSaved = true;
+                picSaved = false;   // always want a pic
             }
             for (Rect r : ringRecList) {
                 Logger.logFile("Vision Rec:" + r);
