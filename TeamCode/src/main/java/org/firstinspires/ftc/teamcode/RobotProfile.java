@@ -61,8 +61,8 @@ public class RobotProfile {
         hardwareSpec.rightEncoderForwardSign = -1;
         hardwareSpec.horizontalEncoderForwardSign = -1;
         hardwareSpec.armDeliverPos = 1400;
-        hardwareSpec.armGrabPos = 1800;
-        hardwareSpec.armHoldPos = 328;
+        hardwareSpec.armGrabPos = 1900;
+        hardwareSpec.armHoldPos = 450;
         hardwareSpec.armInitPos = 0;
         hardwareSpec.armPower = 0.5;
         hardwareSpec.armPowerLow = 0.3;
@@ -72,7 +72,7 @@ public class RobotProfile {
         hardwareSpec.grabberClosePos = 0.64;
         hardwareSpec.shooterOpen = 0.30;
         hardwareSpec.shooterClose = 0.67;
-        hardwareSpec.shootVelocity = -1220;
+        hardwareSpec.shootVelocity = -1200;
         hardwareSpec.shootBarVelocity = -1120;
         hardwareSpec.shootServoDelay = 800;
         hardwareSpec.shootDelay =300;

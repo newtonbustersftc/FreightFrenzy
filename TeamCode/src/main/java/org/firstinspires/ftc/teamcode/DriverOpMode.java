@@ -253,7 +253,7 @@ public class DriverOpMode extends OpMode {
                     currentMode = ActionMode.INTAKE;
                     break;
                 case INTAKE:
-                    robotHardware.stopIntake();
+                    robotHardware.reverseIntake();
                     robotHardware.startShootMotor((gamepad1.right_bumper)?robotProfile.hardwareSpec.shootBarVelocity:robotProfile.hardwareSpec.shootVelocity);
                     robotHardware.ringHolderUp();
                     robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.SHOOT);
@@ -287,8 +287,8 @@ public class DriverOpMode extends OpMode {
         }
         dpadDownPressed = gamepad1.dpad_down;
         if (gamepad1.x && gamepad1.left_bumper) {  // Auto Drive & Shoot
-            currentTask = autoDriveShoot;
-            currentTask.prepare();
+//            currentTask = autoDriveShoot;
+//            currentTask.prepare();
         }
         else if (gamepad1.x && currentMode==ActionMode.SHOOTING) {
             currentTask = new ShootOneRingTask(robotHardware, robotProfile);

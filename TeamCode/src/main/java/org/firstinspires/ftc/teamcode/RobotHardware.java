@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
@@ -42,8 +41,8 @@ public class RobotHardware {
     boolean isPrototype = false;
     BNO055IMU imu1;
     ArmPosition armPosition = ArmPosition.INIT;
-    int ShootVelocityTenthBelow;
-    int ShootVelocityTenthAbove;
+    int ShootVelocityLowLimit;
+    int ShootVelocityHighLimit;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
         Logger.logFile("RobotHardware init()");
@@ -127,8 +126,8 @@ public class RobotHardware {
         getBulkData1();
         getBulkData2();
 
-        ShootVelocityTenthAbove = profile.hardwareSpec.shootVelocity - profile.hardwareSpec.shootVelocity / 10;
-        ShootVelocityTenthBelow = profile.hardwareSpec.shootVelocity + profile.hardwareSpec.shootVelocity / 10;
+        ShootVelocityHighLimit = profile.hardwareSpec.shootVelocity - profile.hardwareSpec.shootVelocity / 20;
+        ShootVelocityLowLimit = profile.hardwareSpec.shootVelocity + profile.hardwareSpec.shootVelocity / 20;
 
         DriveConstants.kA = profile.rrFeedForwardParam.kA;
         DriveConstants.kV = profile.rrFeedForwardParam.kV;
@@ -488,6 +487,6 @@ public class RobotHardware {
 
     public boolean isShootingSpeedWithinRange(){
         double currVelocity = getEncoderVelocity(EncoderType.SHOOTER);;
-        return (currVelocity >= ShootVelocityTenthBelow && currVelocity <= ShootVelocityTenthAbove);
+        return (currVelocity >= ShootVelocityLowLimit && currVelocity <= ShootVelocityHighLimit);
     }
 }
