@@ -17,6 +17,9 @@ import org.opencv.utils.Converters;
 
 import java.util.ArrayList;
 
+/**
+ * Use OpenCV for ring recognition and Roadrunner for Path planning to achieve auto drive and shoot
+ */
 public class AutoDriveShootTask implements RobotControl{
 
     public enum TaskMode{
@@ -30,13 +33,19 @@ public class AutoDriveShootTask implements RobotControl{
     RobotHardware robotHardware;
     RobotProfile robotProfile;
     BulkMecanumDrive drive;
-
+    //share ring field coordinates between different instances to merge positions
     static ArrayList<Vector2d> rings = null;
+    //perspective transform object
     static Mat trans = null;
 
     public static double  ROBOT_WIDTH = 18.0;
 
-
+    /**
+     * constructor
+     * @param robotHardware
+     * @param robotProfile
+     * @param taskMode
+     */
     public AutoDriveShootTask(RobotHardware robotHardware, RobotProfile robotProfile, TaskMode taskMode){
         this.robotHardware = robotHardware;
         this.taskMode = taskMode;
@@ -44,6 +53,9 @@ public class AutoDriveShootTask implements RobotControl{
         this.drive = robotHardware.getMecanumDrive();
     }
 
+    /**
+     * initialize the perspective transform
+     */
     void init() {
         ArrayList<Point> imgList = new ArrayList<Point>();
         ArrayList<Point> fieldList = new ArrayList<Point>();
@@ -65,22 +77,33 @@ public class AutoDriveShootTask implements RobotControl{
         rings = new ArrayList<Vector2d>();
     }
 
+    /**
+     * Utility function to translate from robot coordinate into field coordinate
+     * @param currPose current robot position and heading
+     * @param robotViewPt ring position robot coordinate
+     * @return ring position field coordinate
+     */
     Vector2d getFieldCoordinate(Pose2d currPose, Point robotViewPt) {
         double fieldX = currPose.getX() + (robotViewPt.x * Math.cos(currPose.getHeading()) - robotViewPt.y*Math.sin(currPose.getHeading()))/2.54;
         double fieldY = currPose.getY() + (robotViewPt.x * Math.sin(currPose.getHeading()) + robotViewPt.y * Math.cos(currPose.getHeading()))/2.54;
         return new Vector2d(fieldX, fieldY);
     }
 
-
-
+    /**
+     * prepare stage
+     */
     @Override
     public void prepare() {
+        //initialize perspective transform when called for first time
         if(trans == null){
             init();
         }
+        //clear ring array when taking the first picture
         if(taskMode == TaskMode.FIRST_PIC){
             rings.clear();
-        } else if(taskMode == TaskMode.DRIVE){
+        }
+        //select and generate the best path to collect rings using Roadrunner
+        else if(taskMode == TaskMode.DRIVE){
             RingPickupPathGenerator ringPickupPathGenerator = new RingPickupPathGenerator(robotHardware.getTrackingWheelLocalizer().getPoseEstimate(),
                     robotProfile.getProfilePose("SHOOT"));
             long start = System.currentTimeMillis();
@@ -88,16 +111,19 @@ public class AutoDriveShootTask implements RobotControl{
             Logger.logFile("Path Gen Time: " + (System.currentTimeMillis() - start));
             drive.followTrajectoryAsync(arrayTraj.get(0));
         }
-
     }
 
+    /**
+     * when in picture mode: recognize ring position using OpenCV and translate into field coordinate
+     * merge with existing ring array
+     */
     @Override
     public void execute() {
         if(taskMode == TaskMode.MORE_PIC || taskMode == TaskMode.FIRST_PIC) {
             ArrayList<Rect> ringRecArray = robotHardware.getRobotVision().getRings();
             Logger.logFile("Robot see " + ringRecArray.size() + " rings");
             if (ringRecArray.size()!=0) {
-                // now let's translate from image pixel to field
+                // now let's translate from image pixel to robot coordinate
                 Mat transformed = new Mat();
                 ArrayList<Point> imgPosList = new ArrayList<Point>();
                 for (Rect r : ringRecArray) {
@@ -112,13 +138,14 @@ public class AutoDriveShootTask implements RobotControl{
                     Logger.logFile("Ring robot coordinate at (cm) " + p.x + ", " + p.y);
                 }
 
-                // translate to field coordinate and add to array
+                // translate to field coordinate and merge to array
                 for (Point p : transPoints) {
                     Vector2d worldCorr = getFieldCoordinate(robotHardware.getTrackingWheelLocalizer().getPoseEstimate(), p);
                     Logger.logFile("Ring field coordinate at (inch) " + worldCorr.getX() + ", " + worldCorr.getY());
                     int n = 0;
                     while (n < rings.size()) {
                         Vector2d r = rings.get(n);
+                        //when two rings are less than 3 inches apart, assume it's the same ring
                         if (r.distTo(worldCorr) < 3) {
                             rings.remove(n);
                         }
@@ -131,6 +158,7 @@ public class AutoDriveShootTask implements RobotControl{
             }
         }
         else {
+            //DRIVE mode trigger Roadrunner movement
             drive.update();
         }
     }
@@ -140,6 +168,11 @@ public class AutoDriveShootTask implements RobotControl{
 
     }
 
+    /**
+     * picture mode done right away
+     * drive mode complete when roadrunner is idle
+     * @return
+     */
     @Override
     public boolean isDone() {
         if(taskMode == TaskMode.DRIVE){
