@@ -106,14 +106,15 @@ public class DriverOpMode extends OpMode {
                     boolean forward = Math.abs(currPose.getHeading() - ang) < Math.PI / 2;
                     Logger.logFile("Spline From " + currPose + " F:" + forward);
                     Logger.flushToFile();
+                    DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
                     Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, !forward)
-                            .splineToSplineHeading(shootingPose, shootingPose.getHeading()).build();
+                            .splineToSplineHeading(shootingPose, shootingPose.getHeading(), constraints).build();
                     currentTask = new SplineMoveTask(robotHardware.getMecanumDrive(), traj);
                 }
                 else {
                     Logger.logFile("Line From " + currPose);
                     Logger.flushToFile();
-                    DriveConstraints constraints = new DriveConstraints(10.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+                    DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
 
                     Trajectory traj = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, constraints)
                             .lineToLinearHeading(shootingPose).build();
@@ -134,11 +135,17 @@ public class DriverOpMode extends OpMode {
 
         handleLED();
         if (currentTask != null) {
-            currentTask.execute();
-            if (currentTask.isDone()) {
+            if (gamepad1.left_bumper && gamepad1.right_bumper) {
                 currentTask.cleanUp();
-                Logger.logFile("TaskComplete: " + currentTask + " Pose:" + robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
                 currentTask = null;
+            }
+            else {
+                currentTask.execute();
+                if (currentTask.isDone()) {
+                    currentTask.cleanUp();
+                    Logger.logFile("TaskComplete: " + currentTask + " Pose:" + robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
+                    currentTask = null;
+                }
             }
         }
         else {
