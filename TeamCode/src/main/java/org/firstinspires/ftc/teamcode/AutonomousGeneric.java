@@ -66,7 +66,6 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware.setMotorStopBrake(false); // so we can adjust the robot
         robotHardware.ringHolderDown();
         robotHardware.setShooterPosition(false);
-        robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
         robotHardware.setGrabberPosition(false);
 
         // reset arm position
@@ -249,7 +248,6 @@ public class AutonomousGeneric extends LinearOpMode {
         ParallelComboTask par1 = new ParallelComboTask();
         par1.addTask(moveTask1);
         par1.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
-        par1.addTask(new RingPusherPosTask(robotHardware, robotProfile, RobotHardware.RingPusherPosition.SHOOT));
         par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
         taskList.add(par1);
         // Shooting action
@@ -275,7 +273,6 @@ public class AutonomousGeneric extends LinearOpMode {
         //move to pick up two rings for shoot 2
         ParallelComboTask par2 = new ParallelComboTask();
         par2.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
-        par2.addTask(new RingPusherPosTask(robotHardware, robotProfile, RobotHardware.RingPusherPosition.DOWN));
 
         Pose2d p4 = getProfilePose("C-PICK");
         Pose2d p5 = getProfilePose("C-PICK2");
@@ -292,7 +289,7 @@ public class AutonomousGeneric extends LinearOpMode {
         ParallelComboTask shoot_2 = new ParallelComboTask();
         shoot_2.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
 
-        Pose2d p7 = getProfilePose("SHOOT");
+        Pose2d p7 = getProfilePose("SHOOT-DRIVER");
         Trajectory trjShoot2 = robotHardware.mecanumDrive.trajectoryBuilder(p6, true)
                 .splineToSplineHeading(p7, p7.getHeading(), moveFast)
                 .build();
@@ -305,44 +302,25 @@ public class AutonomousGeneric extends LinearOpMode {
         ParallelComboTask par3 = new ParallelComboTask();
         // Rotate 180  degree
         par3.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), -Math.PI*5/6));
-        par3.addTask(new RingPusherPosTask(robotHardware, robotProfile, RobotHardware.RingPusherPosition.SHOOT));
         par3.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
         taskList.add(par3);
 
         taskList.add(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC));
         taskList.add(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.DRIVE));
+        taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));  // extra time for ring to bucket
         taskList.add(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
-        taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
-
-
-        // Grab wobble 2
-//        taskList.add(new GrabberTask(robotHardware, robotProfile, false, 500));
-//        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 500));
-        // Move to drop wobble 2
-//        Pose2d p7pre = getProfilePose("TRANSIT3");
-//        Pose2d p7 = getProfilePose("C-2");
-//        Trajectory trjWob2 = robotHardware.mecanumDrive.trajectoryBuilder(p6, moveFast)
-//                .splineTo(p7pre.vec(), p7pre.getHeading())
-//                .splineTo(p7.vec(), p7.getHeading(), moveFast)
-//                .build();
-//        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trjWob2));
-        // Drop wobble 2
-//        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.GRAB, 500));
-//        taskList.add(new GrabberTask(robotHardware, robotProfile, true, 500));
-//        taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
-
-        // move to parking
+        // shoot last ring and move to parking
         ParallelComboTask par4 = new ParallelComboTask();
-        Pose2d shoot2 = getProfilePose("SHOOT");
+        par4.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+        Pose2d shoot2 = getProfilePose("SHOOT-DRIVER");
         Trajectory trjPark = robotHardware.mecanumDrive.trajectoryBuilder(shoot2, moveFast)
-                .forward(10)
+                .forward(5)
                 .build();
         par4.addTask(new SplineMoveTask(robotHardware.mecanumDrive, trjPark));
-        par4.addTask(new RingPusherPosTask(robotHardware, robotProfile, RobotHardware.RingPusherPosition.UP));
         par4.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
         par4.addTask(new ShooterMotorTask(robotHardware, robotProfile, false));
         taskList.add(par4);

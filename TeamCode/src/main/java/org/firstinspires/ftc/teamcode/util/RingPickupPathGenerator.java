@@ -14,29 +14,64 @@ import org.firstinspires.ftc.teamcode.Logger;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+class WallHandleParam {
+    double multiplierX;
+    double multiplierY;
+    double entryOffsetX;
+    double entryOffsetY;
+    double finalOffsetX;
+    double finalOffsetY;
+    double heading;
+
+    public WallHandleParam(double mx, double my, double ex, double ey, double fx, double fy, double h) {
+        multiplierX = mx;
+        multiplierY = my;
+        entryOffsetX = ex;
+        entryOffsetY = ey;
+        finalOffsetX = fx;
+        finalOffsetY = fy;
+        heading = h;
+    }
+}
+
 public class RingPickupPathGenerator {
     static TrajectoryBuilder currBuilder;
     static DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+    static DriveConstraints constraintsWall = new DriveConstraints(20.0, 15.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
     static double lastHeading = 0;
     public static double FIELD_WIDTH = 144.0; // 12'
     static double ROBOT_WIDTH = 18.0;
+    static double REVERSE_OFFSET = 0.0;
     Pose2d startPose;
     Pose2d endPose;
     static Line[] walls = new Line[4];
+    static WallHandleParam[] whp = new WallHandleParam[4];
 
     static {
         // TOP
-        walls[0] = new Line(new Vector2D(FIELD_WIDTH/2, FIELD_WIDTH/3), new Vector2D(FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);
+        walls[0] = new Line(new Vector2D(FIELD_WIDTH/2, FIELD_WIDTH/6), new Vector2D(FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);
         // LEFT
-        walls[1] = new Line(new Vector2D(FIELD_WIDTH/2, FIELD_WIDTH/3), new Vector2D(-FIELD_WIDTH/2, FIELD_WIDTH/3), 0);
+        walls[1] = new Line(new Vector2D(FIELD_WIDTH/2, FIELD_WIDTH/6), new Vector2D(-FIELD_WIDTH/2, FIELD_WIDTH/6), 0);
         // BOTTOM
-        walls[2] = new Line(new Vector2D(-FIELD_WIDTH/2, FIELD_WIDTH/3), new Vector2D(-FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);
+        walls[2] = new Line(new Vector2D(-FIELD_WIDTH/2, FIELD_WIDTH/6), new Vector2D(-FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);
         // RIGHT
         walls[3] = new Line(new Vector2D(-FIELD_WIDTH/2, -FIELD_WIDTH/2), new Vector2D(FIELD_WIDTH/2, -FIELD_WIDTH/2), 0);
+
+        whp[0] = new WallHandleParam(0, 1, FIELD_WIDTH/2 - ROBOT_WIDTH, 0, FIELD_WIDTH/2 - ROBOT_WIDTH/2 - REVERSE_OFFSET, 0, 0);
+        whp[1] = new WallHandleParam(1, 0, 0, FIELD_WIDTH/6 - ROBOT_WIDTH, 0, FIELD_WIDTH/6 - ROBOT_WIDTH/2 - REVERSE_OFFSET, Math.PI/2);
+        whp[2] = new WallHandleParam(0, 1, -FIELD_WIDTH/2 + ROBOT_WIDTH, 0, -FIELD_WIDTH/2 + ROBOT_WIDTH/2 + REVERSE_OFFSET, 0, Math.PI);
+        whp[3] = new WallHandleParam(1, 0, 0, -FIELD_WIDTH/2 + ROBOT_WIDTH, 0, -FIELD_WIDTH/2 + ROBOT_WIDTH/2 + REVERSE_OFFSET, -Math.PI/2);
     }
 
     static double NEAR_WALL_EXTRA = ROBOT_WIDTH * 3/2;
 
+    ArrayList<Trajectory> moves = new ArrayList<Trajectory>();
+
+    /**
+     * Constructor
+     * @param startPose current robot position
+     * @param endPose final robot position
+     */
     public RingPickupPathGenerator(Pose2d startPose, Pose2d endPose) {
         this.startPose = startPose;
         this.endPose = endPose;
@@ -47,7 +82,14 @@ public class RingPickupPathGenerator {
      */
     void addMove(Pose2d p1, Vector2d p2, Vector2d p3) {
         Logger.logFile("Add Move " + p1 + " -> " + p2 + " -> " + p3);
-        Line p1ToP2 = new Line(new Vector2D(p1.getX(), p1.getY()), new Vector2D(p2.getX(), p2.getY()), 0);
+        // check if p2 is next to a wall
+        int w = isNearWall(p2);
+        Vector2d p2f = null;
+        if (w!=0) {
+            p2 = new Vector2d(p2.getX()*whp[w-1].multiplierX + whp[w-1].entryOffsetX, p2.getY()*whp[w-1].multiplierY + whp[w-1].entryOffsetY);
+            p2f = new Vector2d(p2.getX()*whp[w-1].multiplierX + whp[w-1].finalOffsetX, p2.getY()*whp[w-1].multiplierY + whp[w-1].finalOffsetY);
+            lastHeading = whp[w-1].heading;
+        }
         Line p2ToP3 = new Line(new Vector2D(p2.getX(), p2.getY()), new Vector2D(p3.getX(), p3.getY()), 0 );
 
         Line p2ToP1 = new Line(toVector2D(p2), toVector2D(p1), 0);
@@ -57,23 +99,38 @@ public class RingPickupPathGenerator {
         double ang2 = p2ToP3.getAngle();
         Vector2D tmpP1 = new Vector2D(p2.getX() + d2 * Math.cos(ang1), p2.getY() + d2 * Math.sin(ang1));
         Vector2D tmpP2 = new Vector2D(p2.getX() + d1 * Math.cos(ang2), p2.getY() + d1 * Math.sin(ang2));
-        Segment seg = new Segment(tmpP1, tmpP2, new Line(tmpP1, tmpP2, 0));
-        lastHeading = seg.getLine().getAngle();
-        Vector2D tmpP1a = new Vector2D(p1.getX() + Math.cos(p1.getHeading()), p1.getY() + Math.sin(p1.getHeading()));
-        double d1p = tmpP1a.distance(toVector2D(p1));
-        boolean reverse = (currBuilder==null)?(d1p>d1):false;   // only first segment allow reverse
+        if (p2f == null) {
+            Segment seg = new Segment(tmpP1, tmpP2, new Line(tmpP1, tmpP2, 0));
+            lastHeading = seg.getLine().getAngle();
+        }
 
-        if (currBuilder==null) {
+        if (currBuilder==null) {    // first move from starting position
+            // Decide if we start robot in Reverse - if robot go on current heading for 1 inch, and become farther away from next point
+            // Find the point 1 inch away with current heading
+            Vector2D tmpP1a = new Vector2D(p1.getX() + Math.cos(p1.getHeading()), p1.getY() + Math.sin(p1.getHeading()));
+            // distance to next point
+            double d1p = tmpP1a.distance(toVector2D(p2));
+            boolean reverse = d1p>p2.distTo(p1.vec());
             currBuilder = new TrajectoryBuilder(p1, reverse, constraints);
-            Logger.logFile("ADS Spline from " + p1);
+            Logger.logFile("ADS Spline from " + p1 + (reverse?" Reverse" : ""));
+            if (reverse) {
+                // make sure it get the angle right if had to reverse on first leg, so we add a point before getting to the ring
+                Pose2d preP2 = new Pose2d(p2.getX() - Math.cos(lastHeading) * ROBOT_WIDTH/2, p2.getY() - Math.sin(lastHeading)*ROBOT_WIDTH/2, lastHeading);
+                currBuilder.splineToSplineHeading(preP2, lastHeading);
+                Logger.logFile("ADS Spline to " + preP2 + " reverse");
+            }
         }
-        if (reverse) {  // make sure it get the angle right if had to reverse on first leg
-            Pose2d preP2 = new Pose2d(p2.getX() - Math.cos(lastHeading) * ROBOT_WIDTH/2, p2.getY() - Math.sin(lastHeading)*ROBOT_WIDTH/2, lastHeading);
-            currBuilder.splineToSplineHeading(preP2, lastHeading);
-            Logger.logFile("ADS Spline to " + preP2 + " reverse");
-        }
-        currBuilder.splineToSplineHeading(new Pose2d(p2.getX(), p2.getY(), lastHeading), lastHeading);
+        currBuilder.splineToSplineHeading(new Pose2d(p2, lastHeading), lastHeading);
         Logger.logFile("ADS Spline to " + p2);
+        if (p2f != null) {
+            currBuilder.splineToSplineHeading(new Pose2d(p2f, lastHeading), lastHeading, constraintsWall);
+            moves.add(currBuilder.build());
+            Logger.logFile("ADS Spline to " + p2f);
+            currBuilder = new TrajectoryBuilder(new Pose2d(p2f, lastHeading), true, constraints);
+            Logger.logFile("ADS Spline from " + p2f);
+            //currBuilder.splineToSplineHeading(new Pose2d(p2, lastHeading), lastHeading, constraints);
+            //Logger.logFile("ADS Spline to " + p2);
+        }
     }
 
     /**
@@ -85,7 +142,6 @@ public class RingPickupPathGenerator {
      */
     ArrayList<Trajectory> pickUpAndShoot(Vector2d r1, Vector2d r2, Vector2d r3) {
         Logger.logFile("pickUpAndShoot " + r1 + "," + r2 + ", " + r3);
-        ArrayList<Trajectory> moves = new ArrayList<Trajectory>();
         currBuilder = null;
         addMove(startPose, r1, r2);
         addMove(new Pose2d(r1.getX(), r1.getY(), lastHeading), r2, r3);
@@ -116,30 +172,74 @@ public class RingPickupPathGenerator {
         return resp;
     }
 
+    /**
+     * Utility function to convert RoadRunner Pose2d object to Apache Math Vector2D object
+     * @param p RoadRunner Pose2d object
+     * @return Apache Math Vector2D object
+     */
     Vector2D toVector2D(Pose2d p) {
         return new Vector2D(p.getX(), p.getY());
     }
 
+    /**
+     * Utility function to convert RoadRunner Vector2d object to Apache Math Vector2D object
+     * @param v RoadRunner Vector2d object
+     * @return Apache Math Vector2D object
+     */
     Vector2D toVector2D(Vector2d v) {
         return new Vector2D(v.getX(), v.getY());
     }
 
+    /**
+     * Utility function to create a Apache Math line segment from 2 Vector2D points with 0 tolerance
+     * @param v1 point 1
+     * @param v2 point 2
+     * @return Line segment from v1 to v2
+     */
     Segment toSegment(Vector2D v1, Vector2D v2) {
         return new Segment(v1, v2, new Line(v1, v2, 0.0));
     }
 
+    /**
+     * Utility function to calculate the position if move from current pose2d by distance
+     * @param pose Current pose2d (location & Heading)
+     * @param dist Distance to move
+     * @return Final position
+     */
     Vector2D move(Pose2d pose, double dist) {
         double x = pose.getX() + dist * Math.cos(pose.getHeading());
         double y = pose.getY() + dist * Math.sin(pose.getHeading());
         return new Vector2D(x, y);
     }
 
-    // Enumerate all chosen ring possible pick up order and get quickest one
+    /**
+     * Enumerate all chosen ring possible pick up order and get quickest one
+     * @return Array of RoadRunner Trajectory
+     */
     public ArrayList<Trajectory> generatePath(ArrayList<Vector2d> rings) {
         Vector2D newStart = move(startPose, ROBOT_WIDTH);
         Vector2D newEnd = move(endPose, -ROBOT_WIDTH);
+        Logger.logFile("GeneratePath rings - " + rings.size());
+        // if number of rings seen is not 3
+        if (rings.size()==2) {
+            rings.add(new Vector2d(endPose.getX()-19, endPose.getY()));
+        }
+        else if (rings.size()==1) {
+            Vector2d r = rings.get(0);
+            Line p2ToP1 = new Line(toVector2D(r), toVector2D(startPose), 0);
+            Line p2ToP3 = new Line(toVector2D(r), toVector2D(endPose), 0 );
+            double ang1 = p2ToP1.getAngle();
+            double ang2 = p2ToP3.getAngle();
+
+            rings.add(new Vector2d(r.getX() + Math.cos(ang1), r.getY() + Math.sin(ang1)));
+            rings.add(new Vector2d(r.getX() + Math.cos(ang1)*2, r.getY() + Math.sin(ang1)*2));
+        }
+        if (rings.size()==0) {
+            rings.add(new Vector2d(endPose.getX()+5, endPose.getY()+5));
+            rings.add(new Vector2d(endPose.getX()-5, endPose.getY()));
+            rings.add(new Vector2d(endPose.getX()-8, endPose.getY()));
+        }
         ArrayList<Vector2d> chosen = selectRings(rings);
-        Logger.logFile("GeneratePath rings - " + chosen.size());
         for(Vector2d v : chosen) {
             Logger.logFile("Ring:" + v.getX() + ", " + v.getY());
         }
@@ -149,25 +249,6 @@ public class RingPickupPathGenerator {
         long startTime = System.currentTimeMillis();
         double bestCost = 10000;
         int bestA = 1, bestB = 2, bestC = 3;
-        // if number of rings seen is not 3
-        if (chosen.size()==2) {
-            chosen.add(new Vector2d(endPose.getX()-19, endPose.getY()));
-        }
-        if (chosen.size()==1) {
-            Vector2d r = chosen.get(0);
-            Line p2ToP1 = new Line(toVector2D(r), toVector2D(startPose), 0);
-            Line p2ToP3 = new Line(toVector2D(r), toVector2D(endPose), 0 );
-            double ang1 = p2ToP1.getAngle();
-            double ang2 = p2ToP3.getAngle();
-
-            chosen.add(new Vector2d(r.getX() + Math.cos(ang1), r.getY() + Math.sin(ang1)));
-            chosen.add(new Vector2d(r.getX() + Math.cos(ang1)*2, r.getY() + Math.sin(ang1)*2));
-        }
-        if (chosen.size()==0) {
-            chosen.add(new Vector2d(endPose.getX()+5, endPose.getY()+5));
-            chosen.add(new Vector2d(endPose.getX()-5, endPose.getY()));
-            chosen.add(new Vector2d(endPose.getX()-8, endPose.getY()));
-        }
         for (int a = 0; a < chosen.size(); a++) {
             for (int b = 0; b < chosen.size(); b++) {
                 if (a != b) {
@@ -206,6 +287,11 @@ public class RingPickupPathGenerator {
         return bestMove;
     }
 
+    /**
+     * Is the ring near one of the wall defined
+     * @param r Ring position
+     * @return 0 - not near any wall.  1-4 is near one of walls
+     */
     int isNearWall(Vector2d r) {
         for(int i=0; i<walls.length; i++) {
             if (walls[i].distance(toVector2D(r)) < ROBOT_WIDTH*5/8) {     // if too close to the wall, add adjustment

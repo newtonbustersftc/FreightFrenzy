@@ -70,8 +70,8 @@ public class RobotProfile {
         hardwareSpec.armReverseDelta = 30;
         hardwareSpec.grabberOpenPos = 0.21;
         hardwareSpec.grabberClosePos = 0.64;
-        hardwareSpec.shooterOpen = 0.30;
-        hardwareSpec.shooterClose = 0.67;
+        hardwareSpec.shooterOpen = 0.55;
+        hardwareSpec.shooterClose = 0.685;
         hardwareSpec.shootVelocity = -1200;
         hardwareSpec.shootBarVelocity = -1120;
         hardwareSpec.shootServoDelay = 800;

@@ -20,7 +20,7 @@ public class DriverOpModeTest extends OpMode {
     double fieldHeadingOffset;
     boolean dpadLeftDown = false;
     boolean dpadRightDown = false;
-    double ringPusherPos = 0.5;
+    double shootServoPos = 0.6;
     int ledNum = 0;
     boolean yPressed = false;
     boolean aPressed = false;
@@ -37,6 +37,7 @@ public class DriverOpModeTest extends OpMode {
         Logger.init();
         robotHardware = new RobotHardware();
         robotHardware.init(hardwareMap, robotProfile);
+        robotHardware.setShooterPosition(true);
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
     }
 
@@ -71,7 +72,7 @@ public class DriverOpModeTest extends OpMode {
             dpadLeftDown = gamepad1.dpad_left;
         }
 
-        robotHardware.setShooterPosition(gamepad1.x);
+        //robotHardware.setShooterPosition(gamepad1.x);
 
         robotHardware.setLed1(ledNum==0);
         robotHardware.setLed2(ledNum==1);
@@ -81,13 +82,13 @@ public class DriverOpModeTest extends OpMode {
         }
         yPressed = gamepad1.y;
         if (gamepad1.a && !aPressed) {
-            ringPusherPos -= 0.02;
-            robotHardware.ringPusherServo.setPosition(ringPusherPos);
+            shootServoPos -= 0.02;
+            robotHardware.shootServo.setPosition(shootServoPos);
         }
         aPressed = gamepad1.a;
         if (gamepad1.b && !bPressed) {
-            ringPusherPos += 0.02;
-            robotHardware.ringPusherServo.setPosition(ringPusherPos);
+            shootServoPos += 0.02;
+            robotHardware.shootServo.setPosition(shootServoPos);
         }
         bPressed = gamepad1.b;
         if (gamepad1.dpad_up) {
@@ -102,7 +103,7 @@ public class DriverOpModeTest extends OpMode {
         telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
         telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
         telemetry.addData("Pose:", robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
-        telemetry.addData("RingPusher:", ringPusherPos);
+        telemetry.addData("Shoot Servo:", shootServoPos);
         telemetry.addData("LEDNum:", ledNum);
         telemetry.addData("ArmPos", robotHardware.getEncoderCounts(RobotHardware.EncoderType.ARM));
    }

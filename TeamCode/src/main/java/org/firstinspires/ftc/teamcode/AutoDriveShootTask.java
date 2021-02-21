@@ -25,7 +25,6 @@ public class AutoDriveShootTask implements RobotControl{
         DRIVE
     }
 
-
     TaskMode taskMode;
     RobotHardware robotHardware;
     RobotProfile robotProfile;
@@ -33,6 +32,8 @@ public class AutoDriveShootTask implements RobotControl{
 
     static ArrayList<Vector2d> rings = null;
     static Mat trans = null;
+    ArrayList<Trajectory> arrayTraj;
+    boolean doneDriving;
 
     public static double  ROBOT_WIDTH = 18.0;
 
@@ -42,6 +43,10 @@ public class AutoDriveShootTask implements RobotControl{
         this.taskMode = taskMode;
         this.robotProfile = robotProfile;
         this.drive = robotHardware.getMecanumDrive();
+    }
+
+    public String toString() {
+        return "AutoDriveShoot " + taskMode;
     }
 
     void init() {
@@ -82,13 +87,14 @@ public class AutoDriveShootTask implements RobotControl{
             rings.clear();
         } else if(taskMode == TaskMode.DRIVE){
             RingPickupPathGenerator ringPickupPathGenerator = new RingPickupPathGenerator(robotHardware.getTrackingWheelLocalizer().getPoseEstimate(),
-                    robotProfile.getProfilePose("SHOOT"));
+                    robotProfile.getProfilePose("SHOOT-DRIVER"));
             long start = System.currentTimeMillis();
-            ArrayList<Trajectory> arrayTraj = ringPickupPathGenerator.generatePath(rings);
+            arrayTraj = ringPickupPathGenerator.generatePath(rings);
             Logger.logFile("Path Gen Time: " + (System.currentTimeMillis() - start));
-            drive.followTrajectoryAsync(arrayTraj.get(0));
+            Trajectory traj = arrayTraj.remove(0);
+            drive.followTrajectoryAsync(traj);
+            doneDriving = false;
         }
-
     }
 
     @Override
@@ -132,6 +138,15 @@ public class AutoDriveShootTask implements RobotControl{
         }
         else {
             drive.update();
+            if (!drive.isBusy()) {
+                if (arrayTraj.size()>0) {
+                    Trajectory traj = arrayTraj.remove(0);
+                    drive.followTrajectoryAsync(traj);
+                }
+                else {
+                    doneDriving = true;
+                }
+            }
         }
     }
 
@@ -143,7 +158,7 @@ public class AutoDriveShootTask implements RobotControl{
     @Override
     public boolean isDone() {
         if(taskMode == TaskMode.DRIVE){
-            return !drive.isBusy();
+            return doneDriving;
         } else {
             return true;
         }
