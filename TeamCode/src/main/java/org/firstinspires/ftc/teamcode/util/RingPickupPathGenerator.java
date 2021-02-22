@@ -39,7 +39,7 @@ public class RingPickupPathGenerator {
     static DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
     static DriveConstraints constraintsWall = new DriveConstraints(20.0, 15.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
     static double lastHeading = 0;
-    public static double FIELD_WIDTH = 144.0; // 12'
+    public static double FIELD_WIDTH = 140.0; // 60cm x 6 / 2.54 = 141.7
     static double ROBOT_WIDTH = 18.0;
     static double REVERSE_OFFSET = 0.0;
     Pose2d startPose;
