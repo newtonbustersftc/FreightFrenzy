@@ -301,7 +301,7 @@ public class AutonomousGeneric extends LinearOpMode {
         //move to shoot 3
         ParallelComboTask par3 = new ParallelComboTask();
         // Rotate 180  degree
-        par3.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), -Math.PI*5/6));
+        par3.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), -Math.PI));
         par3.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
         taskList.add(par3);
 
@@ -334,7 +334,7 @@ public class AutonomousGeneric extends LinearOpMode {
         Pose2d p0 = getProfilePose("START");
         Pose2d p1 = getProfilePose("TRANSIT");
         Pose2d p2 = getProfilePose("SHOOT");
-        Trajectory trjShoot = robotHardware.mecanumDrive.trajectoryBuilder(p0, moveFast)
+        Trajectory trjShoot = robotHardware.mecanumDrive.trajectoryBuilder(p0, constraints)
                 .splineTo(p1.vec(), p1.getHeading())
                 .splineToSplineHeading(p2, p2.getHeading(), constraints)
                 .build();
@@ -351,7 +351,7 @@ public class AutonomousGeneric extends LinearOpMode {
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
-        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
+        //taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
         // move to drop wobble 1
         taskList.add(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 10));
         Pose2d p3 = getProfilePose("B-1");;
