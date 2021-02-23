@@ -104,8 +104,10 @@ public class RobotProfile {
         poses.put("TRANSIT3", new AutoPose(-25, -48, 0));
         poses.put("SHOOT", new AutoPose(-5, -30, -10));
         poses.put("SHOOT-DRIVER", new AutoPose(-5, -42, -5));
-        poses.put("SHOOT-START", new AutoPose(-62, -62, 0));
+        poses.put("SHOOT-START-1", new AutoPose(-62, -62, 0));
         poses.put("SHOOT-LEFT", new AutoPose(-62, -59, 0));
+        poses.put("SHOOT-START-2", new AutoPose(-62, 12, 0));
+        poses.put("SHOOT-RIGHT", new AutoPose(-62, 9, 0));
         poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -10.5, -5));
         poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -18, -5));
         poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -25.5, -5));

@@ -178,12 +178,21 @@ public class DriverOpMode extends OpMode {
     private void handlePowerBar(){
         if(!yPressed && gamepad1.y) {
             if (gamepad1.right_bumper) {
+                Logger.logFile(("pose y " + robotHardware.getMecanumDrive().getPoseEstimate().getY()));
                 DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
                 DriveConstraints constraints = new DriveConstraints(20.0, 10.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
                 powerBar = new SequentialComboTask();
-                robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("SHOOT-START"));
-                Pose2d p0 = getProfilePose("SHOOT-START");
-                Pose2d p1 = getProfilePose("SHOOT-LEFT");
+                Pose2d p0 = null, p1 = null;
+
+                if(robotHardware.getMecanumDrive().getPoseEstimate().getY() < -25) {
+                    robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("SHOOT-START-1"));
+                     p0 = getProfilePose("SHOOT-START-1");
+                     p1 = getProfilePose("SHOOT-LEFT");
+                } else {
+                    robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("SHOOT-START-2"));
+                    p0 = getProfilePose("SHOOT-START-2");
+                    p1 = getProfilePose("SHOOT-RIGHT");
+                }
                 Trajectory traj1 = robotHardware.getMecanumDrive().trajectoryBuilder(p0, constraints)
                         .lineToLinearHeading(p1, constraints)
                         .build();
