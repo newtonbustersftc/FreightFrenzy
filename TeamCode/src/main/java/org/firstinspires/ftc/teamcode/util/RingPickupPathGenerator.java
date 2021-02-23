@@ -226,13 +226,19 @@ public class RingPickupPathGenerator {
         }
         else if (rings.size()==1) {
             Vector2d r = rings.get(0);
-            Line p2ToP1 = new Line(toVector2D(r), toVector2D(startPose), 0);
-            Line p2ToP3 = new Line(toVector2D(r), toVector2D(endPose), 0 );
-            double ang1 = p2ToP1.getAngle();
-            double ang2 = p2ToP3.getAngle();
+            if (isNearWall(r)!=0) {
+                Line p2ToP1 = new Line(toVector2D(r), toVector2D(startPose), 0);
+                Line p2ToP3 = new Line(toVector2D(r), toVector2D(endPose), 0);
+                double ang1 = p2ToP1.getAngle();
+                double ang2 = p2ToP3.getAngle();
 
-            rings.add(new Vector2d(r.getX() + Math.cos(ang1), r.getY() + Math.sin(ang1)));
-            rings.add(new Vector2d(r.getX() + Math.cos(ang1)*2, r.getY() + Math.sin(ang1)*2));
+                rings.add(new Vector2d(r.getX() + Math.cos(ang1), r.getY() + Math.sin(ang1)));
+                rings.add(new Vector2d(r.getX() + Math.cos(ang1) * 2, r.getY() + Math.sin(ang1) * 2));
+            }
+            else {
+                rings.add(new Vector2d(endPose.getX() - 5, endPose.getY()));
+                rings.add(new Vector2d(endPose.getX() - 10, endPose.getY()));
+            }
         }
         if (rings.size()==0) {
             rings.add(new Vector2d(endPose.getX()+5, endPose.getY()+5));

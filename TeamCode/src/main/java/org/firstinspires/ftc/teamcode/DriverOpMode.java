@@ -344,12 +344,18 @@ public class DriverOpMode extends OpMode {
         dropWobble.addTask(new GrabberTask(robotHardware, robotProfile, true, 300));
         dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
         SequentialComboTask oneAds = new SequentialComboTask();
+        oneAds.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), new Pose2d(24, -36, 0)));
+        oneAds.addTask(new RobotSleep(100));
+        oneAds.addTask(new VuforiaPoseUpdateTask(robotHardware));
         oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC));
         oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));
+        oneAds.addTask(new RobotSleep(100));
         oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC));
         oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));
+        oneAds.addTask(new RobotSleep(100));
         oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC));
         oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));
+        oneAds.addTask(new RobotSleep(100));
         oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC));
         oneAds.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
         oneAds.addTask(new IntakeMotorTask(robotHardware, robotProfile, IntakeMotorTask.IntakeMode.NORMAL));
