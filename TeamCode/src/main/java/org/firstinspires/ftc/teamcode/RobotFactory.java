@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-
+/**
+ * Factory class for RobotHardware object so that we do not initialize twice and lose the motor position.
+ */
 public class RobotFactory {
     static RobotHardware  theRobot = null;
 
