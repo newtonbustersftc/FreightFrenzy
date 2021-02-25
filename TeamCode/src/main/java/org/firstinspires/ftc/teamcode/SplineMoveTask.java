@@ -28,12 +28,7 @@ public class SplineMoveTask implements RobotControl {
     }
 
     public String toString() {
-        if (targetPose==null) {
-            return "SplineMove " + trajectory.start() + " -> " + trajectory.end();
-        }
-        else {
-            return "SplineMove curr ->" + targetPose;
-        }
+        return "SplineMove " + trajectory.start() + " -> " + trajectory.end();
     }
 
     public boolean isDone(){

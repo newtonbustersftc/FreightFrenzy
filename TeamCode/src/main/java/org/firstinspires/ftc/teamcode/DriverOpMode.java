@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.content.SharedPreferences;
 
+import com.acmerobotics.dashboard.canvas.Spline;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
@@ -104,7 +105,6 @@ public class DriverOpMode extends OpMode {
                 // determine if we want to go backward or foward based on currPose
                 // calculate the angle from current position to the shooting position
                 robotHardware.stopIntake();
-                robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.SHOOT);
                 robotHardware.startShootMotor();
                 robotHardware.ringHolderUp();
                 robotHardware.setShooterPosition(true);
@@ -295,7 +295,6 @@ public class DriverOpMode extends OpMode {
                 case SHOOTING:
                 case REVERSE:
                     robotHardware.startIntake();
-                    robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
                     robotHardware.ringHolderDown();
                     robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.INTAKE;
@@ -304,7 +303,6 @@ public class DriverOpMode extends OpMode {
                     robotHardware.reverseIntake();
                     robotHardware.startShootMotor((gamepad1.right_bumper)?robotProfile.hardwareSpec.shootBarVelocity:robotProfile.hardwareSpec.shootVelocity);
                     robotHardware.ringHolderUp();
-                    robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.SHOOT);
                     robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.SHOOTING;
                     break;
@@ -318,7 +316,6 @@ public class DriverOpMode extends OpMode {
                     robotHardware.stopIntake();
                     robotHardware.stopShootMotor();
                     robotHardware.ringHolderDown();
-                    robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
                     robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.STOP;
                     break;
@@ -327,7 +324,6 @@ public class DriverOpMode extends OpMode {
                     robotHardware.reverseIntake();
                     robotHardware.stopShootMotor();
                     robotHardware.ringHolderDown();
-                    robotHardware.setRingPusherPosition(RobotHardware.RingPusherPosition.UP);
                     robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.REVERSE;
                     break;
@@ -386,25 +382,28 @@ public class DriverOpMode extends OpMode {
         dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
         //Full auto drive sequence
         SequentialComboTask oneAds = new SequentialComboTask();
-        oneAds.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), new Pose2d(24, -36, 0)));
+        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC, false));
+        oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/4));
         oneAds.addTask(new RobotSleep(100));
-        oneAds.addTask(new VuforiaPoseUpdateTask(robotHardware));
-        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC));
-        oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));
+        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC, false));
+        oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/4));
         oneAds.addTask(new RobotSleep(100));
-        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC));
-        oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));
+        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC, false));
+        oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/4));
         oneAds.addTask(new RobotSleep(100));
-        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC));
-        oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/3));
+        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC, false));
+        oneAds.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), Math.PI/4));
         oneAds.addTask(new RobotSleep(100));
-        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC));
+        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC, false));
         oneAds.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
         oneAds.addTask(new IntakeMotorTask(robotHardware, robotProfile, IntakeMotorTask.IntakeMode.NORMAL));
         oneAds.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
-        oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.DRIVE));
-        oneAds.addTask(new RingPusherPosTask(robotHardware, robotProfile, RobotHardware.RingPusherPosition.SHOOT));
-        oneAds.addTask(new RobotSleep(1000));
+        AutoDriveShootTask adst = new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.DRIVE);
+        adst.setEndPose(robotProfile.getProfilePose("AUTO-TRACKER-IMG"));
+        oneAds.addTask(adst);
+        oneAds.addTask(new RobotSleep(800));
+        oneAds.addTask(new VuforiaPoseUpdateTask(robotHardware));
+        oneAds.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), robotProfile.getProfilePose("SHOOT-DRIVER")));
         oneAds.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
         oneAds.addTask(new ShootOneRingTask(robotHardware, robotProfile));
         oneAds.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
@@ -413,7 +412,6 @@ public class DriverOpMode extends OpMode {
         oneAds.addTask(new ShootOneRingTask(robotHardware, robotProfile));
         oneAds.addTask(new RobotSleep(robotProfile.hardwareSpec.shootDelay));
         oneAds.addTask(new ShooterMotorTask(robotHardware, robotProfile, false));
-        oneAds.addTask(new RingPusherPosTask(robotHardware, robotProfile, RobotHardware.RingPusherPosition.UP));
         autoDriveShoot = new SequentialComboTask();
         autoDriveShoot.addTask(oneAds);
         autoDriveShoot.addTask(oneAds);

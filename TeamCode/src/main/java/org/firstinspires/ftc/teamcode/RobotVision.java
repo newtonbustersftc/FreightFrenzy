@@ -20,9 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.teamcode.study.VuforiaOpenCV;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -124,7 +122,7 @@ public class RobotVision {
         MASK_UPPER_BOUND_V = robotProfile.cvParam.maskUpperV;
         CROP_TOP_PERCENT = robotProfile.cvParam.cropTop;
         MIN_AREA = robotProfile.cvParam.minArea;
-        picSaved = false;
+        saveImage = true;
      }
 
     private void initVuforia() {
@@ -261,7 +259,6 @@ public class RobotVision {
         for (VuforiaTrackable trackable : allTrackables) {
             if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
                 return true;
-
             }
         }
         return false;
@@ -304,12 +301,12 @@ public class RobotVision {
     }
 
     public void activateNavigationTarget(){
-        Logger.logFile("activateNavTarget " + this + " targets " + targetsUltimateGoal);
+        Logger.logFile("Activate Navigation Targest " + targetsUltimateGoal.size());
         targetsUltimateGoal.activate();
     }
 
     public void deactivateNavigationTarget(){
-        Logger.logFile("deactivate navigation " + this + " targets " + targetsUltimateGoal);
+        Logger.logFile("Deactivate navigation targets ");
         targetsUltimateGoal.deactivate();
     }
 /*
@@ -329,6 +326,11 @@ public class RobotVision {
     }
 */
     public AutonomousGoal getAutonomousRecognition(){
+        return getAutonomousRecognition(true);
+    }
+
+    public AutonomousGoal getAutonomousRecognition(boolean keepImg){
+        this.saveImage = keepImg;
         processCV();
         ArrayList<Rect> rects = pipeline.getRingRecList();
         if(rects.size() == 0) {
@@ -341,10 +343,10 @@ public class RobotVision {
         else {
             return AutonomousGoal.SINGLE;
         }
-
     }
 
-    public ArrayList<Rect> getRings() {
+    public ArrayList<Rect> getRings(boolean keepImg) {
+        this.saveImage = keepImg;
         processCV();
         return pipeline.getRingRecList();
     }
@@ -392,7 +394,7 @@ public class RobotVision {
     public static int CROP_RIGHT_PERCENT = 0;
     public static int CROP_BOTTOM_PERCENT = 0;
     static Scalar DRAW_COLOR = new Scalar(255, 0, 0);
-    static boolean picSaved = false;
+    static boolean saveImage = false;
 
     static class RectComparator implements Comparator<Rect> {
         @Override
@@ -456,7 +458,7 @@ public class RobotVision {
                     rec.height *= DIM_MULTIPLIER;
                     ringRecList.add(rec);
                     //Rect drawRec = new Rect(rec.x*DIM_MULTIPLIER, rec.y*DIM_MULTIPLIER, rec.width*DIM_MULTIPLIER, rec.height*DIM_MULTIPLIER);
-                    if (!picSaved) {    // update drawing only when saving the picture
+                    if (saveImage) {    // update drawing only when saving the picture
                         Imgproc.rectangle(input, rec, DRAW_COLOR, 2);
                     }
                     Log.i("Area", "Ndx:" + ndx + " Area:" + area + " Rec:" + rec.x + "," + rec.y + "," + rec.width + "," + rec.height);
@@ -464,14 +466,13 @@ public class RobotVision {
                 }
                 ndx++;
             }
-            if (!picSaved) {
+            if (saveImage) {
                 //need to save pic to file
                 String timestamp = new SimpleDateFormat("MMdd-HHmmss", Locale.US).format(new Date());
                 Mat mbgr = new Mat();
                 Imgproc.cvtColor(input, mbgr, Imgproc.COLOR_RGB2BGR, 3);
                 Imgcodecs.imwrite("/sdcard/FIRST/S" + timestamp + ".jpg", mbgr);
                 mbgr.release();
-                picSaved = false;   // always want a pic
             }
             for (Rect r : ringRecList) {
                 Logger.logFile("Vision Rec:" + r);

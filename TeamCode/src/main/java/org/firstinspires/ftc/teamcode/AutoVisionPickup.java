@@ -219,7 +219,7 @@ public class AutoVisionPickup extends LinearOpMode {
         initRobot();
         waitForStart();
         // take a picture of the field to get rings
-        ArrayList<Rect> ringRecArray = robotVision.getRings();
+        ArrayList<Rect> ringRecArray = robotVision.getRings(true);
         Logger.logFile("Robot see " + ringRecArray.size() + " rings");
 
         // now let's translate from image pixel to field

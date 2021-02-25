@@ -36,8 +36,8 @@ class WallHandleParam {
 
 public class RingPickupPathGenerator {
     static TrajectoryBuilder currBuilder;
-    static DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
-    static DriveConstraints constraintsWall = new DriveConstraints(20.0, 15.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+    DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+    DriveConstraints constraintsWall = new DriveConstraints(20.0, 15.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
     static double lastHeading = 0;
     public static double FIELD_WIDTH = 140.0; // 60cm x 6 / 2.54 = 141.7
     static double ROBOT_WIDTH = 18.0;
@@ -75,6 +75,12 @@ public class RingPickupPathGenerator {
     public RingPickupPathGenerator(Pose2d startPose, Pose2d endPose) {
         this.startPose = startPose;
         this.endPose = endPose;
+    }
+
+    public void setDriveConstraints(DriveConstraints driveConstraints) {
+        if (driveConstraints!=null) {
+            this.constraints = driveConstraints;
+        }
     }
 
     /**

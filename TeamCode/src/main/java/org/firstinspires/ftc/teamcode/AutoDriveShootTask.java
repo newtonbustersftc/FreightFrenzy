@@ -5,6 +5,7 @@ import android.util.Log;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 
 import org.firstinspires.ftc.teamcode.drive.BulkMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.RingPickupPathGenerator;
@@ -28,7 +29,6 @@ public class AutoDriveShootTask implements RobotControl{
         DRIVE
     }
 
-
     TaskMode taskMode;
     RobotHardware robotHardware;
     RobotProfile robotProfile;
@@ -39,6 +39,9 @@ public class AutoDriveShootTask implements RobotControl{
     static Mat trans = null;
     ArrayList<Trajectory> arrayTraj;
     boolean doneDriving;
+    Pose2d endPose = null;
+    DriveConstraints driveContraints = null;
+    boolean saveImg = true;
 
     public static double  ROBOT_WIDTH = 18.0;
 
@@ -49,10 +52,27 @@ public class AutoDriveShootTask implements RobotControl{
      * @param taskMode
      */
     public AutoDriveShootTask(RobotHardware robotHardware, RobotProfile robotProfile, TaskMode taskMode){
+        this(robotHardware, robotProfile, taskMode, true);
+    }
+
+    public AutoDriveShootTask(RobotHardware robotHardware, RobotProfile robotProfile, TaskMode taskMode, boolean saveImg){
         this.robotHardware = robotHardware;
         this.taskMode = taskMode;
         this.robotProfile = robotProfile;
         this.drive = robotHardware.getMecanumDrive();
+        this.saveImg = saveImg;
+    }
+
+    public void setEndPose(Pose2d endPose) {
+        this.endPose = endPose;
+    }
+
+    public void setSaveImage(boolean saveImage) {
+        this.saveImg = saveImage;
+    }
+
+    public void setDriveConstraints(DriveConstraints driveConstraints) {
+        this.driveContraints = driveConstraints;
     }
 
     public String toString() {
@@ -110,8 +130,12 @@ public class AutoDriveShootTask implements RobotControl{
         }
         //select and generate the best path to collect rings using Roadrunner
         else if(taskMode == TaskMode.DRIVE){
+            if (endPose==null) {
+                endPose = robotProfile.getProfilePose("SHOOT-DRIVER");
+            }
             RingPickupPathGenerator ringPickupPathGenerator = new RingPickupPathGenerator(robotHardware.getTrackingWheelLocalizer().getPoseEstimate(),
-                    robotProfile.getProfilePose("SHOOT-DRIVER"));
+                    endPose);
+
             long start = System.currentTimeMillis();
             arrayTraj = ringPickupPathGenerator.generatePath(rings);
             Logger.logFile("Path Gen Time: " + (System.currentTimeMillis() - start));
@@ -128,7 +152,7 @@ public class AutoDriveShootTask implements RobotControl{
     @Override
     public void execute() {
         if(taskMode == TaskMode.MORE_PIC || taskMode == TaskMode.FIRST_PIC) {
-            ArrayList<Rect> ringRecArray = robotHardware.getRobotVision().getRings();
+            ArrayList<Rect> ringRecArray = robotHardware.getRobotVision().getRings(saveImg);
             Logger.logFile("Robot see " + ringRecArray.size() + " rings");
             if (ringRecArray.size()!=0) {
                 // now let's translate from image pixel to robot coordinate

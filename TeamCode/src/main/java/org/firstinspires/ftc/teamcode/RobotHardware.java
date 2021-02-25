@@ -43,6 +43,8 @@ public class RobotHardware {
     ArmPosition armPosition = ArmPosition.INIT;
     int shootVelocityLowLimit;
     int shootVelocityHighLimit;
+    int bucketDown = 2;
+    long bucketDownTime;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
         Logger.logFile("RobotHardware init()");
@@ -180,6 +182,24 @@ public class RobotHardware {
 
             // so we have something
             bulkData2 = expansionHub1.getBulkInputData();
+        }
+        bucketShakeHack();
+    }
+
+    void bucketShakeHack() {
+        if (bucketDown<2) {
+            long curr = System.currentTimeMillis();
+            if (curr-bucketDownTime > 150) {
+                if (bucketDown==0) {
+                    ringHolderServo.setPosition(profile.hardwareSpec.ringHolderDown2);
+                    bucketDown = 1;
+                }
+                else {
+                    ringHolderServo.setPosition(profile.hardwareSpec.ringHolderDown);
+                    bucketDown = 0;
+                }
+                bucketDownTime = curr;
+            }
         }
     }
 
@@ -338,10 +358,13 @@ public class RobotHardware {
     }
 
     public void ringHolderUp() {
+        bucketDown = 2;
         ringHolderServo.setPosition(profile.hardwareSpec.ringHolderUp);
     }
 
     public void ringHolderDown() {
+        bucketDown = 0;
+        bucketDownTime = System.currentTimeMillis();
         ringHolderServo.setPosition(profile.hardwareSpec.ringHolderDown);
     }
 

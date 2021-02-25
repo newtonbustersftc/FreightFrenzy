@@ -79,6 +79,7 @@ public class RobotProfile {
         hardwareSpec.intakePower = -1.0;
         hardwareSpec.ringHolderUp = 0.31;
         hardwareSpec.ringHolderDown = 0.555;
+        hardwareSpec.ringHolderDown2 = 0.48;
         hardwareSpec.ringPusherUp = 0.78;
         hardwareSpec.ringPusherShoot = 0.5;
         hardwareSpec.ringPusherDown = 0.17;
@@ -135,7 +136,7 @@ public class RobotProfile {
         poses.put("C2-PIC", new AutoPose(-32, -4, 270));
 
         poses.put("PARKING", new AutoPose(12, -30, 0));
-
+        poses.put("AUTO-TRACKER-IMG", new AutoPose(36, -36, 0));
     }
 
     public Pose2d getProfilePose(String name) {
@@ -198,6 +199,7 @@ public class RobotProfile {
         double intakePower;
         double ringHolderUp;
         double ringHolderDown;
+        double ringHolderDown2;
         float cameraForwardDisplacement;
         float cameraVerticalDisplacement;
         float cameraLeftDisplacement;
