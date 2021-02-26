@@ -36,10 +36,10 @@ public class RobotProfile {
         distancePID.i = 0.01;
         distancePID.d = 0.0;
         shootPID = new PIDParam();
-        shootPID.p = 10.0;
-        shootPID.i = 0.3;
+        shootPID.p = 10; //original: 10
+        shootPID.i = 0.3;   //original: 0.3
         shootPID.d = 0.0;
-        shootPID.f = 14.0;
+        shootPID.f = 14;  //original: 14
         rrHeadingPID = new PIDParam();
         rrHeadingPID.p = 8;
         rrHeadingPID.i = 0.05;
@@ -113,10 +113,10 @@ public class RobotProfile {
         poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -18, -5));
         poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -25.5, -5));
 
-        poses.put("A-1", new AutoPose(8, -40, -90));
-        poses.put("A-WB2Pre", new AutoPose(-30, -41, -180));
-        poses.put("A-WB2", new AutoPose(-38, -41, -180));
-        poses.put("A-2", new AutoPose(-10, -50, -30));
+        poses.put("A-1", new AutoPose(6, -50, -90));
+        poses.put("A-WB2Pre", new AutoPose(-30, -42, -180));
+        poses.put("A-WB2", new AutoPose(-38, -42, -180));
+        poses.put("A-2", new AutoPose(-4, -50, -90));
 
         poses.put("B-1", new AutoPose(19,-36,0));
         poses.put("B-PICK", new AutoPose(-12, -36, -180));
@@ -126,7 +126,7 @@ public class RobotProfile {
         //poses.put("B-WB2", new AutoPose(-57,-34,-90));
         poses.put("B-2", new AutoPose(14,-40,0));
 
-        poses.put("C-1", new AutoPose(37,-48,-45));
+        poses.put("C-1", new AutoPose(37,-56,-45));
         poses.put("C-PICK", new AutoPose(-12, -35, -180));
         poses.put("C-PICK2", new AutoPose(-20, -35, -180));
         poses.put("C-PICK3Back", new AutoPose(-30, -35, -180));
@@ -135,7 +135,7 @@ public class RobotProfile {
         poses.put("C-2", new AutoPose(40,-58,-15));
         poses.put("C2-PIC", new AutoPose(-32, -4, 270));
 
-        poses.put("PARKING", new AutoPose(12, -30, 0));
+        poses.put("PARKING", new AutoPose(2, -30, 0));
         poses.put("AUTO-TRACKER-IMG", new AutoPose(36, -36, 0));
     }
 

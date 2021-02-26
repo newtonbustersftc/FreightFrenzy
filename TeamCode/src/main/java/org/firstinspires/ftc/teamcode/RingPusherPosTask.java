@@ -24,13 +24,14 @@ public class RingPusherPosTask implements RobotControl {
 
     public void execute() {
         robot.setRingPusherPosition(pos);
+        done = true;
     }
 
     public void cleanUp(){
     }
 
     public boolean isDone() {
-        return true;
+        return done;
         //return System.currentTimeMillis() - startTime > profile.hardwareSpec.shootServoDelay;
     }
 }

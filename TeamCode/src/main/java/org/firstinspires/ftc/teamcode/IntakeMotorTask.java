@@ -17,9 +17,6 @@ public class IntakeMotorTask implements RobotControl {
     }
 
     public void prepare(){
-    }
-
-    public void execute() {
         switch (mode) {
             case NORMAL:
                 robot.startIntake();
@@ -30,6 +27,11 @@ public class IntakeMotorTask implements RobotControl {
             case STOP:
                 robot.stopIntake();
         }
+    }
+
+    public void execute() {
+        // done in prepare
+        // parallel task this may not get executed
    }
 
     public void cleanUp(){
