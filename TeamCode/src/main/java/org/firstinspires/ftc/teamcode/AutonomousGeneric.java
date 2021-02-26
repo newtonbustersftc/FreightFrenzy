@@ -118,6 +118,7 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware.setGrabberPosition(false);
         telemetry.addData("READY...", "NOW");
         waitForStart();
+        robotHardware.startShootMotor();
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
 

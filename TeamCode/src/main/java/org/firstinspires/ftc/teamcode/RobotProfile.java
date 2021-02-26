@@ -36,7 +36,7 @@ public class RobotProfile {
         distancePID.i = 0.01;
         distancePID.d = 0.0;
         shootPID = new PIDParam();
-        shootPID.p = 10; //original: 10
+        shootPID.p = 24; //original: 10
         shootPID.i = 0.3;   //original: 0.3
         shootPID.d = 0.0;
         shootPID.f = 14;  //original: 14
