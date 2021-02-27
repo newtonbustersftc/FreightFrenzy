@@ -232,14 +232,18 @@ public class RingPickupPathGenerator {
         }
         else if (rings.size()==1) {
             Vector2d r = rings.get(0);
-            if (isNearWall(r)!=0) {
+            if (isNearWall(r)==0) {
                 Line p2ToP1 = new Line(toVector2D(r), toVector2D(startPose), 0);
                 Line p2ToP3 = new Line(toVector2D(r), toVector2D(endPose), 0);
                 double ang1 = p2ToP1.getAngle();
                 double ang2 = p2ToP3.getAngle();
 
-                rings.add(new Vector2d(r.getX() + Math.cos(ang1), r.getY() + Math.sin(ang1)));
-                rings.add(new Vector2d(r.getX() + Math.cos(ang1) * 2, r.getY() + Math.sin(ang1) * 2));
+                Vector2D preR =  new Vector2D(r.getX() + Math.cos(ang1) * 4, r.getY() + Math.sin(ang1) * 4);
+                Vector2D postR = new Vector2D(r.getX() + Math.cos(ang2) * 4, r.getY() + Math.sin(ang2) * 4);
+                Line prePose = new Line(preR, postR, 0);
+                double ang0 = prePose.getAngle();
+                rings.add(new Vector2d(r.getX() - Math.cos(ang0) * 1, r.getY() - Math.sin(ang0) * 1 ));
+                rings.add(new Vector2d(r.getX() + Math.cos(ang0) * 1, r.getY() + Math.sin(ang0) * 1 ));
             }
             else {
                 rings.add(new Vector2d(endPose.getX() - 5, endPose.getY()));

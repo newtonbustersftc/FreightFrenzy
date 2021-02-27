@@ -73,34 +73,34 @@ public class RegressionUtil {
      *      (kV) and an optional intercept (kStatic).
      *
      * @param timeSamples time samples
-     * @param positionSamples position samples
-     * @param powerSamples power samples
+     * @param velocitySamples position samples
+     * @param velocitySPSamples power samples
      * @param fitStatic fit kStatic
      * @param file log file
      */
-    public static RampResult fitRampData(List<Double> timeSamples, List<Double> positionSamples,
-                                         List<Double> powerSamples, boolean fitStatic,
+    public static RampResult fitRampData(List<Double> timeSamples, List<Double> velocitySamples,
+                                         List<Double> velocitySPSamples, boolean fitStatic,
                                          @Nullable File file) {
         if (file != null) {
             try (PrintWriter pw = new PrintWriter(file)) {
-                pw.println("time,position,power");
+                pw.println("time,velocity,velocity setPoint");
                 for (int i = 0; i < timeSamples.size(); i++) {
                     double time = timeSamples.get(i);
-                    double pos = positionSamples.get(i);
-                    double power = powerSamples.get(i);
-                    pw.println(time + "," + pos + "," + power);
+                    double vel = velocitySamples.get(i);
+                    double velSP = velocitySPSamples.get(i);
+                    pw.println(time + "," + vel + "," + velSP);
                 }
             } catch (FileNotFoundException e) {
                 // ignore
             }
         }
 
-        List<Double> velSamples = numericalDerivative(timeSamples, positionSamples);
+        List<Double> velSamples = numericalDerivative(timeSamples, velocitySamples);
 
         SimpleRegression rampReg = new SimpleRegression(fitStatic);
         for (int i = 0; i < timeSamples.size(); i++) {
             double vel = velSamples.get(i);
-            double power = powerSamples.get(i);
+            double power = velocitySPSamples.get(i);
 
             rampReg.addData(vel, power);
         }

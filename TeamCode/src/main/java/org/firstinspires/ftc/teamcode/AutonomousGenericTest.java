@@ -79,14 +79,7 @@ public class AutonomousGenericTest extends LinearOpMode {
             catch (Exception ex) {
             }
             /*Specific test for motor velocity */
-            if ((System.currentTimeMillis() - startTime > 4000) && (cnt>0)) {
-                veloSum += robotHardware.getEncoderVelocity(RobotHardware.EncoderType.SHOOTER);
-                cnt--;
-                if (cnt==0) {
-                    Log.d("Shooter Velocity", "" + veloSum/100);
-                    Logger.logFile("Shooter Velocity " + veloSum/100);
-                }
-            }
+// append to shooting velocity csv file
             /* End Testing code */
             if (taskList.size() > 0) {
                 taskList.get(0).execute();

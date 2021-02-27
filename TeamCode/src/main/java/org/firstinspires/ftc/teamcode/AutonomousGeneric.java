@@ -96,6 +96,7 @@ public class AutonomousGeneric extends LinearOpMode {
                     break;  // done
                 }
             }
+
             lastArmPos = currArmPos;
             robotHardware.setDirectArmMotorPos(lastArmPos - robotProfile.hardwareSpec.armReverseDelta);
             firstTime = false;
