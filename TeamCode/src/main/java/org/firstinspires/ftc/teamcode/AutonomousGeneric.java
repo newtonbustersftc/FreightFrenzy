@@ -323,9 +323,9 @@ public class AutonomousGeneric extends LinearOpMode {
                 .forward(5)
                 .build();
         par4.addTask(new SplineMoveTask(robotHardware.mecanumDrive, trjPark));
-        par4.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
-        par4.addTask(new ShooterMotorTask(robotHardware, robotProfile, false));
         taskList.add(par4);
+        taskList.add(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
+        taskList.add(new ShooterMotorTask(robotHardware, robotProfile, false));
         taskList.add(new IntakeMotorTask(robotHardware, robotProfile, IntakeMotorTask.IntakeMode.STOP));
     }
 
