@@ -309,6 +309,7 @@ public class AutonomousGeneric extends LinearOpMode {
 
         taskList.add(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC));
         taskList.add(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.DRIVE));
+        taskList.add(new IntakeMotorTask(robotHardware, robotProfile, IntakeMotorTask.IntakeMode.REVERSE));
         taskList.add(new RobotSleep(robotProfile.hardwareSpec.shootDelay));  // extra time for ring to bucket
         taskList.add(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));
@@ -320,7 +321,7 @@ public class AutonomousGeneric extends LinearOpMode {
         par4.addTask(new ShootOneRingTask(robotHardware, robotProfile));
         Pose2d shoot2 = getProfilePose("SHOOT-DRIVER");
         Trajectory trjPark = robotHardware.mecanumDrive.trajectoryBuilder(shoot2, moveFast)
-                .forward(5)
+                .forward(10)
                 .build();
         par4.addTask(new SplineMoveTask(robotHardware.mecanumDrive, trjPark));
         taskList.add(par4);

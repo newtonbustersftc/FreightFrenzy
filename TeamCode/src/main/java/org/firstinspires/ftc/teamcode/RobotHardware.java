@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -27,7 +28,7 @@ public class RobotHardware {
     ExpansionHubMotor shootMotor1, shootMotor2, intakeMotor;
     ExpansionHubMotor armMotor;
     DigitalChannel led1, led2, led3;
-    ExpansionHubServo grabberServo, shootServo, ringHolderServo, ringPusherServo;
+    ExpansionHubServo grabberServo, shootServo, ringHolderServo, twirlyServo;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
     BulkMecanumDrive mecanumDrive;
@@ -39,12 +40,9 @@ public class RobotHardware {
     //Rev2mDistanceSensor ;
     RobotProfile profile;
     boolean isPrototype = false;
-    BNO055IMU imu1;
     ArmPosition armPosition = ArmPosition.INIT;
     int shootVelocityLowLimit;
     int shootVelocityHighLimit;
-    int bucketDown = 2;
-    long bucketDownTime;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
         Logger.logFile("RobotHardware init()");
@@ -68,8 +66,6 @@ public class RobotHardware {
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled = false;
-        imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
-        imu1.initialize(parameters);
 
         flMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rlMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -102,7 +98,7 @@ public class RobotHardware {
             grabberServo =  (ExpansionHubServo) hardwareMap.servo.get("Grabber");
             shootServo =  (ExpansionHubServo) hardwareMap.servo.get("Shooter");
             ringHolderServo = (ExpansionHubServo) hardwareMap.servo.get("RingHolder");
-            ringPusherServo = (ExpansionHubServo) hardwareMap.servo.get("RingPusher");
+            twirlyServo = (ExpansionHubServo)hardwareMap.servo.get("Twirly");
             led1 = hardwareMap.digitalChannel.get("LED1");
             led2 = hardwareMap.digitalChannel.get("LED2");
             led3 = hardwareMap.digitalChannel.get("LED3");
@@ -179,27 +175,8 @@ public class RobotHardware {
             bulkData2 = expansionHub2.getBulkInputData();
         }
         else {
-
             // so we have something
             bulkData2 = expansionHub1.getBulkInputData();
-        }
-        bucketShakeHack();
-    }
-
-    void bucketShakeHack() {
-        if (bucketDown<2) {
-            long curr = System.currentTimeMillis();
-            if (curr-bucketDownTime > 150) {
-                if (bucketDown==0) {
-                    ringHolderServo.setPosition(profile.hardwareSpec.ringHolderDown2);
-                    bucketDown = 1;
-                }
-                else {
-                    ringHolderServo.setPosition(profile.hardwareSpec.ringHolderDown);
-                    bucketDown = 0;
-                }
-                bucketDownTime = curr;
-            }
         }
     }
 
@@ -347,32 +324,25 @@ public class RobotHardware {
 
     public void startIntake() {
         intakeMotor.setPower(profile.hardwareSpec.intakePower);
+        twirlyServo.setPosition(0);
     }
 
     public void reverseIntake() {
         intakeMotor.setPower(-profile.hardwareSpec.intakePower);
+        twirlyServo.setPosition(1);
     }
 
     public void stopIntake() {
         intakeMotor.setPower(0);
+        twirlyServo.setPosition(0);
     }
 
     public void ringHolderUp() {
-        bucketDown = 2;
         ringHolderServo.setPosition(profile.hardwareSpec.ringHolderUp);
     }
 
     public void ringHolderDown() {
-        bucketDown = 0;
-        bucketDownTime = System.currentTimeMillis();
         ringHolderServo.setPosition(profile.hardwareSpec.ringHolderDown);
-    }
-
-    public float getGyroAngle() {
-        float angle1 = -imu1.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle;
-        //float angle2 = robotHardware.imu2.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).secondAngle;
-        //return (angle1 + angle2) / 2;
-        return angle1;
     }
 
     /**
@@ -448,10 +418,10 @@ public class RobotHardware {
     public enum ArmPosition { INIT, HOLD, DELIVER, GRAB;
         private static ArmPosition[] vals = values();
         public ArmPosition next() {
-            return vals[(this.ordinal()+1) % vals.length];
+            return (this.ordinal()<vals.length-1)?vals[this.ordinal()+1]:this;
         }
-        public ArmPosition prev() {
-            return (this.ordinal()>0)?vals[this.ordinal()-1]:vals[0];
+        public ArmPosition prev() { // can not goto init position
+            return (this.ordinal()>1)?vals[this.ordinal()-1]:vals[1];
         }
     }
 
@@ -476,15 +446,7 @@ public class RobotHardware {
     public enum RingPusherPosition { UP, SHOOT, DOWN }
 
     public void setRingPusherPosition(RingPusherPosition pos) {
-        if (pos==RingPusherPosition.UP) {
-            ringPusherServo.setPosition(profile.hardwareSpec.ringPusherUp);
-        }
-        else if (pos==RingPusherPosition.DOWN){
-            ringPusherServo.setPosition(profile.hardwareSpec.ringPusherDown);
-        }
-        else {
-            ringPusherServo.setPosition(profile.hardwareSpec.ringPusherShoot);
-        }
+
     }
 
     public void setLed1(boolean on) {
