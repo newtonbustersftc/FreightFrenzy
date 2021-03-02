@@ -436,6 +436,16 @@ public class DriverOpMode extends OpMode {
         autoDriveShoot.addTask(oneAds);
         autoDriveShoot.addTask(oneAds);
         autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(oneAds);
 
 
 //        ArrayList<RobotControl> homePositionList = new ArrayList<RobotControl>();
