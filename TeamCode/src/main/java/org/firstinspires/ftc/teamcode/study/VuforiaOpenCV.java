@@ -283,9 +283,9 @@ public class VuforiaOpenCV extends LinearOpMode {
                     rec.height *= DIM_MULTIPLIER;
                     ringRecList.add(rec);
                     //Rect drawRec = new Rect(rec.x*DIM_MULTIPLIER, rec.y*DIM_MULTIPLIER, rec.width*DIM_MULTIPLIER, rec.height*DIM_MULTIPLIER);
-                    if (!picSaved) {    // update drawing only when saving the picture
-                        Imgproc.rectangle(input, rec, DRAW_COLOR, 2);
-                    }
+                    //if (!picSaved) {    // update drawing only when saving the picture
+                        //Imgproc.rectangle(input, rec, DRAW_COLOR, 2);
+                    //}
                     Log.i("Area", "Ndx:" + ndx + " Area:" + area + " Rec:" + rec.x + "," + rec.y + "," + rec.width + "," + rec.height);
                     count++;
                 }
