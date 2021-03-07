@@ -83,18 +83,19 @@ public class AutoDriveShootTask implements RobotControl{
      * initialize the perspective transform
      */
     void init() {
+        int ROBOT_CAMERA_OFFSET = 17; //cm
         ArrayList<Point> imgList = new ArrayList<Point>();
         ArrayList<Point> fieldList = new ArrayList<Point>();
 
-        imgList.add(new Point(282, 139));
-        imgList.add(new Point(43, 203));
-        imgList.add(new Point(560, 203));
-        imgList.add(new Point(264, 357));
+        imgList.add(new Point(305, 121));
+        imgList.add(new Point(40, 186));
+        imgList.add(new Point(560, 188));
+        imgList.add(new Point(293, 344));
 
-        fieldList.add(new Point(180 + ROBOT_WIDTH/2 * 2.54, 0));
-        fieldList.add(new Point(120 + ROBOT_WIDTH/2 * 2.54, 40));
-        fieldList.add(new Point(120 + ROBOT_WIDTH/2 * 2.54, -50));
-        fieldList.add(new Point(60 + ROBOT_WIDTH/2 * 2.54, 0));
+        fieldList.add(new Point(180 + ROBOT_CAMERA_OFFSET, 0));
+        fieldList.add(new Point(120 + ROBOT_CAMERA_OFFSET, 45));
+        fieldList.add(new Point(120 + ROBOT_CAMERA_OFFSET, -45));
+        fieldList.add(new Point(60 + ROBOT_CAMERA_OFFSET, 0));
 
         Mat imgMat = Converters.vector_Point2f_to_Mat(imgList);
         Mat fieldMat = Converters.vector_Point2f_to_Mat(fieldList);
