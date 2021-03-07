@@ -332,7 +332,6 @@ public class DriverOpMode extends OpMode {
                 case SHOOTING:
                 case REVERSE:
                     robotHardware.stopIntake();
-                    robotHardware.stopShootMotor();
                     robotHardware.ringHolderDown();
                     robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.STOP;
@@ -340,7 +339,6 @@ public class DriverOpMode extends OpMode {
                 case INTAKE:
                 case STOP:
                     robotHardware.reverseIntake();
-                    robotHardware.stopShootMotor();
                     robotHardware.ringHolderDown();
                     robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.REVERSE;
