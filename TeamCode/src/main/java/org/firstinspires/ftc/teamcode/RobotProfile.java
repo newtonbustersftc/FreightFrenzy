@@ -63,7 +63,7 @@ public class RobotProfile {
         hardwareSpec.armDeliverPos = 1400;
         hardwareSpec.armGrabPos = 1900;
         hardwareSpec.armHoldPos = 450;
-        hardwareSpec.armInitPos = 0;
+        hardwareSpec.armInitPos = 200;
         hardwareSpec.armPower = 0.5;
         hardwareSpec.armPowerLow = 0.3;
         hardwareSpec.armReverseDelay = 100;
