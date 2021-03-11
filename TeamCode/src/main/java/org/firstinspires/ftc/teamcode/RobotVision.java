@@ -10,6 +10,7 @@ import com.vuforia.Image;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
@@ -21,11 +22,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.util.GoalTargetRecognition;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -107,6 +111,7 @@ public class RobotVision {
     HardwareMap hardwareMap;
 
     CVPipeline pipeline = new CVPipeline();
+    int imgcnt = 0;
 
     public void init(HardwareMap hardwareMap, RobotHardware robotHardware, RobotProfile robotProfile){
         Logger.logFile("RobotVision init()");
@@ -123,6 +128,11 @@ public class RobotVision {
         CROP_TOP_PERCENT = robotProfile.cvParam.cropTop;
         MIN_AREA = robotProfile.cvParam.minArea;
         saveImage = true;
+
+        goalLowerBound = new Scalar(robotProfile.goalCvParam.maskLowerH,
+                robotProfile.goalCvParam.maskLowerS, robotProfile.goalCvParam.maskLowerV);
+        goalUpperBound = new Scalar(robotProfile.goalCvParam.maskUpperH,
+                robotProfile.goalCvParam.maskUpperS, robotProfile.goalCvParam.maskUpperV);
      }
 
     private void initVuforia() {
@@ -331,7 +341,7 @@ public class RobotVision {
 
     public AutonomousGoal getAutonomousRecognition(boolean keepImg){
         this.saveImage = keepImg;
-        processCV();
+        handleRingImage();
         ArrayList<Rect> rects = pipeline.getRingRecList();
         if(rects.size() == 0) {
             return AutonomousGoal.NONE;
@@ -347,39 +357,124 @@ public class RobotVision {
 
     public ArrayList<Rect> getRings(boolean keepImg) {
         this.saveImage = keepImg;
-        processCV();
+        handleRingImage();
         return pipeline.getRingRecList();
     }
 
-    private void processCV() {
-    try {
-        Image rgb = null;
-        VuforiaLocalizer.CloseableFrame frame = vuforia.getFrameQueue().take(); //takes the frame at the head of the queue
-        long numImages = frame.getNumImages();
+    private Mat getCameraImage() {
+        try {
+            Image rgb = null;
+            VuforiaLocalizer.CloseableFrame frame = vuforia.getFrameQueue().take(); //takes the frame at the head of the queue
+            long numImages = frame.getNumImages();
 
-        for (int i = 0; i < numImages; i++) {
-            if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
-                rgb = frame.getImage(i);
-                break;
+            for (int i = 0; i < numImages; i++) {
+                if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
+                    rgb = frame.getImage(i);
+                    break;
+                }
+            }
+
+            /*rgb is now the Image object that we've used in the video*/
+            if (rgb!=null) {
+                Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(), Bitmap.Config.RGB_565);
+                bm.copyPixelsFromBuffer(rgb.getPixels());
+
+                //put the image into a MAT for OpenCV
+                Mat tmp = new Mat(rgb.getWidth(), rgb.getHeight(), CvType.CV_8UC4);
+                Utils.bitmapToMat(bm, tmp);
+                frame.close();
+                return tmp;
+            }
+            //close the frame, prevents memory leaks and crashing
+            frame.close();
+        }
+        catch (InterruptedException ex) {
+        }
+        return null;
+    }
+
+    private void handleRingImage() {
+        Mat img = getCameraImage();
+        pipeline.processFrame(img);
+    }
+
+    Scalar goalLowerBound;
+    Scalar goalUpperBound;
+
+    public GoalTargetRecognition getGoalTargetRecognition() {
+        Mat origMat = getCameraImage();
+        Mat workMat = new Mat();
+        origMat.copyTo(workMat);
+        Mat hsvMat = new Mat();
+        Mat maskMat = new Mat();
+        Mat dilatedMask = new Mat();
+        Mat hierarchey = new Mat();
+        Scalar DRAW_COLOR = new Scalar(64, 64, 255);
+        Scalar DRAW_COLOR2 = new Scalar(64, 255, 64);
+
+        Mat topPortion = workMat.submat(new Rect(0, 0, workMat.width(), (int)(workMat.height()*(1.0-robotProfile.goalCvParam.cropBottom/100.0))));
+        System.out.println("WorkMat " + topPortion.width() + " x " + topPortion.height());
+        Imgproc.cvtColor(topPortion, hsvMat, Imgproc.COLOR_RGB2HSV_FULL);
+
+        ArrayList<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        ArrayList<MatOfPoint> rst = new ArrayList<MatOfPoint>();
+        Core.inRange(hsvMat, goalLowerBound, goalUpperBound, maskMat);
+        Imgproc.dilate(maskMat, dilatedMask, new Mat());
+        Imgproc.findContours(dilatedMask, contours, hierarchey, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        int ndx = 0;
+        Point[] targetP = null;
+        for(ndx =0; ndx<contours.size(); ndx++) {
+            MatOfPoint wrapper = contours.get(ndx);
+            double area = Imgproc.contourArea(wrapper);
+            if (area > robotProfile.goalCvParam.minArea) {
+                Imgproc.drawContours(workMat, contours, ndx, DRAW_COLOR2, 2);
+                MatOfPoint2f c2f = new MatOfPoint2f(wrapper.toArray());
+                double peri = Imgproc.arcLength(c2f, true);
+                MatOfPoint2f approx = new MatOfPoint2f();
+                Imgproc.approxPolyDP(c2f, approx, 0.1 * peri, true);
+                Point[] points = approx.toArray();
+                boolean isGood = true;
+                if (points.length==4) {
+                    int x0 = 0;
+                    int y0 = 0;
+                    for (int i = 0; i < points.length; i++) {
+                        x0 += points[i].x;
+                        y0 += points[i].y;
+                        if (points[i].x/workMat.width()<0.05 || points[i].x/workMat.width()>0.95) {
+                            isGood = false;
+                        }
+                    }
+                    if (isGood) {
+                        Imgproc.line(workMat, points[0], points[1], DRAW_COLOR, 2);
+                        Imgproc.line(workMat, points[1], points[2], DRAW_COLOR, 2);
+                        Imgproc.line(workMat, points[2], points[3], DRAW_COLOR, 2);
+                        Imgproc.line(workMat, points[3], points[0], DRAW_COLOR, 2);
+                        targetP = points;
+                    }
+                }
             }
         }
-
-        /*rgb is now the Image object that weve used in the video*/
-        if (rgb!=null) {
-            Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(), Bitmap.Config.RGB_565);
-            bm.copyPixelsFromBuffer(rgb.getPixels());
-
-            //put the image into a MAT for OpenCV
-            Mat tmp = new Mat(rgb.getWidth(), rgb.getHeight(), CvType.CV_8UC4);
-            Utils.bitmapToMat(bm, tmp);
-            pipeline.processFrame(tmp);
+        saveImage(workMat,"GoalPic-" + (imgcnt%10));
+        saveImage(origMat, "GoalOrig-" + (imgcnt%10));
+        imgcnt++;
+        if (targetP!=null) {
+            Vector2D[] p2d = new Vector2D[4];
+            for(int i=0; i<targetP.length; i++) {
+                p2d[i] = new Vector2D(targetP[i].x, targetP[i].y);
+            }
+            GoalTargetRecognition recognition = new GoalTargetRecognition(p2d);
+            return recognition;
         }
-        //close the frame, prevents memory leaks and crashing
-        frame.close();
+
+        return null;
     }
-    catch (InterruptedException ex) {
+
+    private void saveImage(Mat mat, String filename) {
+        Mat mbgr = new Mat();
+        Imgproc.cvtColor(mat, mbgr, Imgproc.COLOR_RGB2BGR, 3);
+        Imgcodecs.imwrite("/sdcard/FIRST/" + filename + ".jpg", mbgr);
+        mbgr.release();
     }
-}
 
     public static int MASK_LOWER_BOUND_H = 20;
     public static int MASK_LOWER_BOUND_S = 150;

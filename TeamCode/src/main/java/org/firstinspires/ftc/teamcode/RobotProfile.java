@@ -17,6 +17,7 @@ public class RobotProfile {
     PIDParam rrHeadingPID;
     PIDParam rrTranslationPID;
     CVParam cvParam;
+    CVParam goalCvParam;
     HardwareSpec hardwareSpec;
     FeedForwardParam rrFeedForwardParam;
     HashMap<String, AutoPose> poses;
@@ -73,6 +74,7 @@ public class RobotProfile {
         hardwareSpec.shooterOpen = 0.55;
         hardwareSpec.shooterClose = 0.685;
         hardwareSpec.shootVelocity = -1200;
+        hardwareSpec.shootVelocityStartAutonomous = -1240;
         hardwareSpec.shootBarVelocity = -1120;
         hardwareSpec.shootServoDelay = 800;
         hardwareSpec.shootDelay =300;
@@ -90,6 +92,7 @@ public class RobotProfile {
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
+        cvParam.cropBottom = 0;
         cvParam.maskLowerH = 20;
         cvParam.maskLowerS = 150;
         cvParam.maskLowerV = 100;
@@ -97,6 +100,17 @@ public class RobotProfile {
         cvParam.maskUpperS = 255;
         cvParam.maskUpperV = 255;
         cvParam.minArea = 5;
+
+        goalCvParam = new CVParam();
+        goalCvParam.cropTop = 0;
+        goalCvParam.cropBottom = 15;
+        goalCvParam.maskLowerH = 0;
+        goalCvParam.maskLowerS = 0;
+        goalCvParam.maskLowerV = 140;
+        goalCvParam.maskUpperH = 255;
+        goalCvParam.maskUpperS = 30;
+        goalCvParam.maskUpperV = 255;
+        goalCvParam.minArea = 1000;
 
         poses = new HashMap<String, AutoPose>();
         poses.put("START", new AutoPose(-66,-20,0));
@@ -168,8 +182,10 @@ public class RobotProfile {
         int maskLowerS;
         int maskLowerV;
         int cropTop;
+        int cropBottom;
         int minArea;
     }
+
     class HardwareSpec {
         double trackWheelDiameter;   //cm diameter
         double trackWheelCPR;
@@ -193,6 +209,7 @@ public class RobotProfile {
         double ringPusherShoot;
         double ringPusherDown;
         int shootVelocity;
+        int shootVelocityStartAutonomous;
         int shootBarVelocity;
         long shootServoDelay;
         int shootDelay;
