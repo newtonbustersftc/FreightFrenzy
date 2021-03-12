@@ -249,8 +249,8 @@ public class AutonomousGeneric extends LinearOpMode {
         SplineMoveTask moveTask1 = new SplineMoveTask(robotHardware.mecanumDrive, trjShoot);
         ParallelComboTask par1 = new ParallelComboTask();
         par1.addTask(moveTask1);
-        par1.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
         par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
+        par1.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
         taskList.add(par1);
         // Shooting action
         taskList.add(new ShootOneRingTask(robotHardware, robotProfile));

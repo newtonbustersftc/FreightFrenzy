@@ -409,8 +409,10 @@ public class RobotVision {
         Mat maskMat = new Mat();
         Mat dilatedMask = new Mat();
         Mat hierarchey = new Mat();
-        Scalar DRAW_COLOR = new Scalar(64, 64, 255);
+        Scalar DRAW_COLOR3 = new Scalar(64, 64, 255);
         Scalar DRAW_COLOR2 = new Scalar(64, 255, 64);
+        Scalar DRAW_COLOR = new Scalar(255, 64, 64);
+        GoalTargetRecognition goalRec = null;
 
         Mat topPortion = workMat.submat(new Rect(0, 0, workMat.width(), (int)(workMat.height()*(1.0-robotProfile.goalCvParam.cropBottom/100.0))));
         System.out.println("WorkMat " + topPortion.width() + " x " + topPortion.height());
@@ -435,38 +437,36 @@ public class RobotVision {
                 Point[] points = approx.toArray();
                 boolean isGood = true;
                 if (points.length==4) {
-                    int x0 = 0;
-                    int y0 = 0;
-                    for (int i = 0; i < points.length; i++) {
-                        x0 += points[i].x;
-                        y0 += points[i].y;
-                        if (points[i].x/workMat.width()<0.05 || points[i].x/workMat.width()>0.95) {
-                            isGood = false;
-                        }
+                    Vector2D[] p2d = new Vector2D[4];
+                    for(int i=0; i<points.length; i++) {
+                        p2d[i] = new Vector2D(points[i].x, points[i].y);
                     }
-                    if (isGood) {
-                        Imgproc.line(workMat, points[0], points[1], DRAW_COLOR, 2);
-                        Imgproc.line(workMat, points[1], points[2], DRAW_COLOR, 2);
-                        Imgproc.line(workMat, points[2], points[3], DRAW_COLOR, 2);
-                        Imgproc.line(workMat, points[3], points[0], DRAW_COLOR, 2);
-                        targetP = points;
+                    GoalTargetRecognition recognition = new GoalTargetRecognition(p2d);
+                    Scalar drawColor;
+                    if (recognition.isValid()) {
+                        goalRec = recognition;
+                        drawColor = DRAW_COLOR;
                     }
+                    else {
+                        drawColor = DRAW_COLOR3;
+                    }
+                    MatOfPoint approxf1 = new MatOfPoint();
+                    approx.convertTo(approxf1, CvType.CV_32S);
+                    List<MatOfPoint> contourTemp = new ArrayList<>();
+                    contourTemp.add(approxf1);
+                    Imgproc.fillPoly(workMat, contourTemp, drawColor);
+//                    Imgproc.line(workMat, points[0], points[1], drawColor);
+//                    Imgproc.line(workMat, points[1], points[2], drawColor);
+//                    Imgproc.line(workMat, points[2], points[3], drawColor);
+//                    Imgproc.line(workMat, points[0], points[3], drawColor);
                 }
+
             }
         }
         saveImage(workMat,"GoalPic-" + (imgcnt%10));
         saveImage(origMat, "GoalOrig-" + (imgcnt%10));
         imgcnt++;
-        if (targetP!=null) {
-            Vector2D[] p2d = new Vector2D[4];
-            for(int i=0; i<targetP.length; i++) {
-                p2d[i] = new Vector2D(targetP[i].x, targetP[i].y);
-            }
-            GoalTargetRecognition recognition = new GoalTargetRecognition(p2d);
-            return recognition;
-        }
-
-        return null;
+        return goalRec;
     }
 
     private void saveImage(Mat mat, String filename) {

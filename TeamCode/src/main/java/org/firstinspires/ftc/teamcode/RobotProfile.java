@@ -89,6 +89,9 @@ public class RobotProfile {
         hardwareSpec.cameraVerticalDisplacement = 16.5f;
         hardwareSpec.cameraLeftDisplacement = -1.5f;
         hardwareSpec.cameraHeadingOffset = -2.5f;
+        hardwareSpec.shootingAngle = Math.atan(11.0/70.0);
+        hardwareSpec.shootingDistBase = 70;
+        hardwareSpec.shootingVelocityInch = -75.0/36.0;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -103,10 +106,10 @@ public class RobotProfile {
 
         goalCvParam = new CVParam();
         goalCvParam.cropTop = 0;
-        goalCvParam.cropBottom = 15;
+        goalCvParam.cropBottom = 70;
         goalCvParam.maskLowerH = 0;
         goalCvParam.maskLowerS = 0;
-        goalCvParam.maskLowerV = 140;
+        goalCvParam.maskLowerV = 135;
         goalCvParam.maskUpperH = 255;
         goalCvParam.maskUpperS = 30;
         goalCvParam.maskUpperV = 255;
@@ -220,7 +223,10 @@ public class RobotProfile {
         float cameraForwardDisplacement;
         float cameraVerticalDisplacement;
         float cameraLeftDisplacement;
-        float cameraHeadingOffset;
+        double cameraHeadingOffset;
+        double shootingAngle;
+        double shootingDistBase;
+        double shootingVelocityInch;
     }
 
     class FeedForwardParam {

@@ -40,6 +40,7 @@ public class DriverOpMode extends OpMode {
     SequentialComboTask grabLift, dropWobble;
     SequentialComboTask powerBar;
     SequentialComboTask autoDriveShoot;
+    RobotControl autoAimShoot;
     RobotControl currentTask = null;
     RobotVision robotVision;
 
@@ -350,6 +351,10 @@ public class DriverOpMode extends OpMode {
             currentTask = autoDriveShoot;
             currentTask.prepare();
         }
+        if (gamepad1.x && gamepad1.right_bumper) {  // auto aim & shoot
+            currentTask = autoAimShoot;
+            currentTask.prepare();
+        }
         else if (gamepad1.x && currentMode==ActionMode.SHOOTING) {
             currentTask = new ShootOneRingTask(robotHardware, robotProfile);
             currentTask.prepare();
@@ -396,6 +401,8 @@ public class DriverOpMode extends OpMode {
         dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.DELIVER, 300));
         dropWobble.addTask(new GrabberTask(robotHardware, robotProfile, true, 300));
         dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
+        // Auto aim & shoot
+        autoAimShoot = new AutoAimGoalTask(robotHardware, robotProfile);
         //Full auto drive sequence
         SequentialComboTask oneAds = new SequentialComboTask();
         oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC, false));
