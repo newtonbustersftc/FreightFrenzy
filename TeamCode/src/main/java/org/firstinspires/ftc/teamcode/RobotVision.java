@@ -469,6 +469,50 @@ public class RobotVision {
         return goalRec;
     }
 
+    public Point getWobbleGoalHandle() {
+        Mat input = getCameraImage();
+        Mat hsvMat = new Mat();
+        Mat maskMat = new Mat();
+        Mat dilatedMask = new Mat();
+        Mat hierarchey = new Mat();
+        int offsetX;
+        int offsetY;
+        offsetX = 0;
+        offsetY = 0;
+        Mat  procMat = input.submat(new Rect(offsetX, offsetY,
+                input.width(),
+                (int)(input.height()*0.7)));
+
+        Imgproc.cvtColor(procMat, hsvMat, Imgproc.COLOR_RGB2HSV_FULL);
+        Scalar lowerBound = new Scalar(160, 100, 150);
+        Scalar upperBound = new Scalar(180, 255, 255);
+        Core.inRange(hsvMat, lowerBound, upperBound, maskMat);
+        Imgproc.dilate(maskMat, dilatedMask, new Mat());
+
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        Imgproc.findContours(dilatedMask, contours, hierarchey, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Iterator<MatOfPoint> each = contours.iterator();
+        int ndx = 0;
+        Point result = null;
+        while (each.hasNext()) {
+            MatOfPoint wrapper = each.next();
+            double area = Imgproc.contourArea(wrapper);
+            if (area > 1500) {
+                Rect rec = Imgproc.boundingRect(wrapper);
+                if(result == null) {
+                    result = new Point(rec.x+rec.width/2, rec.y);
+                }
+                else {
+                    if(rec.x+rec.width/2 > result.x) {
+                        result = new Point(rec.x+rec.width/2, rec.y);
+                    }
+                }
+            }
+            ndx++;
+        }
+        return result;
+    }
+
     private void saveImage(Mat mat, String filename) {
         Mat mbgr = new Mat();
         Imgproc.cvtColor(mat, mbgr, Imgproc.COLOR_RGB2BGR, 3);
