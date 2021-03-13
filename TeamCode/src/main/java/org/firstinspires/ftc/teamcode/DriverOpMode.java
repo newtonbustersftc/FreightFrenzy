@@ -402,7 +402,7 @@ public class DriverOpMode extends OpMode {
         dropWobble.addTask(new GrabberTask(robotHardware, robotProfile, true, 300));
         dropWobble.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 10));
         // Auto aim & shoot
-        autoAimShoot = new AutoAimGoalTask(robotHardware, robotProfile);
+        autoAimShoot = new AutoAimGoalTask(robotHardware, robotProfile, 3);
         //Full auto drive sequence
         SequentialComboTask oneAds = new SequentialComboTask();
         oneAds.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC, false));

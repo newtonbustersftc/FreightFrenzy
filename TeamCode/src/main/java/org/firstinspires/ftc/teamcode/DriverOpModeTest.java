@@ -7,12 +7,15 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.util.GoalTargetRecognition;
+
 import java.io.File;
 
 @TeleOp(name="DriverOpMode Test", group="Test")
 //@Disabled
 public class DriverOpModeTest extends OpMode {
     RobotHardware robotHardware;
+    RobotVision robotVision;
     boolean fieldMode;
     RobotProfile robotProfile;
 
@@ -21,10 +24,10 @@ public class DriverOpModeTest extends OpMode {
     boolean dpadLeftDown = false;
     boolean dpadRightDown = false;
     double shootServoPos = 0.6;
-    int ledNum = 0;
     boolean yPressed = false;
     boolean aPressed = false;
     boolean bPressed = false;
+    GoalTargetRecognition goalRecog = null;
 
     @Override
     public void init() {
@@ -37,7 +40,11 @@ public class DriverOpModeTest extends OpMode {
         Logger.init();
         robotHardware = new RobotHardware();
         robotHardware.init(hardwareMap, robotProfile);
-        robotHardware.setShooterPosition(true);
+        robotHardware.initRobotVision();
+        robotVision = robotHardware.getRobotVision();
+        robotVision.activateNavigationTarget();
+        robotHardware.initLeds();   // need to init everytime
+
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
     }
 
@@ -73,12 +80,8 @@ public class DriverOpModeTest extends OpMode {
         }
 
         //robotHardware.setShooterPosition(gamepad1.x);
-
-        robotHardware.setLed1(ledNum==0);
-        robotHardware.setLed2(ledNum==1);
-        robotHardware.setLed3(ledNum==2);
         if (gamepad1.y && !yPressed) {
-            ledNum = (ledNum+1) % 3;
+            goalRecog = robotHardware.getRobotVision().getGoalTargetRecognition();
         }
         yPressed = gamepad1.y;
         if (gamepad1.a && !aPressed) {
@@ -99,13 +102,16 @@ public class DriverOpModeTest extends OpMode {
             robotHardware.stopShootMotor();
             robotHardware.ringHolderDown();
         }
-        telemetry.addData("LeftE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
-        telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
-        telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
+        //telemetry.addData("LeftE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
+        //telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
+        //telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
         telemetry.addData("Pose:", robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
-        telemetry.addData("Shoot Servo:", shootServoPos);
-        telemetry.addData("LEDNum:", ledNum);
+        //telemetry.addData("Shoot Servo:", shootServoPos);
         telemetry.addData("ArmPos", robotHardware.getEncoderCounts(RobotHardware.EncoderType.ARM));
+        if (goalRecog!=null) {
+            telemetry.addData("Goal Dist", goalRecog.getDistanceInch());
+            telemetry.addData("Goal Angle", Math.toDegrees(goalRecog.getTargetAngle()));
+        }
    }
 
     @Override
