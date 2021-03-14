@@ -37,7 +37,10 @@ public class SplineMoveTask implements RobotControl {
 
     public void prepare(){
         if (targetPose!=null) {
-            trajectory = drive.trajectoryBuilder(drive.getPoseEstimate())
+            Pose2d currPose = drive.getPoseEstimate();
+            double ang = Math.atan2(targetPose.getX() - currPose.getX(), targetPose.getY() - currPose.getY());
+            boolean forward = Math.abs(currPose.getHeading() - ang) < Math.PI / 2;
+            trajectory = drive.trajectoryBuilder(currPose, !forward)
                             .splineToSplineHeading(targetPose, targetPose.getHeading()).build();
         }
         drive.followTrajectoryAsync(trajectory);
