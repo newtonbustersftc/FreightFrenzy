@@ -39,8 +39,6 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
     Vector2D wobblePosition;
     //perspective transform object
     static Mat trans = null;
-    ArrayList<Trajectory> arrayTraj;
-    boolean doneDriving;
 
     public static double  ROBOT_WIDTH = 18.0;
 
@@ -64,19 +62,19 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
      * initialize the perspective transform
      */
     void init() {
-        int ROBOT_CAMERA_OFFSET = 17; //cm
+        int ROBOT_WIDTH = 44; //cm
         ArrayList<Point> imgList = new ArrayList<Point>();
         ArrayList<Point> fieldList = new ArrayList<Point>();
 
-        imgList.add(new Point(305, 121));
-        imgList.add(new Point(40, 186));
-        imgList.add(new Point(560, 188));
-        imgList.add(new Point(293, 344));
+        imgList.add(new Point(25, 38));
+        imgList.add(new Point(292, 46));
+        imgList.add(new Point(279, 117));
+        imgList.add(new Point(544, 81));
 
-        fieldList.add(new Point(180 + ROBOT_CAMERA_OFFSET, 0));
-        fieldList.add(new Point(120 + ROBOT_CAMERA_OFFSET, 45));
-        fieldList.add(new Point(120 + ROBOT_CAMERA_OFFSET, -45));
-        fieldList.add(new Point(60 + ROBOT_CAMERA_OFFSET, 0));
+        fieldList.add(new Point(60 + ROBOT_WIDTH/2, 25));
+        fieldList.add(new Point(60 + ROBOT_WIDTH/2, 0));
+        fieldList.add(new Point(25 + ROBOT_WIDTH/2, 0));
+        fieldList.add(new Point(37 + ROBOT_WIDTH/2, -17));
 
         Mat imgMat = Converters.vector_Point2f_to_Mat(imgList);
         Mat fieldMat = Converters.vector_Point2f_to_Mat(fieldList);
@@ -104,10 +102,10 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
         if(trans == null){
             init();
         }
-
+        DriveConstraints constraints = new DriveConstraints(20.0, 10.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
         RobotVision vision = robotHardware.getRobotVision();
         result = vision.getWobbleGoalHandle();
-        Pose2d currPos;
+        Pose2d currPose;
         if (result!=null) {
             Mat transformed = new Mat();
             ArrayList<Point> imgPosList = new ArrayList<Point>();
@@ -119,11 +117,20 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
                 Log.d("Point", p.toString());
                 Logger.logFile("Wobble Goal robot coordinate at (cm) " + p.x + ", " + p.y);
             }
-            currPos = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
-            Vector2d worldCorr = getFieldCoordinate(currPos, transPoints.get(0));
+            currPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
+            Vector2d worldCorr = getFieldCoordinate(currPose, transPoints.get(0));
+            Logger.logFile("Current Pose " + currPose);
             Logger.logFile("Wobble Goal coordinate at (inch) " + worldCorr.getX() + ", " + worldCorr.getY());
-
-            Trajectory trajectory = robotHardware.getMecanumDrive().trajectoryBuilder(currPos).splineTo(worldCorr,currPos.getHeading()).build();
+            Vector2d endPose = new Vector2d(
+                    worldCorr.getX()+robotProfile.hardwareSpec.wobbleOffsetX*Math.cos(currPose.getHeading()+Math.PI)
+                            +robotProfile.hardwareSpec.wobbleOffsetY*Math.cos(currPose.getHeading()+Math.PI+Math.PI/2),
+                    worldCorr.getY()+robotProfile.hardwareSpec.wobbleOffsetX*Math.sin(currPose.getHeading()+Math.PI)
+                            +robotProfile.hardwareSpec.wobbleOffsetY*Math.sin(currPose.getHeading()+Math.PI+Math.PI/2));
+            Logger.logFile("Wobble Goal Pick up coordinate at " + endPose);
+            Trajectory trajectory = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, constraints).
+                lineToConstantHeading(endPose).build();
+            robotHardware.setGrabberPosition(true);
+            robotHardware.setArmMotorPos(RobotHardware.ArmPosition.HOLD);
             robotHardware.getMecanumDrive().followTrajectoryAsync(trajectory);
             taskMode = TaskMode.DRIVE;
         }
@@ -142,7 +149,6 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
                 taskMode = TaskMode.PICKUP;
                 robotHardware.setArmMotorPos(RobotHardware.ArmPosition.GRAB);
                 pickupTime= System.currentTimeMillis();
-
             }
         }
     }
@@ -159,7 +165,7 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
     @Override
     public boolean isDone() {
         if(taskMode == TaskMode.PICKUP) {
-            return pickupTime+500 < System.currentTimeMillis();
+            return pickupTime+200 < System.currentTimeMillis();
         }
         else {
             return result == null;

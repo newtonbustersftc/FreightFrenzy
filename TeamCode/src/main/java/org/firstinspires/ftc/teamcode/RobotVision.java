@@ -455,10 +455,6 @@ public class RobotVision {
                     List<MatOfPoint> contourTemp = new ArrayList<>();
                     contourTemp.add(approxf1);
                     Imgproc.fillPoly(workMat, contourTemp, drawColor);
-//                    Imgproc.line(workMat, points[0], points[1], drawColor);
-//                    Imgproc.line(workMat, points[1], points[2], drawColor);
-//                    Imgproc.line(workMat, points[2], points[3], drawColor);
-//                    Imgproc.line(workMat, points[0], points[3], drawColor);
                 }
 
             }
@@ -469,10 +465,24 @@ public class RobotVision {
         return goalRec;
     }
 
+    private Mat getHsvMask(Mat hsvMat, Scalar lowerBound, Scalar upperBound) {
+        Mat mask = new Mat();
+        if (lowerBound.val[0]<upperBound.val[0]) {
+            Core.inRange(hsvMat, lowerBound, upperBound, mask);
+            return mask;
+        }
+        Mat m1 = new Mat();
+        Mat m2 = new Mat();
+        Core.inRange(hsvMat, new Scalar(0, lowerBound.val[1], lowerBound.val[2]), new Scalar(lowerBound.val[0], upperBound.val[1], upperBound.val[2]), m1);
+        Core.inRange(hsvMat, new Scalar(upperBound.val[0], lowerBound.val[1], lowerBound.val[2]), new Scalar(255, upperBound.val[1], upperBound.val[2]), m2);
+        Core.add(m1, m2, mask);
+        return mask;
+    }
+
     public Point getWobbleGoalHandle() {
         Mat input = getCameraImage();
         Mat hsvMat = new Mat();
-        Mat maskMat = new Mat();
+        Mat maskMat;
         Mat dilatedMask = new Mat();
         Mat hierarchey = new Mat();
         int offsetX;
@@ -481,12 +491,13 @@ public class RobotVision {
         offsetY = 0;
         Mat  procMat = input.submat(new Rect(offsetX, offsetY,
                 input.width(),
-                (int)(input.height()*0.7)));
+                (int)(input.height()*0.3)));
 
         Imgproc.cvtColor(procMat, hsvMat, Imgproc.COLOR_RGB2HSV_FULL);
-        Scalar lowerBound = new Scalar(160, 100, 150);
-        Scalar upperBound = new Scalar(180, 255, 255);
-        Core.inRange(hsvMat, lowerBound, upperBound, maskMat);
+        Scalar lowerBound = new Scalar(robotProfile.wobbleCvParam.maskLowerH, robotProfile.wobbleCvParam.maskLowerS, robotProfile.wobbleCvParam.maskLowerV);
+        Scalar upperBound = new Scalar(robotProfile.wobbleCvParam.maskUpperH, robotProfile.wobbleCvParam.maskUpperS, robotProfile.wobbleCvParam.maskUpperV);
+        //Core.inRange(hsvMat, lowerBound, upperBound, maskMat);
+        maskMat = getHsvMask(hsvMat, lowerBound, upperBound);
         Imgproc.dilate(maskMat, dilatedMask, new Mat());
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
@@ -499,6 +510,7 @@ public class RobotVision {
             double area = Imgproc.contourArea(wrapper);
             if (area > 1500) {
                 Rect rec = Imgproc.boundingRect(wrapper);
+                Imgproc.rectangle(input, rec, DRAW_COLOR_GREEN, 2);
                 if(result == null) {
                     result = new Point(rec.x+rec.width/2, rec.y);
                 }
@@ -510,6 +522,8 @@ public class RobotVision {
             }
             ndx++;
         }
+        saveImage(input,"Wobble-" + (imgcnt%10));
+        imgcnt++;
         return result;
     }
 
@@ -532,7 +546,8 @@ public class RobotVision {
     public static int CROP_LEFT_PERCENT = 0;
     public static int CROP_RIGHT_PERCENT = 0;
     public static int CROP_BOTTOM_PERCENT = 0;
-    static Scalar DRAW_COLOR = new Scalar(255, 0, 0);
+    static Scalar DRAW_COLOR_RED = new Scalar(255, 0, 0);
+    static Scalar DRAW_COLOR_GREEN = new Scalar(0, 255, 0);
     static boolean saveImage = false;
 
     static class RectComparator implements Comparator<Rect> {
@@ -598,7 +613,7 @@ public class RobotVision {
                     ringRecList.add(rec);
                     //Rect drawRec = new Rect(rec.x*DIM_MULTIPLIER, rec.y*DIM_MULTIPLIER, rec.width*DIM_MULTIPLIER, rec.height*DIM_MULTIPLIER);
                     if (saveImage) {    // update drawing only when saving the picture
-                        Imgproc.rectangle(input, rec, DRAW_COLOR, 2);
+                        Imgproc.rectangle(input, rec, DRAW_COLOR_RED, 2);
                     }
                     Log.i("Area", "Ndx:" + ndx + " Area:" + area + " Rec:" + rec.x + "," + rec.y + "," + rec.width + "," + rec.height);
                     count++;

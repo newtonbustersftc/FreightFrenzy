@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
+
 import org.firstinspires.ftc.teamcode.drive.BulkMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.GoalTargetRecognition;
 
@@ -42,6 +44,8 @@ public class AutoAimGoalTask implements RobotControl {
     public void prepare(){
         RobotVision vision = robotHardware.getRobotVision();
         goalRecog = vision.getGoalTargetRecognition();
+        DriveConstraints constraints = new DriveConstraints(30.0, 15.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+
         if (goalRecog!=null) {
             robotHardware.ringHolderUp();
             double turnAngle = goalRecog.getTargetAngle()-robotProfile.hardwareSpec.shootingAngle;

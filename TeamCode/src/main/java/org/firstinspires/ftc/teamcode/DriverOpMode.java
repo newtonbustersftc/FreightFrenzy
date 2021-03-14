@@ -383,9 +383,14 @@ public class DriverOpMode extends OpMode {
             currentTask.prepare();
         }
         if (!aPressed && gamepad1.a) {
-            //robotHardware.setGrabberPosition(true);
-            currentTask = grabLift;
-            grabLift.prepare();
+            if (gamepad1.left_bumper) {
+                currentTask = new AutoWobbleGoalPickUpTask(robotHardware, robotProfile);
+                currentTask.prepare();
+            }
+            else {
+                currentTask = grabLift;
+                grabLift.prepare();
+            }
         }
         aPressed = gamepad1.a;
     }

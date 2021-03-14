@@ -18,6 +18,7 @@ public class RobotProfile {
     PIDParam rrTranslationPID;
     CVParam cvParam;
     CVParam goalCvParam;
+    CVParam wobbleCvParam;
     HardwareSpec hardwareSpec;
     FeedForwardParam rrFeedForwardParam;
     HashMap<String, AutoPose> poses;
@@ -92,6 +93,8 @@ public class RobotProfile {
         hardwareSpec.shootingAngle = Math.atan(8.0/70.0);
         hardwareSpec.shootingDistBase = 70;
         hardwareSpec.shootingVelocityInch = -75.0/36.0;
+        hardwareSpec.wobbleOffsetX = 16; // inch
+        hardwareSpec.wobbleOffsetY = 6.5; // inch
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -113,7 +116,19 @@ public class RobotProfile {
         goalCvParam.maskUpperH = 255;
         goalCvParam.maskUpperS = 30;
         goalCvParam.maskUpperV = 255;
-        goalCvParam.minArea = 28000;
+        goalCvParam.minArea = 8000;
+
+
+        wobbleCvParam = new CVParam();
+        wobbleCvParam.cropTop = 0;
+        wobbleCvParam.cropBottom = 70;
+        wobbleCvParam.maskLowerH = 230;
+        wobbleCvParam.maskLowerS = 150;
+        wobbleCvParam.maskLowerV = 100;
+        wobbleCvParam.maskUpperH = 15;
+        wobbleCvParam.maskUpperS = 255;
+        wobbleCvParam.maskUpperV = 255;
+        wobbleCvParam.minArea = 100;
 
         poses = new HashMap<String, AutoPose>();
         poses.put("START", new AutoPose(-66,-20,0));
@@ -154,6 +169,7 @@ public class RobotProfile {
 
         poses.put("PARKING", new AutoPose(2, -30, 0));
         poses.put("AUTO-TRACKER-IMG", new AutoPose(36, -36, 0));
+
     }
 
     public Pose2d getProfilePose(String name) {
@@ -227,6 +243,8 @@ public class RobotProfile {
         double shootingAngle;
         double shootingDistBase;
         double shootingVelocityInch;
+        double wobbleOffsetX;
+        double wobbleOffsetY;
     }
 
     class FeedForwardParam {
