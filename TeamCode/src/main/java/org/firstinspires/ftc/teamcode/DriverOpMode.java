@@ -395,6 +395,41 @@ public class DriverOpMode extends OpMode {
         aPressed = gamepad1.a;
     }
 
+    RobotControl setupADSPowerBar() {
+        DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        DriveConstraints constraints = new DriveConstraints(20.0, 10.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        SequentialComboTask powerBar = new SequentialComboTask();
+        ParallelComboTask par1 = new ParallelComboTask();
+        Pose2d p1 = getProfilePose("AUTO-TRACKER-IMG");
+        Pose2d p2 = getProfilePose("SHOOT-POWER-BAR-3");
+
+        Trajectory traj2 = robotHardware.getMecanumDrive().trajectoryBuilder(p1, true)
+                    .splineToSplineHeading(p2, p2.getHeading(), constraints)  // slower move to warm up the shoot motor
+                    .build();
+        par1.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj2));
+        par1.addTask(new MoveArmTask(robotHardware, robotProfile, RobotHardware.ArmPosition.HOLD, 1));
+        par1.addTask(new IntakeMotorTask(robotHardware, robotProfile,  IntakeMotorTask.IntakeMode.STOP));
+        par1.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.UP));
+        par1.addTask(new ShooterMotorTask(robotHardware, robotProfile, true, robotProfile.hardwareSpec.shootBarVelocity));
+        powerBar.addTask(par1);
+        powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+
+        Pose2d p3 = getProfilePose("SHOOT-POWER-BAR-2");
+        Trajectory traj3 = robotHardware.getMecanumDrive().trajectoryBuilder(p2, constraints)
+                .lineToLinearHeading(p3, constraints)
+                .build();
+        powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj3));
+        powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+
+        Pose2d p4 = getProfilePose("SHOOT-POWER-BAR-1");
+        Trajectory traj4 = robotHardware.getMecanumDrive().trajectoryBuilder(p3, constraints)
+                .lineToLinearHeading(p4, constraints)
+                .build();
+        powerBar.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), traj4));
+        powerBar.addTask(new ShootOneRingTask(robotHardware, robotProfile));
+        powerBar.addTask(new ShooterMotorTask(robotHardware, robotProfile, false));
+        return powerBar;
+    }
     /**
      * Define combo task for driver op mode
      */
@@ -442,20 +477,32 @@ public class DriverOpMode extends OpMode {
         oneAds.addTask(new ShooterMotorTask(robotHardware, robotProfile, false));
         autoDriveShoot = new SequentialComboTask();
         autoDriveShoot.addTask(oneAds);
+
         autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
-        autoDriveShoot.addTask(oneAds);
+        autoDriveShoot.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
+        autoDriveShoot.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), robotProfile.getProfilePose("ADS-WOBBLE-PICK")));
+        autoDriveShoot.addTask(new AutoWobbleGoalPickUpTask(robotHardware, robotProfile));
+        autoDriveShoot.addTask(new RobotSleep(1000));
+        autoDriveShoot.addTask(grabLift);
+        autoDriveShoot.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), robotProfile.getProfilePose("ADS-WOBBLE-DROP1")));
+        autoDriveShoot.addTask(dropWobble);
+        autoDriveShoot.addTask(new SplineMoveTask(robotHardware.getMecanumDrive(), robotProfile.getProfilePose("ADS-FINAL-1")));
+        autoDriveShoot.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.FIRST_PIC, false));
+        autoDriveShoot.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), -Math.PI/4));
+        autoDriveShoot.addTask(new RobotSleep(100));
+        autoDriveShoot.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC, false));
+        autoDriveShoot.addTask(new MecanumRotateTask(robotHardware.getMecanumDrive(), -Math.PI/4));
+        autoDriveShoot.addTask(new RobotSleep(100));
+        autoDriveShoot.addTask(new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.MORE_PIC, false));
+        autoDriveShoot.addTask(new RingHolderPosTask(robotHardware, robotProfile, RingHolderPosTask.RingHolderPosition.DOWN));
+        autoDriveShoot.addTask(new IntakeMotorTask(robotHardware, robotProfile, IntakeMotorTask.IntakeMode.NORMAL));
+        autoDriveShoot.addTask(new ShooterMotorTask(robotHardware, robotProfile, true));
+        AutoDriveShootTask adst2 = new AutoDriveShootTask(robotHardware, robotProfile, AutoDriveShootTask.TaskMode.DRIVE);
+        adst2.setEndPose(robotProfile.getProfilePose("AUTO-TRACKER-IMG"));
+        autoDriveShoot.addTask(adst2);
+        autoDriveShoot.addTask(new RobotSleep(800));
+        autoDriveShoot.addTask(new VuforiaPoseUpdateTask(robotHardware));
+        autoDriveShoot.addTask(setupADSPowerBar());
 
 
 //        ArrayList<RobotControl> homePositionList = new ArrayList<RobotControl>();

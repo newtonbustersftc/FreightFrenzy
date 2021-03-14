@@ -170,6 +170,10 @@ public class RobotProfile {
         poses.put("PARKING", new AutoPose(2, -30, 0));
         poses.put("AUTO-TRACKER-IMG", new AutoPose(36, -36, 0));
 
+        poses.put("ADS-WOBBLE-PICK", new AutoPose(42, -40, -45));
+        poses.put("ADS-WOBBLE-DROP1", new AutoPose(-58, -48, 180));
+        poses.put("ADS-FINAL-1", new AutoPose(-50, -48, 90));
+
     }
 
     public Pose2d getProfilePose(String name) {
