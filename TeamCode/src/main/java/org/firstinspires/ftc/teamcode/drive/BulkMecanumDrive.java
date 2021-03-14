@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
+import com.acmerobotics.roadrunner.drive.Drive;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
@@ -126,7 +127,7 @@ public class BulkMecanumDrive extends MecanumDrive {
         return new TrajectoryBuilder(startPose, constraints);
     }
 
-    public void turnAsync(double angle) {
+    public void turnAsync(double angle, DriveConstraints constraints) {
         double heading = getPoseEstimate().getHeading();
 
         lastPoseOnTurn = getPoseEstimate();
@@ -141,6 +142,10 @@ public class BulkMecanumDrive extends MecanumDrive {
 
         turnStart = clock.seconds();
         mode = Mode.TURN;
+    }
+
+    public void turnAsync(double angle) {
+        turnAsync(angle, constraints);
     }
 
     public void turn(double angle) {
