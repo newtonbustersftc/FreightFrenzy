@@ -40,6 +40,7 @@ public class DriverOpMode extends OpMode {
     SequentialComboTask grabLift, dropWobble;
     SequentialComboTask powerBar;
     SequentialComboTask autoDriveShoot;
+    ShootRingTask shootRingTask;
     RobotControl autoAimShoot;
     RobotControl currentTask = null;
     RobotVision robotVision;
@@ -73,7 +74,7 @@ public class DriverOpMode extends OpMode {
 
         shootingPose = robotProfile.getProfilePose("SHOOT-DRIVER");
         setupCombos();
-
+        shootRingTask = new ShootRingTask(robotHardware, robotProfile, this);
     }
 
     /**
@@ -356,7 +357,7 @@ public class DriverOpMode extends OpMode {
             currentTask.prepare();
         }
         else if (gamepad1.x && currentMode==ActionMode.SHOOTING) {
-            currentTask = new ShootOneRingTask(robotHardware, robotProfile);
+            currentTask = shootRingTask;
             currentTask.prepare();
         }
     }
