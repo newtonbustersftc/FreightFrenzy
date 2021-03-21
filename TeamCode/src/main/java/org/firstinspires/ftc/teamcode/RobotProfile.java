@@ -137,13 +137,26 @@ public class RobotProfile {
         poses.put("TRANSIT3", new AutoPose(-25, -48, 0));
         poses.put("SHOOT", new AutoPose(-5, -30, -12));
         poses.put("SHOOT-DRIVER", new AutoPose(-5, -42, -5));
-        poses.put("SHOOT-START-1", new AutoPose(-62, -62, 0));
-        poses.put("SHOOT-LEFT", new AutoPose(-62, -59, 0));
-        poses.put("SHOOT-START-2", new AutoPose(-62, 12, 0));
-        poses.put("SHOOT-RIGHT", new AutoPose(-62, 9, 0));
-        poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -10.5, -5));
-        poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -18, -5));
-        poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -25.5, -5));
+        poses.put("SHOOT-PB-RIGHT", new AutoPose(-62, -62, 0));
+        poses.put("SHOOT-PB-LEFT", new AutoPose(-62, 14.5, 0));
+        poses.put("SHOOT-PB-RIGHT-1", new AutoPose(-62, -59, 0));
+        poses.put("SHOOT-PB-LEFT-1", new AutoPose(-62, 11.5, 0));
+        poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -7, -5));
+        poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -14.5, -5));
+        poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -22, -5));
+
+        poses.put("START_STATE", new AutoPose(-66,-33,0));
+        poses.put("FIRST_SHOOT_STATE", new AutoPose(-38, -33, -6));
+        poses.put("QUAD_COLLISION_STATE", new AutoPose(-30,-33,  -6));
+        poses.put("RINGS_PICK1_STATE", new AutoPose(-26,-33,-6));
+        poses.put("RINGS_PICK2_STATE", new AutoPose(-18,-33,-6));
+        poses.put("C_1_STATE", new AutoPose(43,-57, -30));
+        poses.put("WG2_PICKPre_STATE", new AutoPose(0,-48, -90));
+        poses.put("WG2_PICK_STATE", new AutoPose(-26,-56,-180));
+        poses.put("C_WG2_DELIVERPre_STATE", new AutoPose(0,-42, -90));
+        poses.put("C_WG2_DELIVER_STATE", new AutoPose(36,-49, -42));
+        poses.put("C_PARKING" +
+                "", new AutoPose(5,-49, 0));
 
         poses.put("A-1", new AutoPose(6, -50, -90));
         poses.put("A-WB2Pre", new AutoPose(-30, -42, -180));
@@ -151,9 +164,9 @@ public class RobotProfile {
         poses.put("A-2", new AutoPose(-4, -50, -90));
 
         poses.put("B-1", new AutoPose(19,-36,0));
-        poses.put("B-PICK", new AutoPose(-12, -36, -180));
-        poses.put("B-WB2Pre", new AutoPose(-30,-41,-180));
-        poses.put("B-WB2", new AutoPose(-38,-41,-180));
+        poses.put("B-PICK", new AutoPose(0, -15, -90));
+        poses.put("B-WB2Pre", new AutoPose(-30,-41,-150));
+        poses.put("B-WB2", new AutoPose(-38,-38,-180));
         //poses.put("B-WB2Pre", new AutoPose(-57,-28,-95));
         //poses.put("B-WB2", new AutoPose(-57,-34,-90));
         poses.put("B-2", new AutoPose(14,-40,0));

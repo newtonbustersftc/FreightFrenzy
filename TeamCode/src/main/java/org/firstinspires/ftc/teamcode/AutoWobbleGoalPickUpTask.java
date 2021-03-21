@@ -26,7 +26,8 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
 
     public enum TaskMode{
         DRIVE,
-        PICKUP
+        PICKUP,
+        NONE
     }
 
     TaskMode taskMode;
@@ -102,7 +103,7 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
         if(trans == null){
             init();
         }
-        DriveConstraints constraints = new DriveConstraints(20.0, 10.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        DriveConstraints constraints = new DriveConstraints(40.0, 30.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
         RobotVision vision = robotHardware.getRobotVision();
         result = vision.getWobbleGoalHandle();
         Pose2d currPose;
@@ -130,7 +131,8 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
             Trajectory trajectory = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, constraints).
                 lineToConstantHeading(endPose).build();
             robotHardware.setGrabberPosition(true);
-            robotHardware.setArmMotorPos(RobotHardware.ArmPosition.HOLD);
+            //bb cannot put HOLD, no time for autonomous
+//            robotHardware.setArmMotorPos(RobotHardware.ArmPosition.HOLD);
             robotHardware.getMecanumDrive().followTrajectoryAsync(trajectory);
             taskMode = TaskMode.DRIVE;
         }
@@ -166,6 +168,8 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
     public boolean isDone() {
         if(taskMode == TaskMode.PICKUP) {
             return pickupTime+200 < System.currentTimeMillis();
+            //bb, the above concatenate 200 at the end of pickupTime, always return false
+            //return (System.currentTimeMillis() - pickupTime) >800;
         }
         else {
             return result == null;
