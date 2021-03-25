@@ -26,8 +26,7 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
 
     public enum TaskMode{
         DRIVE,
-        PICKUP,
-        NONE
+        PICKUP
     }
 
     TaskMode taskMode;
@@ -106,6 +105,7 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
         DriveConstraints constraints = new DriveConstraints(40.0, 30.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
         RobotVision vision = robotHardware.getRobotVision();
         result = vision.getWobbleGoalHandle();
+        Logger.logFile("AutoWobbleGoalPickUpTask: result is "+ result);
         Pose2d currPose;
         if (result!=null) {
             Mat transformed = new Mat();
@@ -128,11 +128,10 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
                     worldCorr.getY()+robotProfile.hardwareSpec.wobbleOffsetX*Math.sin(currPose.getHeading()+Math.PI)
                             +robotProfile.hardwareSpec.wobbleOffsetY*Math.sin(currPose.getHeading()+Math.PI+Math.PI/2));
             Logger.logFile("Wobble Goal Pick up coordinate at " + endPose);
-            Trajectory trajectory = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, constraints).
-                lineToConstantHeading(endPose).build();
+            Trajectory trajectory = robotHardware.getMecanumDrive().trajectoryBuilder(currPose, constraints)
+                                    .lineToConstantHeading(endPose)
+                                    .build();
             robotHardware.setGrabberPosition(true);
-            //bb cannot put HOLD, no time for autonomous
-//            robotHardware.setArmMotorPos(RobotHardware.ArmPosition.HOLD);
             robotHardware.getMecanumDrive().followTrajectoryAsync(trajectory);
             taskMode = TaskMode.DRIVE;
         }
@@ -168,8 +167,6 @@ public class AutoWobbleGoalPickUpTask implements RobotControl{
     public boolean isDone() {
         if(taskMode == TaskMode.PICKUP) {
             return pickupTime+200 < System.currentTimeMillis();
-            //bb, the above concatenate 200 at the end of pickupTime, always return false
-            //return (System.currentTimeMillis() - pickupTime) >800;
         }
         else {
             return result == null;

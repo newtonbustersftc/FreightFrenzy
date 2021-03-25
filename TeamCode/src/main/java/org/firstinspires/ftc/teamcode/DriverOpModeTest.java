@@ -106,7 +106,7 @@ public class DriverOpModeTest extends OpMode {
         //telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
         //telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
         telemetry.addData("Pose:", robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
-        //telemetry.addData("Shoot Servo:", shootServoPos);
+        telemetry.addData("Shoot Servo:", shootServoPos);
         telemetry.addData("ArmPos", robotHardware.getEncoderCounts(RobotHardware.EncoderType.ARM));
         if (goalRecog!=null) {
             telemetry.addData("Goal Dist", goalRecog.getDistanceInch());

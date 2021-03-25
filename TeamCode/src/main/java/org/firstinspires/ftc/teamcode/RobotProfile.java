@@ -145,21 +145,24 @@ public class RobotProfile {
         poses.put("SHOOT-POWER-BAR-1", new AutoPose(-5, -7, -5));
         poses.put("SHOOT-POWER-BAR-2", new AutoPose(-5, -14.5, -5));
         poses.put("SHOOT-POWER-BAR-3", new AutoPose(-5, -22, -5));
-        poses.put("AUTOB-SHOOT-POWER-BAR-1", new AutoPose(-45, -5.5, -5));
-        poses.put("AUTOB-SHOOT-POWER-BAR-2", new AutoPose(-45, -12.5, -5));
-        poses.put("AUTOB-SHOOT-POWER-BAR-3", new AutoPose(-45, -20.5, -5));
+        poses.put("AUTOA-SHOOT-POWER-BAR-1", new AutoPose(-5, -5.5, -5));
+        poses.put("AUTOA-SHOOT-POWER-BAR-2", new AutoPose(-5, -12.5, -5));
+        poses.put("AUTOA-SHOOT-POWER-BAR-3", new AutoPose(-5, -20.5, -5));
+        poses.put("AUTOB-SHOOT-POWER-BAR-1", new AutoPose(-40, -5.5, -5));
+        poses.put("AUTOB-SHOOT-POWER-BAR-2", new AutoPose(-40, -12.5, -5));
+        poses.put("AUTOB-SHOOT-POWER-BAR-3", new AutoPose(-40, -20.5, -5));
 
         poses.put("START_STATE", new AutoPose(-66,-33,0));
-        poses.put("FIRST_SHOOT_STATE", new AutoPose(-38, -33, -6));
-        poses.put("QUAD_COLLISION_STATE", new AutoPose(-30,-33,  -6));
-        poses.put("RINGS_PICK1_STATE", new AutoPose(-26,-33,-6));
-        poses.put("RINGS_PICK2_STATE", new AutoPose(-18,-33,-6));
-        poses.put("C_1_STATE", new AutoPose(43,-57, -30));
-        poses.put("WG2_PICKPre_STATE", new AutoPose(-25,-48, 180));
-        poses.put("WG2_PICK_STATE", new AutoPose(-26,-56,180));
+        poses.put("FIRST_SHOOT_STATE", new AutoPose(-38, -33, -5));
+        poses.put("QUAD_COLLISION_STATE", new AutoPose(-30,-33,  -5));
+        poses.put("RINGS_PICK1_STATE", new AutoPose(-26,-33,-5));
+        poses.put("RINGS_PICK2_STATE", new AutoPose(-18,-33,-5));
+        poses.put("C_1_STATE", new AutoPose(45,-53, -30));
+        poses.put("WG2_PICKPre_STATE", new AutoPose(20,-48, 180));
+        poses.put("WG2_PICK_STATE", new AutoPose(-32,-54,180));
         poses.put("C_WG2_DELIVERPre_STATE", new AutoPose(-25,-48, -5));
-        poses.put("C_WG2_DELIVER_STATE", new AutoPose(36,-49, -42));
-        poses.put("C_PARKING", new AutoPose(5,-49, 180));
+        poses.put("C_WG2_DELIVER_STATE", new AutoPose(39,-54, -48));
+        poses.put("C_PARKING", new AutoPose(5,-34, -48));
 
         poses.put("A-1", new AutoPose(8, -46, -90));
         poses.put("A-WB2Pre", new AutoPose(-30, -42, -180));
@@ -168,13 +171,13 @@ public class RobotProfile {
 //        poses.put("A-WB2", new AutoPose(-38, -42, -180));
         poses.put("A-2", new AutoPose(-2, -46, -90));
 
-        poses.put("B-1", new AutoPose(19,-36,0));
+        poses.put("B-1", new AutoPose(19,-32,0));
         poses.put("B-PICK", new AutoPose(10, -40, -90));
         poses.put("B-WB2Pre", new AutoPose(-30,-25,-150));
         poses.put("B-WB2", new AutoPose(-28,-50,-180));
         //poses.put("B-WB2Pre", new AutoPose(-57,-28,-95));
         //poses.put("B-WB2", new AutoPose(-57,-34,-90));
-        poses.put("B-2", new AutoPose(14,-45,0));
+        poses.put("B-2", new AutoPose(14,-34,0));
 
         poses.put("C-1", new AutoPose(37,-56,-45));
         poses.put("C-PICK", new AutoPose(-12, -35, -180));
@@ -185,7 +188,7 @@ public class RobotProfile {
         poses.put("C-2", new AutoPose(40,-58,-15));
         poses.put("C2-PIC", new AutoPose(-32, -4, 270));
 
-        poses.put("PARKING", new AutoPose(6, -30, 0));
+        poses.put("PARKING", new AutoPose(8, -30, 0));
         poses.put("AUTO-TRACKER-IMG", new AutoPose(36, -36, 0));
 
         poses.put("ADS-WOBBLE-PICK", new AutoPose(42, -40, -45));
