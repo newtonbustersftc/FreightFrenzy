@@ -356,12 +356,19 @@ public class DriverOpMode extends OpMode {
         }
         dpadDownPressed = gamepad1.dpad_down;
         if (gamepad1.x && gamepad1.left_bumper) {  // Auto Drive & Shoot
-            currentTask = autoDriveShoot;
+            //currentTask = autoDriveShoot;
+            currentTask = autoAimShoot;
             currentTask.prepare();
+            if (! currentTask.isDone()) {
+                currentMode = ActionMode.SHOOTING;
+            }
         }
         if (gamepad1.x && gamepad1.right_bumper) {  // auto aim & shoot
             currentTask = autoAimShoot;
             currentTask.prepare();
+            if (! currentTask.isDone()) {
+                currentMode = ActionMode.SHOOTING;
+            }
         }
         else if (gamepad1.x && currentMode==ActionMode.SHOOTING) {
             currentTask = shootRingTask;

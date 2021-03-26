@@ -15,6 +15,7 @@ public class AutoAimGoalTask implements RobotControl {
     boolean done;
     int origShootCount;
     int shootCount;
+    int shootVelocity;
 
     enum State{
         TURNING, SHOOTING, WAIT_BETWEEN_SHOOT;
@@ -47,9 +48,10 @@ public class AutoAimGoalTask implements RobotControl {
         DriveConstraints constraints = new DriveConstraints(30.0, 15.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
 
         if (goalRecog!=null) {
+            startTime = System.currentTimeMillis();
             robotHardware.ringHolderUp();
             double turnAngle = goalRecog.getTargetAngle()-robotProfile.hardwareSpec.shootingAngle;
-            int shootVelocity = (int)((goalRecog.getDistanceInch() - robotProfile.hardwareSpec.shootingDistBase) *
+            shootVelocity = (int)((goalRecog.getDistanceInch() - robotProfile.hardwareSpec.shootingDistBase) *
                     robotProfile.hardwareSpec.shootingVelocityInch + robotProfile.hardwareSpec.shootVelocity);
             robotHardware.startShootMotor(shootVelocity);
             drive.turnAsync(turnAngle);
@@ -66,7 +68,10 @@ public class AutoAimGoalTask implements RobotControl {
         if (goalRecog!=null) {
             if(state == State.TURNING){
                 drive.update();
-                if(!drive.isBusy()){
+                double currVelo = robotHardware.getEncoderVelocity(RobotHardware.EncoderType.SHOOTER);
+                if(!drive.isBusy() && (System.currentTimeMillis()-startTime)>robotProfile.hardwareSpec.shootServoDelay
+                        && Math.abs(currVelo-shootVelocity)<60
+                        || (System.currentTimeMillis()-startTime)>3000) {
                     state = State.SHOOTING;
                     startTime = System.currentTimeMillis();
                     robotHardware.setShooterPosition(false);
