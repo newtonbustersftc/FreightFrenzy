@@ -135,7 +135,7 @@ public class RobotHardware {
         mecanumDrive = new BulkMecanumDrive(this, rrMotor, rlMotor, frMotor, flMotor);
         trackingWheelLocalizer = new BulkTrackingWheelLocalizer(this);
         mecanumDrive.setLocalizer(trackingWheelLocalizer);
-        robotVision = new RobotVision();
+        //robotVision = new RobotVision();
     }
 
     /**
