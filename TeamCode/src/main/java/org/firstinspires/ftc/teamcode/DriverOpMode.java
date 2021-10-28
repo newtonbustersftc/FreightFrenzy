@@ -53,10 +53,10 @@ public class DriverOpMode extends OpMode {
         Logger.init();
         //Obtain the RobotHardware object from factory
         robotHardware = RobotFactory.getRobotHardware(hardwareMap, robotProfile);
-        robotHardware.initRobotVision();
-        robotVision = robotHardware.getRobotVision();
-        robotVision.activateNavigationTarget();
-        robotHardware.initLeds();   // need to init everytime
+        //robotHardware.initRobotVision();
+        //robotVision = robotHardware.getRobotVision();
+        //robotVision.activateNavigationTarget();
+        //robotHardware.initLeds();   // need to init everytime
 
         // Based on the Autonomous mode starting position, define the heading offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
@@ -67,7 +67,7 @@ public class DriverOpMode extends OpMode {
             fieldModeSign = -1;
         }
 
-        shootingPose = robotProfile.getProfilePose("SHOOT-DRIVER");
+        //shootingPose = robotProfile.getProfilePose("SHOOT-DRIVER");
         setupCombos();
 
     }
@@ -109,7 +109,7 @@ public class DriverOpMode extends OpMode {
     public void stop() {
         try {
             Logger.logFile("DriverOpMode stop() called");
-            robotVision.deactivateNavigationTarget();
+            //robotVision.deactivateNavigationTarget();
             Logger.flushToFile();
         }
         catch (Exception e) {
