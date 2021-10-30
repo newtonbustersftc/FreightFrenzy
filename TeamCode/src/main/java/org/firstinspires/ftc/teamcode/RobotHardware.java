@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.localization.Localizer;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -135,7 +136,7 @@ public class RobotHardware {
         mecanumDrive = new BulkMecanumDrive(this, rrMotor, rlMotor, frMotor, flMotor);
         trackingWheelLocalizer = new BulkTrackingWheelLocalizer(this);
         mecanumDrive.setLocalizer(trackingWheelLocalizer);
-        //robotVision = new RobotVision();
+        robotVision = new RobotVision();
     }
 
     /**
@@ -150,19 +151,19 @@ public class RobotHardware {
     }
 
     public void initLeds() {
-        led1.setMode(DigitalChannel.Mode.OUTPUT);
-        led2.setMode(DigitalChannel.Mode.OUTPUT);
-        led3.setMode(DigitalChannel.Mode.OUTPUT);
-        led1.setState(true);
-        led2.setState(true);
-        led3.setState(true);
+//        led1.setMode(DigitalChannel.Mode.OUTPUT);
+//        led2.setMode(DigitalChannel.Mode.OUTPUT);
+//        led3.setMode(DigitalChannel.Mode.OUTPUT);
+//        led1.setState(true);
+//        led2.setState(true);
+//        led3.setState(true);
     }
 
     public BulkMecanumDrive getMecanumDrive() {
         return mecanumDrive;
     }
 
-    public BulkTrackingWheelLocalizer getTrackingWheelLocalizer(){
+    public Localizer getLocalizer(){
         return trackingWheelLocalizer;
     }
 

@@ -2,10 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.content.SharedPreferences;
 
-import com.acmerobotics.dashboard.canvas.Spline;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -81,9 +78,9 @@ public class DriverOpMode extends OpMode {
         robotHardware.getBulkData1();
         //Read values from the expansion hub
         robotHardware.getBulkData2();
-        robotHardware.getTrackingWheelLocalizer().update();
-        currPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
-
+        //robotHardware.getTrackingWheelLocalizer().update();
+        //currPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
+        currPose = new Pose2d(0,0,0);   // for now
         //Handling autonomous task loop
         if (currentTask != null) {
             if (gamepad1.left_bumper && gamepad1.right_bumper) {
@@ -94,7 +91,7 @@ public class DriverOpMode extends OpMode {
                 currentTask.execute();
                 if (currentTask.isDone()) {
                     currentTask.cleanUp();
-                    Logger.logFile("TaskComplete: " + currentTask + " Pose:" + robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
+                    Logger.logFile("TaskComplete: " + currentTask + " Pose:" + robotHardware.getLocalizer().getPoseEstimate());
                     currentTask = null;
                 }
             }

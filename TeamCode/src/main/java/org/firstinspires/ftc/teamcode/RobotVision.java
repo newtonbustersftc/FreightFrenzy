@@ -118,7 +118,7 @@ public class RobotVision {
         Logger.logFile("RobotVision init()");
         this.hardwareMap = hardwareMap;
         this.robotProfile = robotProfile;
-        webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        webcamName = hardwareMap.get(WebcamName.class, "Webcam");
         initVuforia();
         MASK_LOWER_BOUND_H = robotProfile.cvParam.maskLowerH;
         MASK_LOWER_BOUND_S = robotProfile.cvParam.maskLowerS;
@@ -129,11 +129,6 @@ public class RobotVision {
         CROP_TOP_PERCENT = robotProfile.cvParam.cropTop;
         MIN_AREA = robotProfile.cvParam.minArea;
         saveImage = true;
-
-        goalLowerBound = new Scalar(robotProfile.goalCvParam.maskLowerH,
-                robotProfile.goalCvParam.maskLowerS, robotProfile.goalCvParam.maskLowerV);
-        goalUpperBound = new Scalar(robotProfile.goalCvParam.maskUpperH,
-                robotProfile.goalCvParam.maskUpperS, robotProfile.goalCvParam.maskUpperV);
      }
 
     private void initVuforia() {
@@ -166,9 +161,6 @@ public class RobotVision {
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
         targets = this.vuforia.loadTrackablesFromAsset("FreightFrenzy");
-
-        // For convenience, gather together all the trackable objects in one easily-iterable collection */
-        allTrackables.addAll(targets);
 
         /**
          * In order for localization to work, we need to tell the system where each target is on the field, and
@@ -338,12 +330,6 @@ public class RobotVision {
         }
     }
 
-    public ArrayList<Rect> getRings(boolean keepImg) {
-        this.saveImage = keepImg;
-        handleRingImage();
-        return pipeline.getRingRecList();
-    }
-
     private Mat getCameraImage() {
         try {
             Image rgb = null;
@@ -381,73 +367,6 @@ public class RobotVision {
         pipeline.processFrame(img);
     }
 
-    Scalar goalLowerBound;
-    Scalar goalUpperBound;
-
-    public GoalTargetRecognition getGoalTargetRecognition() {
-        Mat origMat = getCameraImage();
-        Mat workMat = new Mat();
-        origMat.copyTo(workMat);
-        Mat hsvMat = new Mat();
-        Mat maskMat = new Mat();
-        Mat dilatedMask = new Mat();
-        Mat hierarchey = new Mat();
-        Scalar DRAW_COLOR3 = new Scalar(64, 64, 255);
-        Scalar DRAW_COLOR2 = new Scalar(64, 255, 64);
-        Scalar DRAW_COLOR = new Scalar(255, 64, 64);
-        GoalTargetRecognition goalRec = null;
-
-        Mat topPortion = workMat.submat(new Rect(0, 0, workMat.width(), (int)(workMat.height()*(1.0-robotProfile.goalCvParam.cropBottom/100.0))));
-        System.out.println("WorkMat " + topPortion.width() + " x " + topPortion.height());
-        Imgproc.cvtColor(topPortion, hsvMat, Imgproc.COLOR_RGB2HSV_FULL);
-
-        ArrayList<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        ArrayList<MatOfPoint> rst = new ArrayList<MatOfPoint>();
-        Core.inRange(hsvMat, goalLowerBound, goalUpperBound, maskMat);
-        Imgproc.dilate(maskMat, dilatedMask, new Mat());
-        Imgproc.findContours(dilatedMask, contours, hierarchey, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-        int ndx = 0;
-        Point[] targetP = null;
-        for(ndx =0; ndx<contours.size(); ndx++) {
-            MatOfPoint wrapper = contours.get(ndx);
-            double area = Imgproc.contourArea(wrapper);
-            if (area > robotProfile.goalCvParam.minArea) {
-                Imgproc.drawContours(workMat, contours, ndx, DRAW_COLOR2, 2);
-                MatOfPoint2f c2f = new MatOfPoint2f(wrapper.toArray());
-                double peri = Imgproc.arcLength(c2f, true);
-                MatOfPoint2f approx = new MatOfPoint2f();
-                Imgproc.approxPolyDP(c2f, approx, 0.1 * peri, true);
-                Point[] points = approx.toArray();
-                boolean isGood = true;
-                if (points.length==4) {
-                    Vector2D[] p2d = new Vector2D[4];
-                    for(int i=0; i<points.length; i++) {
-                        p2d[i] = new Vector2D(points[i].x, points[i].y);
-                    }
-                    GoalTargetRecognition recognition = new GoalTargetRecognition(p2d);
-                    Scalar drawColor;
-                    if (recognition.isValid()) {
-                        goalRec = recognition;
-                        drawColor = DRAW_COLOR;
-                    }
-                    else {
-                        drawColor = DRAW_COLOR3;
-                    }
-                    MatOfPoint approxf1 = new MatOfPoint();
-                    approx.convertTo(approxf1, CvType.CV_32S);
-                    List<MatOfPoint> contourTemp = new ArrayList<>();
-                    contourTemp.add(approxf1);
-                    Imgproc.fillPoly(workMat, contourTemp, drawColor);
-                }
-
-            }
-        }
-        saveImage(workMat,"GoalPic-" + (imgcnt%10));
-        saveImage(origMat, "GoalOrig-" + (imgcnt%10));
-        imgcnt++;
-        return goalRec;
-    }
-
     private Mat getHsvMask(Mat hsvMat, Scalar lowerBound, Scalar upperBound) {
         Mat mask = new Mat();
         if (lowerBound.val[0]<upperBound.val[0]) {
@@ -460,54 +379,6 @@ public class RobotVision {
         Core.inRange(hsvMat, new Scalar(upperBound.val[0], lowerBound.val[1], lowerBound.val[2]), new Scalar(255, upperBound.val[1], upperBound.val[2]), m2);
         Core.add(m1, m2, mask);
         return mask;
-    }
-
-    public Point getWobbleGoalHandle() {
-        Mat input = getCameraImage();
-        Mat hsvMat = new Mat();
-        Mat maskMat;
-        Mat dilatedMask = new Mat();
-        Mat hierarchey = new Mat();
-        int offsetX;
-        int offsetY;
-        offsetX = 0;
-        offsetY = 0;
-        Mat  procMat = input.submat(new Rect(offsetX, offsetY,
-                input.width(),
-                (int)(input.height()*0.3)));
-
-        Imgproc.cvtColor(procMat, hsvMat, Imgproc.COLOR_RGB2HSV_FULL);
-        Scalar lowerBound = new Scalar(robotProfile.wobbleCvParam.maskLowerH, robotProfile.wobbleCvParam.maskLowerS, robotProfile.wobbleCvParam.maskLowerV);
-        Scalar upperBound = new Scalar(robotProfile.wobbleCvParam.maskUpperH, robotProfile.wobbleCvParam.maskUpperS, robotProfile.wobbleCvParam.maskUpperV);
-        //Core.inRange(hsvMat, lowerBound, upperBound, maskMat);
-        maskMat = getHsvMask(hsvMat, lowerBound, upperBound);
-        Imgproc.dilate(maskMat, dilatedMask, new Mat());
-
-        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        Imgproc.findContours(dilatedMask, contours, hierarchey, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-        Iterator<MatOfPoint> each = contours.iterator();
-        int ndx = 0;
-        Point result = null;
-        while (each.hasNext()) {
-            MatOfPoint wrapper = each.next();
-            double area = Imgproc.contourArea(wrapper);
-            if (area > 1500) {
-                Rect rec = Imgproc.boundingRect(wrapper);
-                Imgproc.rectangle(input, rec, DRAW_COLOR_GREEN, 2);
-                if(result == null) {
-                    result = new Point(rec.x+rec.width/2, rec.y);
-                }
-                else {
-                    if(rec.x+rec.width/2 > result.x) {
-                        result = new Point(rec.x+rec.width/2, rec.y);
-                    }
-                }
-            }
-            ndx++;
-        }
-        saveImage(input,"Wobble-" + (imgcnt%10));
-        imgcnt++;
-        return result;
     }
 
     private void saveImage(Mat mat, String filename) {

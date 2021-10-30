@@ -67,8 +67,8 @@ public class DriverOpModeTest extends OpMode {
     public void loop() {
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
-        robotHardware.getTrackingWheelLocalizer().update();
-        currPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
+        robotHardware.getLocalizer().update();
+        currPose = robotHardware.getLocalizer().getPoseEstimate();
 
         handleMovement();
         // field mode or not
@@ -95,35 +95,13 @@ public class DriverOpModeTest extends OpMode {
         }
 
         //robotHardware.setShooterPosition(gamepad1.x);
-        if (gamepad1.y && !yPressed) {
-            goalRecog = robotHardware.getRobotVision().getGoalTargetRecognition();
-        }
-        yPressed = gamepad1.y;
-        if (gamepad1.a && !aPressed) {
-            shootServoPos -= 0.02;
-            robotHardware.shootServo.setPosition(shootServoPos);
-        }
-        aPressed = gamepad1.a;
-        if (gamepad1.b && !bPressed) {
-            shootServoPos += 0.02;
-            robotHardware.shootServo.setPosition(shootServoPos);
-        }
-        bPressed = gamepad1.b;
-        if (gamepad1.dpad_up) {
-            robotHardware.startShootMotor();
-            robotHardware.ringHolderUp();
-        }
-        if (gamepad1.dpad_down) {
-            robotHardware.stopShootMotor();
-            robotHardware.ringHolderDown();
-        }
         //telemetry.addData("LeftE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
         //telemetry.addData("RightE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
         //telemetry.addData("HorizE", robotHardware.getEncoderCounts(RobotHardware.EncoderType.HORIZONTAL));
 
 
         T265Camera.CameraUpdate camUpdate = slamra.getLastReceivedCameraUpdate();
-        telemetry.addData("Pose:", robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
+        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
         telemetry.addData("X:", camUpdate.pose.getX()*100/2.54);
         telemetry.addData("Y:", camUpdate.pose.getY()*100/2.54);
         telemetry.addData("H:", Math.toDegrees(camUpdate.pose.getHeading()));

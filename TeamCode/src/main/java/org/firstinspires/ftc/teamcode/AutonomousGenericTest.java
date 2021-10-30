@@ -1,19 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Log;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -48,15 +40,15 @@ public class AutonomousGenericTest extends LinearOpMode {
     public void runOpMode() {
 
         initRobot();
-
+        robotHardware.initRobotVision();
         robotVision = robotHardware.getRobotVision();
-        //robotVision.activateRecognition();
         //robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(-66, -33, 0));
-        robotHardware.getTrackingWheelLocalizer().update();
-        robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START"));
+        //robotHardware.getLocalizer().update();
+        //robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START"));
 
         waitForStart();
-
+        robotVision.getAutonomousRecognition();
+        taskList = new ArrayList<RobotControl>();
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
             taskList.get(0).prepare();

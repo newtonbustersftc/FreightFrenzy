@@ -67,10 +67,14 @@ public class OpenCvExample extends LinearOpMode
         phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
-            public void onOpened()
-            {
+            public void onOpened() {
                 phoneCam.startStreaming(320,240, OpenCvCameraRotation.SIDEWAYS_LEFT);
             }
+
+            public void onError(int errorCode) {
+                Log.e("TeamCode", "AsyncCameraOpenListener error code " + errorCode);
+            }
+
         });
 
         waitForStart();

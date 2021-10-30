@@ -4,6 +4,8 @@ import android.graphics.Point;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -11,6 +13,11 @@ import java.util.HashMap;
 
 
 public class RobotProfileTest {
+    @BeforeTest
+    public void before() {
+
+    }
+
     @Test
     public void robotProfileTest() {
         RobotProfile profile = new RobotProfile();

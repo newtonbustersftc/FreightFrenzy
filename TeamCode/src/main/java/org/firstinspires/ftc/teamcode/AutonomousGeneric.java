@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import android.content.SharedPreferences;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -123,7 +121,7 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
 
-        robotHardware.getTrackingWheelLocalizer().update();
+        robotHardware.getLocalizer().update();
         robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START_STATE"));
         robotHardware.setMotorStopBrake(true);  // so no sliding when we move
         RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition();
@@ -155,7 +153,7 @@ public class AutonomousGeneric extends LinearOpMode {
                 taskList.get(0).execute();
 
                 if (taskList.get(0).isDone()) {
-                    Logger.logFile("MainTaskComplete: " + taskList.get(0) + " Pose:" + robotHardware.getTrackingWheelLocalizer().getPoseEstimate());
+                    Logger.logFile("MainTaskComplete: " + taskList.get(0) + " Pose:" + robotHardware.getLocalizer().getPoseEstimate());
                     Logger.flushToFile();
 
                     taskList.get(0).cleanUp();
