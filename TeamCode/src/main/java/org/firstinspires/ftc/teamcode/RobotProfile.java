@@ -17,8 +17,6 @@ public class RobotProfile {
     PIDParam rrHeadingPID;
     PIDParam rrTranslationPID;
     CVParam cvParam;
-    CVParam goalCvParam;
-    CVParam wobbleCvParam;
     HardwareSpec hardwareSpec;
     FeedForwardParam rrFeedForwardParam;
     HashMap<String, AutoPose> poses;
@@ -68,6 +66,7 @@ public class RobotProfile {
         hardwareSpec.cameraVerticalDisplacement = 16.5f;
         hardwareSpec.cameraLeftDisplacement = -1.5f;
         hardwareSpec.cameraHeadingOffset = -2.5f;
+        hardwareSpec.realSenseAngleModifier = Math.PI/2;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -132,6 +131,7 @@ public class RobotProfile {
         float cameraVerticalDisplacement;
         float cameraLeftDisplacement;
         double cameraHeadingOffset;
+        double realSenseAngleModifier;
     }
 
     class FeedForwardParam {
