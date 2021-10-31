@@ -80,14 +80,12 @@ public class DriverOpModeTest extends OpMode {
         }
         // test controls
         if (gamepad1.dpad_right && !dpadRightDown) {
-            robotHardware.setArmNextPosition();
             dpadRightDown = true;
         }
         else {
             dpadRightDown = gamepad1.dpad_right;
         }
         if (gamepad1.dpad_left && !dpadLeftDown) {
-            robotHardware.setArmPrevPosition();
             dpadLeftDown = true;
         }
         else {

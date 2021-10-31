@@ -48,7 +48,6 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
         robotHardware.initRobotVision();
         robotHardware.setMotorStopBrake(true);
-        robotHardware.setShooterPosition(false);
 
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
@@ -62,9 +61,6 @@ public class AutonomousGeneric extends LinearOpMode {
     public void runOpMode() {
         initRobot();
         robotHardware.setMotorStopBrake(false); // so we can adjust the robot
-        robotHardware.ringHolderDown();
-        robotHardware.setShooterPosition(false);
-        robotHardware.setGrabberPosition(false);
 
         // reset arm position
         int warningSoundID = hardwareMap.appContext.getResources().getIdentifier("backing_up", "raw", hardwareMap.appContext.getPackageName());
@@ -74,50 +70,8 @@ public class AutonomousGeneric extends LinearOpMode {
                 SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, warningSoundID);
             }
         }
-        int lastArmPos = 0;
-
-        boolean firstTime = true;
-        while (true) {
-            robotHardware.getBulkData1();
-            robotHardware.getBulkData2();
-            int currArmPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.ARM);
-            if (!firstTime) {
-                if (currArmPos == lastArmPos) {
-                    // stop moving, we move up a bit then reset Arm motor to 0 position
-                    robotHardware.setDirectArmMotorPos(lastArmPos+robotProfile.hardwareSpec.armReverseDelta);
-                    try {
-                        Thread.sleep(robotProfile.hardwareSpec.armReverseDelay);
-                    }
-                    catch (Exception e) {
-                    }
-                    robotHardware.resetArmMotorPosition();
-                    break;  // done
-                }
-            }
-
-            lastArmPos = currArmPos;
-            robotHardware.setDirectArmMotorPos(lastArmPos - robotProfile.hardwareSpec.armReverseDelta);
-            firstTime = false;
-            try {
-                Thread.sleep(robotProfile.hardwareSpec.armReverseDelay);
-            }
-            catch (Exception e) {
-            }
-        }
-        if (warningSoundID!=0) {
-            SoundPlayer.getInstance().stopPlayingAll();
-        }
-        robotHardware.setArmMotorPos(RobotHardware.ArmPosition.INIT);
-        robotHardware.setGrabberPosition(true);
-        try {
-            Thread.sleep(3000); // put the wobble goal on
-        }
-        catch (Exception e) {
-        }
-        robotHardware.setGrabberPosition(false);
         telemetry.addData("READY...", "NOW");
         waitForStart();
-        robotHardware.startShootMotor();
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
 

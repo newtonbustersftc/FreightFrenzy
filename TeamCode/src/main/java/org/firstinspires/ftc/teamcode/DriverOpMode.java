@@ -166,15 +166,10 @@ public class DriverOpMode extends OpMode {
                 case SHOOTING:
                 case REVERSE:
                     robotHardware.startIntake();
-                    robotHardware.ringHolderDown();
-                    robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.INTAKE;
                     break;
                 case INTAKE:
                     robotHardware.reverseIntake();
-                    robotHardware.startShootMotor((gamepad1.right_bumper)?robotProfile.hardwareSpec.shootBarVelocity:robotProfile.hardwareSpec.shootVelocity);
-                    robotHardware.ringHolderUp();
-                    robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.SHOOTING;
                     break;
             }
@@ -185,15 +180,11 @@ public class DriverOpMode extends OpMode {
                 case SHOOTING:
                 case REVERSE:
                     robotHardware.stopIntake();
-                    robotHardware.ringHolderDown();
-                    robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.STOP;
                     break;
                 case INTAKE:
                 case STOP:
                     robotHardware.reverseIntake();
-                    robotHardware.ringHolderDown();
-                    robotHardware.setShooterPosition(true);
                     currentMode = ActionMode.REVERSE;
                     break;
             }

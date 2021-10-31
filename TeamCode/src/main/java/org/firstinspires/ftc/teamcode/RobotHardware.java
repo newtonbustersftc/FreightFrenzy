@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -11,9 +10,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.BulkMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.BulkTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -26,10 +22,9 @@ import org.openftc.revextensions2.RevBulkData;
 public class RobotHardware {
     HardwareMap hardwareMap;
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
-    ExpansionHubMotor shootMotor1, shootMotor2, intakeMotor;
-    ExpansionHubMotor armMotor;
+    ExpansionHubMotor liftMotor, duckMotor, intakeMotor;
     DigitalChannel led1, led2, led3;
-    ExpansionHubServo grabberServo, shootServo, ringHolderServo, twirlyServo;
+    ExpansionHubServo servo;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
     BulkMecanumDrive mecanumDrive;
@@ -40,23 +35,11 @@ public class RobotHardware {
     //DigitalChannel ;
     //Rev2mDistanceSensor ;
     RobotProfile profile;
-    boolean isPrototype = false;
-    ArmPosition armPosition = ArmPosition.INIT;
-    int shootVelocityLowLimit;
-    int shootVelocityHighLimit;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
         Logger.logFile("RobotHardware init()");
         this.hardwareMap = hardwareMap;
         this.profile = profile;
-        try {
-            if (hardwareMap.get("ArmMotor")!=null) {
-                isPrototype = false;
-            }
-        }
-        catch (IllegalArgumentException ex) {
-            isPrototype = true;
-        }
         expansionHub1 = hardwareMap.get(ExpansionHubEx.class, "Control Hub");
         rrMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("RRMotor");
         rlMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("RLMotor");
@@ -81,52 +64,33 @@ public class RobotHardware {
         frMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        if (!isPrototype) {
-            expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub");
-            armMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("ArmMotor");
-            armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            armMotor.setTargetPosition(0);
-            armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            shootMotor1 = (ExpansionHubMotor) hardwareMap.dcMotor.get("ShootMotor1");
-            shootMotor2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("ShootMotor2");
-            intakeMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("IntakeMotor");
-            shootMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            shootMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            grabberServo =  (ExpansionHubServo) hardwareMap.servo.get("Grabber");
-            shootServo =  (ExpansionHubServo) hardwareMap.servo.get("Shooter");
-            ringHolderServo = (ExpansionHubServo) hardwareMap.servo.get("RingHolder");
-            twirlyServo = (ExpansionHubServo)hardwareMap.servo.get("Twirly");
-            led1 = hardwareMap.digitalChannel.get("LED1");
-            led2 = hardwareMap.digitalChannel.get("LED2");
-            led3 = hardwareMap.digitalChannel.get("LED3");
-            initLeds();
+        expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub");
+        intakeMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("IntakeMotor");
+        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("LiftMotor");
+        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        duckMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("DuckMotor");
+        duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        led1 = hardwareMap.digitalChannel.get("LED1");
+        led2 = hardwareMap.digitalChannel.get("LED2");
+        led3 = hardwareMap.digitalChannel.get("LED3");
+        initLeds();
 
-            // Display PID values
-            PIDFCoefficients coeff = shootMotor1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-            PIDFCoefficients coeffNew = new PIDFCoefficients();
-            coeffNew.algorithm = MotorControlAlgorithm.PIDF;
-            coeffNew.p = profile.shootPID.p;
-            coeffNew.i = profile.shootPID.i;
-            coeffNew.d = profile.shootPID.d;
-            coeffNew.f = profile.shootPID.f;
+        // Display PID values
+        PIDFCoefficients coeffNew = new PIDFCoefficients();
+        coeffNew.algorithm = MotorControlAlgorithm.PIDF;
+        coeffNew.p = profile.shootPID.p;
+        coeffNew.i = profile.shootPID.i;
+        coeffNew.d = profile.shootPID.d;
+        coeffNew.f = profile.shootPID.f;
 
-            shootMotor1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, coeffNew);
-            shootMotor2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, coeffNew);
-            Logger.logFile("DefaultPIDF - algo:" + coeff.algorithm + " p:" + coeff.p + " i:" + coeff.i +
-                    " d:" + coeff.d + " f:" + coeff.f);
-            Logger.logFile("NewPIDF - algo:" + coeffNew.algorithm + " p:" + coeffNew.p + " i:" + coeffNew.i +
-                    " d:" + coeffNew.d + " f:" + coeffNew.f);
-        }
+        Logger.logFile("NewPIDF - algo:" + coeffNew.algorithm + " p:" + coeffNew.p + " i:" + coeffNew.i +
+                " d:" + coeffNew.d + " f:" + coeffNew.f);
+
         Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
         getBulkData1();
         getBulkData2();
-
-        shootVelocityHighLimit = profile.hardwareSpec.shootVelocity - profile.hardwareSpec.shootVelocity / 20;
-        shootVelocityLowLimit = profile.hardwareSpec.shootVelocity + profile.hardwareSpec.shootVelocity / 20;
 
         DriveConstants.kA = profile.rrFeedForwardParam.kA;
         DriveConstants.kV = profile.rrFeedForwardParam.kV;
@@ -172,13 +136,7 @@ public class RobotHardware {
     }
 
     public void getBulkData2() {
-        if (!isPrototype) {
-            bulkData2 = expansionHub2.getBulkInputData();
-        }
-        else {
-            // so we have something
-            bulkData2 = expansionHub1.getBulkInputData();
-        }
+        bulkData2 = expansionHub2.getBulkInputData();
     }
 
     public int getEncoderCounts(EncoderType encoder) {
@@ -190,11 +148,7 @@ public class RobotHardware {
         }
         else if(encoder == EncoderType.HORIZONTAL) {
             return profile.hardwareSpec.horizontalEncoderForwardSign * bulkData1.getMotorCurrentPosition(frMotor);
-        }
-        else if (encoder == EncoderType.ARM) {
-            return bulkData2.getMotorCurrentPosition(armMotor);
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -208,21 +162,6 @@ public class RobotHardware {
         }
         else if(encoder == EncoderType.HORIZONTAL) {
             return profile.hardwareSpec.horizontalEncoderForwardSign * bulkData1.getMotorVelocity(frMotor);
-        }
-        else if (encoder == EncoderType.SHOOTER) {
-            if (bulkData2 != null) {
-                return bulkData2.getMotorVelocity(shootMotor1);
-            }
-            else {
-                return 0;
-            }
-        }
-        //test
-        else if(encoder == EncoderType.SHOOTER1){
-            return bulkData2.getMotorVelocity(shootMotor1);
-        }
-        else if(encoder == EncoderType.SHOOTER2){
-            return bulkData2.getMotorVelocity(shootMotor2);
         }
         else {
             return 0;
@@ -241,12 +180,14 @@ public class RobotHardware {
             frontRight = power * Math.sin(angle) - rotation;
             rearLeft = power * Math.sin(angle) + rotation;
             rearRight = power * Math.cos(angle) - rotation;
-        }else if(sign ==1){  //left side less encoder counts
+        }
+        else if(sign ==1){  //left side less encoder counts
             frontLeft = power *0.95 * Math.cos(angle) + rotation;
             frontRight = power * Math.sin(angle) - rotation;
             rearLeft = power * 0.95 * Math.sin(angle) + rotation;
             rearRight = power * Math.cos(angle) - rotation;
-        }else if(sign == 2){   //right side less encoder counts
+        }
+        else if(sign == 2){   //right side less encoder counts
             frontLeft = power * Math.cos(angle) + rotation;
             frontRight = power * 0.95 * Math.sin(angle) - rotation;
             rearLeft = power * Math.sin(angle) + rotation;
@@ -324,26 +265,19 @@ public class RobotHardware {
     }
 
     public void startIntake() {
-        intakeMotor.setPower(profile.hardwareSpec.intakePower);
-        twirlyServo.setPosition(0);
+        intakeMotor.setPower(profile.hardwareSpec.intakeVelocity);
     }
 
     public void reverseIntake() {
-        intakeMotor.setPower(-profile.hardwareSpec.intakePower);
-        twirlyServo.setPosition(1);
+        intakeMotor.setPower(-profile.hardwareSpec.intakeVelocity);
     }
 
     public void stopIntake() {
         intakeMotor.setPower(0);
-        twirlyServo.setPosition(0);
     }
 
-    public void ringHolderUp() {
-        ringHolderServo.setPosition(profile.hardwareSpec.ringHolderUp);
-    }
-
-    public void ringHolderDown() {
-        ringHolderServo.setPosition(profile.hardwareSpec.ringHolderDown);
+    public void startDuck(){
+        duckMotor.setPower(profile.hardwareSpec.duckVelocity);
     }
 
     /**
@@ -355,100 +289,11 @@ public class RobotHardware {
 
     public void stopAll() {
         setMotorPower(0, 0, 0, 0);
-        setGrabberPosition(true);
-        setArmMotorPos(ArmPosition.INIT);
-        armMotor.setPower(0);
-    }
-
-    public void setGrabberPosition(boolean isOpen) {
-        grabberServo.setPosition(isOpen?profile.hardwareSpec.grabberOpenPos:profile.hardwareSpec.grabberClosePos);
-    }
-
-    /**
-     * This function is used for backing up the arm till stop position
-     * @param pos
-     */
-    public void setDirectArmMotorPos(int pos) {
-        armMotor.setPower(profile.hardwareSpec.armPowerLow);
-        armMotor.setTargetPosition(pos);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
-
-    public void resetArmMotorPosition() {
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armMotor.setTargetPosition(0);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
-
-    public void setArmMotorPos(ArmPosition pos) {
-        armPosition = pos;
-        armMotor.setPower(profile.hardwareSpec.armPower);
-        int newPosNum = 0;
-        switch (pos) {
-            case INIT:
-                newPosNum = profile.hardwareSpec.armInitPos;
-                break;
-            case HOLD:
-                newPosNum = profile.hardwareSpec.armHoldPos;
-                break;
-            case DELIVER:
-                newPosNum = profile.hardwareSpec.armDeliverPos;
-                break;
-            case GRAB:
-                newPosNum = profile.hardwareSpec.armGrabPos;
-                break;
-        }
-        armMotor.setTargetPosition(newPosNum);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
-
-    public void setArmNextPosition() {
-        setArmMotorPos(armPosition.next());
-    }
-
-    public void setArmPrevPosition() {
-        setArmMotorPos(armPosition.prev());
     }
 
     //public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM, SHOOTER}
     //test
-    public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM, SHOOTER, SHOOTER1, SHOOTER2}
-
-    public enum ArmPosition { INIT, HOLD, DELIVER, GRAB;
-        private static ArmPosition[] vals = values();
-        public ArmPosition next() {
-            return (this.ordinal()<vals.length-1)?vals[this.ordinal()+1]:this;
-        }
-        public ArmPosition prev() { // can not goto init position
-            return (this.ordinal()>1)?vals[this.ordinal()-1]:vals[1];
-        }
-    }
-
-    public void startShootMotor() {
-        startShootMotor(profile.hardwareSpec.shootVelocity);
-    }
-
-    public void startShootMotor(int velocity){
-        shootMotor1.setVelocity(velocity);
-        shootMotor2.setVelocity(velocity);
-    }
-
-    public void stopShootMotor() {
-        shootMotor1.setPower(0);
-        shootMotor2.setPower(0);
-    }
-
-    public void setShooterPosition(boolean isOpen) {
-        shootServo.setPosition((isOpen)?profile.hardwareSpec.shooterOpen:profile.hardwareSpec.shooterClose);
-    }
-
-    public enum RingPusherPosition { UP, SHOOT, DOWN }
-
-    public void setRingPusherPosition(RingPusherPosition pos) {
-
-    }
+    public enum EncoderType {LEFT, RIGHT, HORIZONTAL}
 
     public void setLed1(boolean on) {
         led1.setState(!on);
@@ -460,23 +305,5 @@ public class RobotHardware {
 
     public void setLed3(boolean on) {
         led3.setState(!on);
-    }
-
-    /****/
-    public void setShootMotor1(double power){
-        shootMotor1.setPower(power);
-    }
-
-    public void setShootMotor2(double power){
-        shootMotor2.setPower(power);
-    }
-
-    /**
-     *
-     * @return true if current velocity is within 5%
-     */
-    public boolean isShootingSpeedWithinRange(){
-        double currVelocity = getEncoderVelocity(EncoderType.SHOOTER);;
-        return (currVelocity >= shootVelocityLowLimit && currVelocity <= shootVelocityHighLimit);
     }
 }
