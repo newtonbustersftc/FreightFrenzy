@@ -43,7 +43,7 @@ public class DriverOpModeTest extends OpMode {
         Logger.init();
         robotHardware = new RobotHardware();
         robotHardware.init(hardwareMap, robotProfile);
-        //robotHardware.initRobotVision();
+        robotHardware.initRobotVision();
         //robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
         robotHardware.initLeds();   // need to init everytime
@@ -79,17 +79,17 @@ public class DriverOpModeTest extends OpMode {
             fieldMode = false;  //good luck driving
         }
         // test controls
-        if (gamepad1.dpad_right && !dpadRightDown) {
-            dpadRightDown = true;
+        if (gamepad1.dpad_up) {
+            robotHardware.startIntake();
         }
         else {
-            dpadRightDown = gamepad1.dpad_right;
+            robotHardware.stopIntake();
         }
-        if (gamepad1.dpad_left && !dpadLeftDown) {
-            dpadLeftDown = true;
+        if (gamepad1.dpad_right) {
+            robotHardware.startDuck();
         }
         else {
-            dpadLeftDown = gamepad1.dpad_left;
+            robotHardware.stopDuck();
         }
 
         //robotHardware.setShooterPosition(gamepad1.x);

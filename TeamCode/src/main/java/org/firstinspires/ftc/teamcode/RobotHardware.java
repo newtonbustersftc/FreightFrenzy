@@ -265,11 +265,11 @@ public class RobotHardware {
     }
 
     public void startIntake() {
-        intakeMotor.setPower(profile.hardwareSpec.intakeVelocity);
+        intakeMotor.setVelocity(profile.hardwareSpec.intakeVelocity);
     }
 
     public void reverseIntake() {
-        intakeMotor.setPower(-profile.hardwareSpec.intakeVelocity);
+        intakeMotor.setVelocity(-profile.hardwareSpec.intakeVelocity);
     }
 
     public void stopIntake() {
@@ -277,7 +277,11 @@ public class RobotHardware {
     }
 
     public void startDuck(){
-        duckMotor.setPower(profile.hardwareSpec.duckVelocity);
+        duckMotor.setVelocity(profile.hardwareSpec.duckVelocity);
+    }
+
+    public void stopDuck() {
+        duckMotor.setPower(0);
     }
 
     /**
