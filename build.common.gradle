@@ -98,8 +98,8 @@ android {
         }
         debug {
             debuggable true
-            jniDebuggable true
-            renderscriptDebuggable true
+            jniDebuggable false
+            renderscriptDebuggable false
             ndk {
                 abiFilters "armeabi-v7a"
             }
@@ -113,6 +113,7 @@ android {
 
     packagingOptions {
         pickFirst '**/*.so'
+        jniLibs.useLegacyPackaging true
     }
     sourceSets.main {
         jni.srcDirs = []
