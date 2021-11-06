@@ -58,7 +58,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
  **/
 
 public class RobotVision {
-    public enum AutonomousGoal {NONE, SINGLE, QUAD};
+    public enum AutonomousGoal {LEFT, MIDDLE, RIGHT, NONE};
     private List<VuforiaTrackable> allTrackables;
     // IMPORTANT: If you are using a USB WebCam, you must select CAMERA_CHOICE = BACK; and PHONE_IS_PORTRAIT = false;
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
@@ -322,11 +322,14 @@ public class RobotVision {
             return AutonomousGoal.NONE;
         }
         Rect r = rects.get(0);
-        if(r.height > 65){
-            return AutonomousGoal.QUAD;
+        if(r.x+ r.width/2 < 150) {
+            return AutonomousGoal.LEFT;
         }
-        else {
-            return AutonomousGoal.SINGLE;
+        else if (r.x+r.width/2 > 450) {
+            return AutonomousGoal.RIGHT;
+        }
+        else{
+            return AutonomousGoal.MIDDLE;
         }
     }
 
