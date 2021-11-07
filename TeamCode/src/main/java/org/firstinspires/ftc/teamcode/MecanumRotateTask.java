@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 
 import org.firstinspires.ftc.teamcode.drive.BulkMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 /**
  * SplineMoveTask
@@ -11,10 +12,10 @@ import org.firstinspires.ftc.teamcode.drive.BulkMecanumDrive;
 
 public class MecanumRotateTask implements RobotControl {
 
-    BulkMecanumDrive drive;
+    SampleMecanumDrive drive;
     double angle;
 
-    public MecanumRotateTask(BulkMecanumDrive drive, double angle){
+    public MecanumRotateTask(SampleMecanumDrive drive, double angle){
         this.drive = drive;
         this.angle = angle;
     }

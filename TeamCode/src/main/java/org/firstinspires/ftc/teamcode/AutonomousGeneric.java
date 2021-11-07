@@ -20,6 +20,7 @@ public class AutonomousGeneric extends LinearOpMode {
     RobotHardware robotHardware;
     RobotNavigator navigator;
     RobotProfile robotProfile;
+    DriverOptions driverOptions;
 
     int leftEncoderCounts;
     int rightEncoderCounts;
@@ -32,8 +33,9 @@ public class AutonomousGeneric extends LinearOpMode {
     private int delay;
 
     enum PfPose {
-        START, TRANSIT, SHOOT, ZONE_A1, ZONE_A1B, ZONE_B1, ZONE_B1B,
-        ZONE_C1, ZONE_C1B, WOBBLE2_RDY, WOBBLE2_GRB
+        RED_START, BLUE_START, RED_WAREHOUSE, BLUE_WAREHOUSE, RED_CAROUSEL, BLUE_CAROUSEL,
+        RED_STORAGE, BLUE_STORAGE, RED_SHIPPINGHUB, BLUE_SHIPPINGHUB, RED_SHAREDHUB,
+        BLUE_SHAREDHUB
     }
 
     public void initRobot() {
@@ -55,6 +57,10 @@ public class AutonomousGeneric extends LinearOpMode {
         Logger.logFile("Init completed");
 
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
+        driverOptions.setStartingPositionModes(prefs.getString("START_POS_MODES_PREF", ""));
+        driverOptions.setParking(prefs.getString("PARKING_PREF", ""));
+        driverOptions.setDelay(prefs.getInt("DELAY_PREF", 0));
+        driverOptions.setDeliveryRoutes(prefs.getString("DELIVERY_ROUTES_PREF", ""));
     }
 
     @Override
@@ -80,7 +86,11 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware.setMotorStopBrake(true);  // so no sliding when we move
         RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition();
         Logger.logFile("recognition result: " + goal);
-
+        AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, robotHardware, robotProfile, goal);
+        //goWobbleTask(driverOptions.getStartingPositionModes());
+        //if (driverOptions.getDuckPosition().contains("yes")) {//5 points - do nothing but parking
+        //    taskList = builder.buildParkingOnlyTask(driverOptions.getParking());
+        //}
         // do the task list building after click start, which we should have the skystone position
         //AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, skystonePosition, robotHardware, navigator, robotProfile);
         taskList = new ArrayList<RobotControl>();

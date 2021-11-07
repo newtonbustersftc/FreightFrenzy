@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.localization.Localizer;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.arcrobotics.ftclib.geometry.Transform2d;
+import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -18,6 +22,9 @@ import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 import org.openftc.revextensions2.ExpansionHubServo;
 import org.openftc.revextensions2.RevBulkData;
+import com.spartronics4915.lib.T265Camera;
+import java.text.DecimalFormat;
+import java.util.Locale;
 
 public class RobotHardware {
     HardwareMap hardwareMap;
@@ -27,9 +34,11 @@ public class RobotHardware {
     ExpansionHubServo servo;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
-    BulkMecanumDrive mecanumDrive;
-    BulkTrackingWheelLocalizer trackingWheelLocalizer;
+    SampleMecanumDrive mecanumDrive;
+    RealSenseLocalizer realSenseLocalizer;
     RobotVision robotVision;
+    static T265Camera t265 = null;
+    DecimalFormat nf2 = new DecimalFormat("#.##");
 
     //Servo ;
     //DigitalChannel ;
@@ -77,17 +86,6 @@ public class RobotHardware {
         led3 = hardwareMap.digitalChannel.get("LED3");
         initLeds();
 
-        // Display PID values
-        PIDFCoefficients coeffNew = new PIDFCoefficients();
-        coeffNew.algorithm = MotorControlAlgorithm.PIDF;
-        coeffNew.p = profile.shootPID.p;
-        coeffNew.i = profile.shootPID.i;
-        coeffNew.d = profile.shootPID.d;
-        coeffNew.f = profile.shootPID.f;
-
-        Logger.logFile("NewPIDF - algo:" + coeffNew.algorithm + " p:" + coeffNew.p + " i:" + coeffNew.i +
-                " d:" + coeffNew.d + " f:" + coeffNew.f);
-
         Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
         getBulkData1();
         getBulkData2();
@@ -97,10 +95,21 @@ public class RobotHardware {
         DriveConstants.kStatic = profile.rrFeedForwardParam.kStatic;
         SampleMecanumDrive.HEADING_PID = new PIDCoefficients(profile.rrHeadingPID.p,profile.rrHeadingPID.i,profile.rrHeadingPID.d);
         SampleMecanumDrive.TRANSLATIONAL_PID = new PIDCoefficients(profile.rrTranslationPID.p,profile.rrTranslationPID.i,profile.rrTranslationPID.d);
-        mecanumDrive = new BulkMecanumDrive(this, rrMotor, rlMotor, frMotor, flMotor);
-        trackingWheelLocalizer = new BulkTrackingWheelLocalizer(this);
-        mecanumDrive.setLocalizer(trackingWheelLocalizer);
+        //mecanumDrive = new BulkMecanumDrive(this, rrMotor, rlMotor, frMotor, flMotor);
+        mecanumDrive = new SampleMecanumDrive(hardwareMap);
+        if (t265 == null) {
+            t265 = new T265Camera(new Transform2d(new Translation2d(0, 0), new Rotation2d(0)), 0, hardwareMap.appContext);
+        }
+        if (!t265.isStarted()) {
+            t265.start();
+        }
+        realSenseLocalizer = new RealSenseLocalizer(this, true, profile);
+        mecanumDrive.setLocalizer(realSenseLocalizer);
         robotVision = new RobotVision();
+    }
+
+    public T265Camera getT265Camera() {
+        return t265;
     }
 
     /**
@@ -123,12 +132,12 @@ public class RobotHardware {
 //        led3.setState(true);
     }
 
-    public BulkMecanumDrive getMecanumDrive() {
+    public MecanumDrive getMecanumDrive() {
         return mecanumDrive;
     }
 
     public Localizer getLocalizer(){
-        return trackingWheelLocalizer;
+        return realSenseLocalizer;
     }
 
     public void getBulkData1() {
@@ -213,7 +222,8 @@ public class RobotHardware {
         frontRight = frontRight/biggest*power;
         rearLeft = rearLeft/biggest*power;
         rearRight = rearRight/biggest*power;
-
+        Logger.logFile("Power - FL" + nf2.format(frontLeft) + " FR:"+ nf2.format(frontRight) +
+                        " RL:" + nf2.format(rearLeft) + " RR:" + nf2.format(rearRight));
         setMotorPower(frontLeft, frontRight, rearLeft, rearRight);
     }
 
@@ -293,6 +303,9 @@ public class RobotHardware {
 
     public void stopAll() {
         setMotorPower(0, 0, 0, 0);
+        if (t265.isStarted()) {
+            t265.stop();
+        }
     }
 
     //public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM, SHOOTER}

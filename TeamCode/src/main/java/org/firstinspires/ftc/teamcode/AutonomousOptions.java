@@ -10,7 +10,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * Emily 11-6-21 09:00-11:00
+ * Updated the current year specifications
+ */
 @TeleOp(name="Autonomous Options", group="Main")
 
 public class AutonomousOptions extends OpMode {
@@ -18,11 +21,13 @@ public class AutonomousOptions extends OpMode {
     // ADD preference names here
     public static final String START_POS_MODES_PREF = "starting position";
     public static final String DELAY_PREF = "delay";
-    public static final String  PARKING_PREF = "parking";
+    public static final String PARKING_PREF = "parking";
+    public static final String DELIVERY_ROUTES_PREF = "delivery routes";
     // ADD preference values here
-    public static final String[] START_POS_MODES = {"BLUE_1", "BLUE_2", "RED_1", "RED_2"};
+    public static final String[] START_POS_MODES = {"BLUE_LEFT", "BLUE_RIGHT", "RED_LEFT", "RED_RIGHT"};
     public static final String[] DELAYS = {"0 " + "sec", "1 sec", "2 sec", "3 sec", "4 sec", "5 sec", "25 sec"};
-    public static final String[] PARKING_LOCATION = {"default", "far"};
+    public static final String[] PARKING_LOCATION = {"RED_STORAGE", "BLUE_STORAGE", "RED_WAREHOUSE_NOBARRIER", "BLUE_WAREHOUSE_NOBARRIER", "RED_WAREHOUSE_BARRIER", "BLUE_WAREHOUSE_BARRIER"};
+    public static final String[] DELIVERY_ROUTES = {"RED_ROUTE_NOBARRIER", "BLUE_ROUTE_NOBARRIER", "RED_ROUTE_BARRIER", "BLUE_ROUTE_BARRIER"};
     private static final String NONE = "none";
     public static Map<String, String[]> prefMap = new HashMap<>();
     private static String[] prefKeys = {START_POS_MODES_PREF, DELAY_PREF, PARKING_PREF};

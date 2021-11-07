@@ -34,6 +34,7 @@ public class TurnTest extends LinearOpMode {
                 }
                 drive.turn(Math.toRadians(-ANGLE));
             }
+            telemetry.addLine("Use A/B to turn left or right");
             telemetry.addData("Pose2d:", drive.getPoseEstimate());
             telemetry.addData("IMU:", Math.toDegrees(drive.getRawExternalHeading() - imuOffset));
             telemetry.update();

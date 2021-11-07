@@ -20,6 +20,7 @@ public class RobotProfile {
     HardwareSpec hardwareSpec;
     FeedForwardParam rrFeedForwardParam;
     HashMap<String, AutoPose> poses;
+    Movement movement;
 
     public static RobotProfile loadFromFile(File file) throws FileNotFoundException {
         Gson gson = new Gson();
@@ -83,6 +84,11 @@ public class RobotProfile {
         poses.put("START", new AutoPose(-66,-20,0));
         poses.put("TRANSIT", new AutoPose(-25, -20, 0));
         poses.put("TRANSIT2", new AutoPose(-25, -14, 180));
+
+        movement = new Movement();
+        movement.forwardStopDist = 25;
+        movement.strifeStopDist = 17;
+        movement.rotateStopAngle = .1;
     }
 
     public Pose2d getProfilePose(String name) {
@@ -140,7 +146,7 @@ public class RobotProfile {
         double kStatic;
     }
 
-    class AutoPose{
+    class AutoPose {
         double x;
         double y;
         double heading;
@@ -151,4 +157,11 @@ public class RobotProfile {
             this.heading = heading;
         }
     }
+    class Movement {
+        double strifeStopDist;
+        double forwardStopDist;
+        double rotateStopAngle;
+        }
 }
+
+

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
+import com.acmerobotics.roadrunner.trajectory.*;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -45,10 +47,12 @@ public class AutonomousGenericTest extends LinearOpMode {
         //robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(-66, -33, 0));
         //robotHardware.getLocalizer().update();
         //robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START"));
-
+        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         waitForStart();
-        robotVision.getAutonomousRecognition();
+        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+        Logger.logFile("Recognition Result: " + robotVision.getAutonomousRecognition());
         taskList = new ArrayList<RobotControl>();
+        setupTaskList1();
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
             taskList.get(0).prepare();
@@ -62,8 +66,11 @@ public class AutonomousGenericTest extends LinearOpMode {
 
         while (opModeIsActive()) {
             loopCount++;
-            robotHardware.getBulkData1();
-            robotHardware.getBulkData2();
+            //robotHardware.getBulkData1();
+            //robotHardware.getBulkData2();
+            robotHardware.getLocalizer().update();
+            Logger.logFile("Pose:" + robotHardware.getLocalizer().getPoseEstimate());
+            Logger.logFile("Velocity:" + robotHardware.getLocalizer().getPoseVelocity());
             try {
                 Logger.flushToFile();
             }
@@ -96,5 +103,27 @@ public class AutonomousGenericTest extends LinearOpMode {
     Pose2d getProfilePose(String name) {
         RobotProfile.AutoPose ap = robotProfile.poses.get(name);
         return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
+    }
+
+    void setupTaskList1() {
+        DriveConstraints constraints = new DriveConstraints(5.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        // move to shoot
+        Pose2d p0 = new Pose2d(0,0,0);
+        Pose2d p1 = new Pose2d(0, 5, 0);
+        //Pose2d p2 = new Pose2d(10,5,0);
+        Trajectory trj = robotHardware.mecanumDrive.trajectoryBuilder(p0)
+                .forward(10, constraints)
+                //.splineToSplineHeading(p2, p2.getHeading(), constraints)
+                .build();
+        SplineMoveTask moveTask1 = new SplineMoveTask(robotHardware.mecanumDrive, trj);
+        MecanumRotateTask rot = new MecanumRotateTask(robotHardware.mecanumDrive, Math.PI/2);
+        taskList.add(moveTask1);
+        taskList.add(rot);
+    }
+
+    void setupTaskList2() {
+        PIDMecanumMoveTask task = new PIDMecanumMoveTask(robotHardware,robotProfile);
+        task.setRelativePath(10,0);
     }
 }
