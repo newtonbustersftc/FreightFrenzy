@@ -4,10 +4,8 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.geometry.Transform2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.ChassisSpeeds;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.spartronics4915.lib.T265Camera;
 
@@ -19,41 +17,24 @@ import org.jetbrains.annotations.Nullable;
  */
 @Config
 public class RealSenseLocalizer implements Localizer {
+    private static double INCH_TO_METER = 0.0254;
 
-    private Pose2d poseOffset = new Pose2d();
-    private static Pose2d mPoseEstimate = new Pose2d();
-    private Pose2d rawPose = new Pose2d();
-    private T265Camera.CameraUpdate up;
+    private Pose2d t265Offset = new Pose2d(6.25, -1, 0);    // If Robot Center is 0,0,0, where is T265 and angle
+    private Pose2d originOffset = new Pose2d(0,0,0);    // When setPostEstimate, remember where the robot center origin
+    private static Pose2d postEstimate = new Pose2d();
+    private T265Camera.CameraUpdate t265Update;
     private RobotHardware robotHardware;
     private RobotProfile robotProfile;
-
     public static T265Camera slamra;
-
-    public static boolean makeCameraCenter = true;
-
-    private static T265Camera.PoseConfidence poseConfidence;
-
-    public RealSenseLocalizer(HardwareMap hardwareMap) {
-        if (slamra==null) {
-            slamra = new T265Camera(new Transform2d(new Translation2d(0, 0), new Rotation2d(0)), 0, hardwareMap.appContext);
-        }
-        else {
-            slamra.setPose(new com.arcrobotics.ftclib.geometry.Pose2d(0, 0, new Rotation2d(0)));
-        }
-        if (!slamra.isStarted()) {
-            slamra.start();
-        }
-    }
+    int sampleN;
 
     public RealSenseLocalizer(RobotHardware robotHardware, boolean resetPos, RobotProfile robotProfile) {
         this.robotProfile = robotProfile;
         this.robotHardware = robotHardware;
-        poseOffset = new Pose2d();
-        mPoseEstimate = new Pose2d();
-        rawPose = new Pose2d();
-
+        // TODO initialize t265Offset from Profile
+        postEstimate = new Pose2d();
         slamra = robotHardware.getT265Camera();
-        slamra.setPose(new com.arcrobotics.ftclib.geometry.Pose2d(0, 0, new Rotation2d(0)));
+        sampleN = 0;
     }
 
     /**
@@ -62,35 +43,55 @@ public class RealSenseLocalizer implements Localizer {
     @NotNull
     @Override
     public Pose2d getPoseEstimate() {
-        //variable up is updated in update()
-
-        //The FTC265 library uses Ftclib geometry, so I need to convert that to road runner Geometry
-        //TODO: convert all Ftclib geometry to ACME robotics geometry in T265Camera.java
-        if (up != null) {
-            Translation2d oldPose = up.pose.getTranslation();
-            Rotation2d oldRot = up.pose.getRotation();
-            //The T265's unit of measurement is meters.  dividing it by .0254 converts meters to inches.
-            rawPose = new Pose2d(oldPose.getY() / .0254, oldPose.getX() / .0254, norm(oldRot.getRadians())); //raw pos
-            mPoseEstimate = rawPose.plus(poseOffset); //offsets the pose to be what the pose estimate is;
+        //The FTC265 library uses Ftclib geometry
+        // Need to convert T265 post to robot pose, and then to again relative to origin pose
+        if (t265Update != null) {
+            // The way we oriented the sensor, Y is our field X, X is our field Y, Heading is robot heading
+            Pose2d t265Pose = new Pose2d(t265Update.pose.getY()/INCH_TO_METER, t265Update.pose.getX()/INCH_TO_METER, t265Update.pose.getHeading());
+            Pose2d centerPose = translateRobotCenter(t265Pose);
+            postEstimate = fieldTranslate(originOffset, centerPose); //offsets the pose to be what the pose estimate is;
+            sampleN++;
+            if (sampleN%1000==0) {
+                Logger.logFile("getPoseEstimate - t265Pose:" + t265Pose + " center:" + centerPose + " origin: " + originOffset +
+                        " estimate:" + postEstimate);
+            }
         } else {
             RobotLog.v("NULL Camera Update");
         }
-        return mPoseEstimate;
+        return postEstimate;
     }
 
     @Override
     public void setPoseEstimate(@NotNull Pose2d pose2d) {
+        // TODO assume always 0,0,0 for now
         RobotLog.v("Set Pose to " + pose2d.toString());
         long startTime = System.currentTimeMillis();
-        T265Camera.CameraUpdate update = slamra.getLastReceivedCameraUpdate();
-        while (update.confidence== T265Camera.PoseConfidence.Failed && (System.currentTimeMillis() - startTime)<2000) {
-            update = slamra.getLastReceivedCameraUpdate();
+        t265Update = slamra.getLastReceivedCameraUpdate();
+        while (t265Update.confidence == T265Camera.PoseConfidence.Failed && (System.currentTimeMillis() - startTime) < 1000) {
+            t265Update = slamra.getLastReceivedCameraUpdate();
         }
-        if (update.confidence== T265Camera.PoseConfidence.Failed) {
-            RobotLog.e("setPoseEstimate didn't get camera update");
+        if (t265Update.confidence == T265Camera.PoseConfidence.Failed) {
+            RobotLog.e("Failed to setPoseEstimate, no t265Update");
+            Logger.logFile("Failed to setPoseEstimate, no t265Update");
         }
-        slamra.setPose(new com.arcrobotics.ftclib.geometry.Pose2d(pose2d.getY()* .0254, pose2d.getX() * 0.0254, new Rotation2d(pose2d.getHeading())));
-        slamra.getLastReceivedCameraUpdate();
+        Pose2d t265Pose = new Pose2d(t265Update.pose.getY()/INCH_TO_METER, t265Update.pose.getX()/INCH_TO_METER, t265Update.pose.getHeading());
+        originOffset = translateRobotCenter(t265Pose);
+        Logger.logFile("setPoseEstimate - t265Pose:" + t265Pose + " origin:" + originOffset);
+        RobotLog.v("setPoseEstimate - t265Pose:" + t265Pose + " origin:" + originOffset);
+    }
+
+    public Pose2d translateRobotCenter(Pose2d t265Pose) {
+        double deltaX = -Math.sin(t265Pose.getHeading())*t265Offset.getY() - Math.cos(t265Pose.getHeading())*t265Offset.getX();
+        double deltaY = -Math.cos(t265Pose.getHeading())*t265Offset.getY() + Math.sin(t265Pose.getHeading())*t265Offset.getX();
+        return new Pose2d(t265Pose.getX() + deltaX, t265Pose.getY() + deltaY, t265Pose.getHeading());
+    }
+
+    public Pose2d fieldTranslate(Pose2d orig, Pose2d robot) {
+        double deltaX = (robot.getX() - orig.getX())*Math.cos(-orig.getHeading()) +
+                (robot.getY() - orig.getY())*Math.sin(-orig.getHeading());
+        double deltaY = (robot.getX() - orig.getX()) * Math.sin(orig.getHeading()) +
+                (robot.getY() - orig.getY())*Math.cos(- orig.getHeading());
+        return new Pose2d(deltaX, deltaY, robot.getHeading() - orig.getHeading());
     }
 
     /**
@@ -99,8 +100,7 @@ public class RealSenseLocalizer implements Localizer {
      */
     @Override
     public void update() {
-        up = slamra.getLastReceivedCameraUpdate();
-        poseConfidence = up.confidence;
+        t265Update = slamra.getLastReceivedCameraUpdate();
     }
 
     /**
@@ -114,8 +114,8 @@ public class RealSenseLocalizer implements Localizer {
     public Pose2d getPoseVelocity() {
         //variable up is updated in update()
 
-        ChassisSpeeds velocity = up.velocity;
-        return new Pose2d(velocity.vyMetersPerSecond /.0254,velocity.vxMetersPerSecond /.0254,velocity.omegaRadiansPerSecond);
+        ChassisSpeeds velocity = t265Update.velocity;
+        return new Pose2d(velocity.vyMetersPerSecond /INCH_TO_METER,velocity.vxMetersPerSecond /INCH_TO_METER,velocity.omegaRadiansPerSecond);
     }
 
     /**
@@ -129,18 +129,4 @@ public class RealSenseLocalizer implements Localizer {
         return angle;
     }
 
-//    /**
-//     * DO NOT USE THiS
-//     */
-//    @Deprecated
-//    @SuppressWarnings("SpellCheckingInspection")
-//    private Pose2d adjustPosbyCameraPos()
-//    {
-//        double dist = Math.hypot(slamraX,slamraY); //distance camera is from center
-//        double angle = Math.atan2(slamraY,slamraX);
-//        double cameraAngle = mPoseEstimate.getHeading() - angle;
-//        double detlaX = dist * Math.cos(cameraAngle);
-//        double detlaY = dist * Math.sin(cameraAngle);
-//        return mPoseEstimate.minus(new Pose2d(detlaX,detlaY));
-//    }
 }

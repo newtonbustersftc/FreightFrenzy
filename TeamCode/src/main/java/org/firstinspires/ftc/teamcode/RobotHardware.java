@@ -22,6 +22,8 @@ import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 import org.openftc.revextensions2.ExpansionHubServo;
 import org.openftc.revextensions2.RevBulkData;
+
+import com.qualcomm.robotcore.util.RobotLog;
 import com.spartronics4915.lib.T265Camera;
 import java.text.DecimalFormat;
 import java.util.Locale;
@@ -99,8 +101,10 @@ public class RobotHardware {
         mecanumDrive = new SampleMecanumDrive(hardwareMap);
         if (t265 == null) {
             t265 = new T265Camera(new Transform2d(new Translation2d(0, 0), new Rotation2d(0)), 0, hardwareMap.appContext);
+            RobotLog.v("New T265 object");
         }
         if (!t265.isStarted()) {
+            RobotLog.v("Starting T265");
             t265.start();
         }
         realSenseLocalizer = new RealSenseLocalizer(this, true, profile);
@@ -222,8 +226,8 @@ public class RobotHardware {
         frontRight = frontRight/biggest*power;
         rearLeft = rearLeft/biggest*power;
         rearRight = rearRight/biggest*power;
-        Logger.logFile("Power - FL" + nf2.format(frontLeft) + " FR:"+ nf2.format(frontRight) +
-                        " RL:" + nf2.format(rearLeft) + " RR:" + nf2.format(rearRight));
+//        Logger.logFile("Power - FL" + nf2.format(frontLeft) + " FR:"+ nf2.format(frontRight) +
+//                        " RL:" + nf2.format(rearLeft) + " RR:" + nf2.format(rearRight));
         setMotorPower(frontLeft, frontRight, rearLeft, rearRight);
     }
 
