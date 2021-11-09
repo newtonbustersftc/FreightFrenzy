@@ -30,7 +30,6 @@ public class AutonomousTaskBuilder {
         this.parking = driverOptions.getParking();
         this.deliverRoute = driverOptions.getDeliveryRoutes();
         this.duckPosition = driverOptions.getDuckPosition();
-        this.navigator = navigator;
         this.robotProfile = robotProfile;
     }
 
@@ -45,7 +44,6 @@ public class AutonomousTaskBuilder {
 
     void addMovement(RobotPosition beginP, RobotPosition endP) {
         lastMovement = new PIDMecanumMoveTask(robotHardware, robotProfile);
-        lastMovement.setPath(beginP, endP);
         taskList.add(lastMovement);
         lastPos = endP;
     }

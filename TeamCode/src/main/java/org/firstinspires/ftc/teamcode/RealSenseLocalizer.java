@@ -58,12 +58,11 @@ public class RealSenseLocalizer implements Localizer {
         } else {
             RobotLog.v("NULL Camera Update");
         }
-        return postEstimate;
+        return new Pose2d(postEstimate.getX(), postEstimate.getY(), norm(postEstimate.getHeading()));
     }
 
     @Override
     public void setPoseEstimate(@NotNull Pose2d pose2d) {
-        // TODO assume always 0,0,0 for now
         RobotLog.v("Set Pose to " + pose2d.toString());
         long startTime = System.currentTimeMillis();
         t265Update = slamra.getLastReceivedCameraUpdate();
@@ -75,7 +74,9 @@ public class RealSenseLocalizer implements Localizer {
             Logger.logFile("Failed to setPoseEstimate, no t265Update");
         }
         Pose2d t265Pose = new Pose2d(t265Update.pose.getY()/INCH_TO_METER, t265Update.pose.getX()/INCH_TO_METER, t265Update.pose.getHeading());
-        originOffset = translateRobotCenter(t265Pose);
+        Pose2d origin0 = translateRobotCenter(t265Pose);
+        originOffset = new Pose2d(origin0.getX()-(pose2d.getX()*Math.cos(pose2d.getHeading())+pose2d.getY()*Math.sin(pose2d.getHeading())),
+                origin0.getY()-(pose2d.getX()*Math.sin(pose2d.getHeading())-pose2d.getY()*Math.cos(pose2d.getHeading())), origin0.getHeading()-pose2d.getHeading());
         Logger.logFile("setPoseEstimate - t265Pose:" + t265Pose + " origin:" + originOffset);
         RobotLog.v("setPoseEstimate - t265Pose:" + t265Pose + " origin:" + originOffset);
     }
@@ -124,8 +125,8 @@ public class RealSenseLocalizer implements Localizer {
      */
     private double norm(double angle)
     {
-        while (angle>Math.toRadians(360)) angle-=Math.toRadians(360);
-        while (angle<=0) angle+=Math.toRadians(360);
+        while (angle>Math.PI*2) angle-=Math.PI*2;
+        while (angle<=0) angle+=Math.PI*2;
         return angle;
     }
 

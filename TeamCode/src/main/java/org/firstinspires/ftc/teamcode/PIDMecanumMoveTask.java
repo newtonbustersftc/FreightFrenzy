@@ -11,7 +11,7 @@ import com.acmerobotics.roadrunner.localization.Localizer;
 
 public class PIDMecanumMoveTask implements RobotControl {
 
-    RobotPosition startPos, endPos;
+    Pose2d startPos, endPos;
     double offsetX;
     double offsetY;
     double power;
@@ -44,6 +44,7 @@ public class PIDMecanumMoveTask implements RobotControl {
             prevDist[i] = -9999;
         }
         prevNdx = 0;
+        loopCount = 0;
     }
 
     public String toString() {
@@ -58,12 +59,10 @@ public class PIDMecanumMoveTask implements RobotControl {
         this.minPower = minPower;
     }
 
-    public void setPath(RobotPosition startPos, RobotPosition endPos) {
+    public void setPath(Pose2d startPos, Pose2d endPos) {
         this.startPos = startPos;
         this.endPos = endPos;
-        Logger.logFile("Path Task:" + startPos.getX() + "," + startPos.getY() + " TO " +
-                endPos.getX() + "," + endPos.getY());
-        //pathAngle = Math.PI / 2 - Math.atan2(endPos.y - startPos.y, endPos.x - startPos.x);  redundant with targetAngle
+        Logger.logFile("Path Task:" + startPos + " TO " + endPos);
     }
 
     public void setRelativePath(double offsetX, double offsetY){
@@ -90,8 +89,8 @@ public class PIDMecanumMoveTask implements RobotControl {
 
     public double getPosError() {
         Pose2d currentPose = navigator.getPoseEstimate();
-        double currentAngle = Math.PI/2 - Math.atan2(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX());
-        double error = Math.hypot(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX()) * Math.sin(-targetAngle + currentAngle);
+        double currAngle = -Math.atan2(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX());
+        double error = Math.hypot(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX()) * Math.sin(targetAngle-currAngle);
         return error;
     }
 
@@ -139,12 +138,13 @@ public class PIDMecanumMoveTask implements RobotControl {
     public void prepare(){
         Pose2d currentPose = navigator.getPoseEstimate();
         if(startPos == null && endPos == null){
-            startPos = new RobotPosition(currentPose.getX(),currentPose.getY(),currentPose.getHeading());
-            endPos = new RobotPosition(offsetX + currentPose.getX(), offsetY + currentPose.getY(), currentPose.getHeading());
+            startPos = new Pose2d(currentPose.getX(),currentPose.getY(),currentPose.getHeading());
+            endPos = new Pose2d(offsetX + currentPose.getX(), offsetY + currentPose.getY(), currentPose.getHeading());
         }
         lastToTargetDist = 10000;
-        targetAngle = -Math.PI/2+Math.atan2(endPos.getY() - startPos.getY(), endPos.getX() - startPos.getX());
+        targetAngle = -Math.atan2(endPos.getY() - startPos.getY(), endPos.getX() - startPos.getX());        // CHANGED SIGN
         setupPID();
+        Logger.logFile("PIDMecan - start:" + startPos + " end:" + endPos + " targetAngle" + Math.toDegrees(targetAngle));
     }
 
     public void execute() {
@@ -153,15 +153,15 @@ public class PIDMecanumMoveTask implements RobotControl {
         double headCorrection = pidHeading.performPID(getHeadingError());
         double targetDistance = Math.hypot(endPos.getY() - startPos.getY(), endPos.getX() - startPos.getX());
         double currentDistance = Math.hypot(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX());
-        if (targetDistance - currentDistance <= profile.movement.forwardStopDist){
-            double pwr = minPower + (targetDistance - currentDistance)/profile.movement.forwardStopDist * (power-minPower);
-            robot.mecanumDrive2(pwr, targetAngle + posCorrection - endPos.getHeading(), headCorrection);
+        double pwr = power;
+        if (targetDistance - currentDistance <= 15) {
+             pwr = minPower + (targetDistance - currentDistance) / 15 * (power - minPower);
         }
-        else{
-            robot.mecanumDrive2(power,targetAngle + posCorrection - endPos.getHeading(), headCorrection);
+        robot.mecanumDrive2(pwr, targetAngle - posCorrection - endPos.getHeading(), -headCorrection);
+        loopCount++;
+        if (loopCount % 10==0) {
+            Logger.logFile("Pose:" + currentPose + " pwr:" + pwr + " postCorr:" + posCorrection + " headCorr:" + headCorrection);
         }
-        //Logger.logFile("X:" + navigator.getWorldX() + ", Y:" + navigator.getWorldY() +
-        //         " H:" + navigator.getHeading() + ", PosCorr:" + posCorrection + " ,headCorr:" + headCorrection);
     }
     public void cleanUp(){
         robot.setMotorPower(0,0,0,0);

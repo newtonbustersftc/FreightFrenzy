@@ -232,9 +232,8 @@ public class RobotHardware {
     }
 
     public void mecanumDrive2(double power, double angle, double rotation){
-
         //10/28/2019, Will, Ian Athena implemented and tested the drive method
-        double robotAngle = Math.PI / 2 - angle - Math.PI / 4;
+        double robotAngle = Math.PI / 2 + angle - Math.PI / 4;
         double frontLeft = power * Math.cos(robotAngle) + rotation;
         double frontRight = power * Math.sin(robotAngle) - rotation;
         double rearLeft = power * Math.sin(robotAngle) + rotation;

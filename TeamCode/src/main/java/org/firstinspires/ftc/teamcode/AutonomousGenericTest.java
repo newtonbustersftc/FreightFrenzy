@@ -47,12 +47,11 @@ public class AutonomousGenericTest extends LinearOpMode {
         //robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(-66, -33, 0));
         //robotHardware.getLocalizer().update();
         //robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START"));
-        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         waitForStart();
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         Logger.logFile("Recognition Result: " + robotVision.getAutonomousRecognition());
         taskList = new ArrayList<RobotControl>();
-        setupTaskList1();
+        setupTaskList2();
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
             taskList.get(0).prepare();
@@ -66,11 +65,11 @@ public class AutonomousGenericTest extends LinearOpMode {
 
         while (opModeIsActive()) {
             loopCount++;
-            //robotHardware.getBulkData1();
-            //robotHardware.getBulkData2();
+            robotHardware.getBulkData1();
+            robotHardware.getBulkData2();
             robotHardware.getLocalizer().update();
             Logger.logFile("Pose:" + robotHardware.getLocalizer().getPoseEstimate());
-            Logger.logFile("Velocity:" + robotHardware.getLocalizer().getPoseVelocity());
+            //Logger.logFile("Velocity:" + robotHardware.getLocalizer().getPoseVelocity());
             try {
                 Logger.flushToFile();
             }
@@ -123,7 +122,31 @@ public class AutonomousGenericTest extends LinearOpMode {
     }
 
     void setupTaskList2() {
-        PIDMecanumMoveTask task = new PIDMecanumMoveTask(robotHardware,robotProfile);
-        task.setRelativePath(10,0);
+//        PIDMecanumMoveTask pmm1 = new PIDMecanumMoveTask(robotHardware,robotProfile);
+//        pmm1.setPower(0.3);
+//        pmm1.setPath(new Pose2d(0,0,0), new Pose2d(10, 0, 0));
+//
+        //taskList.add(pmm1);
+
+        MecanumRotateMoveTask mrm1 = new MecanumRotateMoveTask(robotHardware, robotProfile);
+        mrm1.setRotateHeading(new Pose2d(0,0,0), new Pose2d(10, 0, 0), MecanumRotateMoveTask.Direction.STRAIGHT);
+        mrm1.setPower(0.3);
+        taskList.add(mrm1);
+
+        MecanumRotateMoveTask mrm2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
+        mrm2.setRotateHeading(new Pose2d(10,0,0), new Pose2d(10, 0, Math.PI/2), MecanumRotateMoveTask.Direction.ANTI_CLOCKWISE);
+        mrm2.setPower(0.3);
+        taskList.add(mrm2);
+
+        MecanumRotateMoveTask mrm3 = new MecanumRotateMoveTask(robotHardware, robotProfile);
+        mrm3.setRotateHeading(new Pose2d(10,0,0), new Pose2d(10, -10, Math.PI/2), MecanumRotateMoveTask.Direction.STRAIGHT);
+        mrm3.setPower(0.3);
+        taskList.add(mrm3);
+
+//        PIDMecanumMoveTask pmm2 = new PIDMecanumMoveTask(robotHardware,robotProfile);
+//        pmm2.setPower(0.3);
+//        pmm2.setPath(new Pose2d(1,0,Math.PI/2), new Pose2d(10, -10, Math.PI/2));
+//
+//        taskList.add(pmm2);
     }
 }
