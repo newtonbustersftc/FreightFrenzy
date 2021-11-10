@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.localization.Localizer;
+import org.firstinspires.ftc.teamcode.util.AngleMath;
 
 /**
  * 2019.12.01
@@ -12,12 +13,10 @@ import com.acmerobotics.roadrunner.localization.Localizer;
  */
 
 public class MecanumRotateMoveTask implements RobotControl {
-    public enum Direction { ANTI_CLOCKWISE, CLOCKWISE, STRAIGHT }
-
     Pose2d startPose, endPose;
     double power = 0.5;
 
-    Direction turnDirection;
+    AngleMath.Direction turnDirection;
     double turnSign;
     RobotHardware robot;
     RobotProfile profile;
@@ -47,7 +46,7 @@ public class MecanumRotateMoveTask implements RobotControl {
         this.minPower = minPower;
     }
 
-    public void setRotateHeading(Pose2d startPose, Pose2d endPose, Direction turnDirection) {
+    public void setRotateHeading(Pose2d startPose, Pose2d endPose, AngleMath.Direction turnDirection) {
         this.startPose = startPose;
         this.endPose = endPose;
         this.turnDirection = turnDirection;
@@ -68,7 +67,7 @@ public class MecanumRotateMoveTask implements RobotControl {
         if ((System.currentTimeMillis() - startTime) > timeOut) {
             return true;
         }
-        if ((dist < 0.5) && (absDeltaAngle(currPose.getHeading(), endPose.getHeading()) < minDeltaAngle)){
+        if ((dist < 0.5) && (AngleMath.absDeltaAngle(currPose.getHeading(), endPose.getHeading()) < minDeltaAngle)){
             Logger.logFile("Done Rotation: " + currPose);
             return true;
         } else {
@@ -76,54 +75,13 @@ public class MecanumRotateMoveTask implements RobotControl {
         }
     }
 
-    public double absDeltaAngle(double ang1, double ang2) {
-        ang1 = normalizeAngle(ang1);
-        ang2 = normalizeAngle(ang2);
-        if (Math.abs(ang1 - ang2) > Math.PI){
-            return Math.PI * 2 - Math.abs(ang1 - ang2);
-        }
-        return Math.abs(ang1-ang2);
-    }
-
-    public double absDeltaAngle(double fromAngle, double toAngle, Direction rotationDir) {
-        fromAngle = normalizeAngle(fromAngle);
-        toAngle = normalizeAngle(toAngle);
-        double ang;
-        if (rotationDir==Direction.ANTI_CLOCKWISE) {
-            if (toAngle>fromAngle) {
-                ang = toAngle - fromAngle;
-            }
-            else {
-                ang = fromAngle + Math.PI*2 - toAngle;
-            }
-        }
-        else {  // CLOCKWISE
-            if (fromAngle>toAngle) {
-                ang = fromAngle - toAngle;
-            }
-            else {
-                ang = fromAngle + Math.PI*2 - toAngle;
-            }
-        }
-        return ang;
-    }
-
-    public double normalizeAngle(double ang) {
-        while (ang>Math.PI*2) {
-            ang = ang - Math.PI*2;
-        }
-        while (ang<0) {
-            ang = ang + Math.PI*2;
-        }
-        return ang;
-    }
 
     public void prepare() {
         robot.setMotorStopBrake(true);
         currentAngle = startPose.getHeading();
         targetAngle = endPose.getHeading();
-        turnSign = (turnDirection==Direction.ANTI_CLOCKWISE)?-1:1;
-        if (turnDirection==Direction.STRAIGHT) {
+        turnSign = (turnDirection==AngleMath.Direction.ANTI_CLOCKWISE)?-1:1;
+        if (turnDirection==AngleMath.Direction.STRAIGHT) {
             slowRotate = true;
         }
         else {
@@ -153,13 +111,13 @@ public class MecanumRotateMoveTask implements RobotControl {
         }
         // now need to determine which way to turn
         // when it's greater than 45 degree, we use the direction prescribed by start/end angle (rightTurnSign)
-        if (!slowRotate && (absDeltaAngle(currentAngle, endPose.getHeading(), turnDirection)>rotateStop)) {
+        if (!slowRotate && (AngleMath.absDeltaAngle(currentAngle, endPose.getHeading(), turnDirection)>rotateStop)) {
             rotatePwr = turnSign * power;
         }
         else {
             slowRotate = true;
             // now direction should be get close to finish, if overshot, turn back
-            rotatePwr = minPower + absDeltaAngle(currentAngle, endPose.getHeading())/rotateStop * (power - minPower);
+            rotatePwr = minPower + AngleMath.absDeltaAngle(currentAngle, endPose.getHeading())/rotateStop * (power - minPower);
             if (currentAngle < endPose.getHeading() || (currentAngle-endPose.getHeading()>Math.PI)) {
                 // we going to turn left
                 rotatePwr = -rotatePwr;

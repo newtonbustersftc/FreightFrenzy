@@ -88,7 +88,7 @@ public class DriverOpModeTest extends OpMode {
             robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,00,0));
         }
         if (gamepad1.y) {
-            robotHardware.getLocalizer().setPoseEstimate(new Pose2d(5,10,0));
+            robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,Math.PI/2));
         }
 
         telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());

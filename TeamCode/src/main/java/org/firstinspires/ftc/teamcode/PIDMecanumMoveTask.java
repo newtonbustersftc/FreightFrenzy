@@ -96,7 +96,14 @@ public class PIDMecanumMoveTask implements RobotControl {
 
     public double getHeadingError() {
         Pose2d currentPose = navigator.getPoseEstimate();
-        return currentPose.getHeading() - endPos.getHeading();
+        double headingErr = currentPose.getHeading() - endPos.getHeading();
+        if (headingErr > Math.PI) {
+            headingErr = headingErr - Math.PI*2;
+        }
+        else if (headingErr < -Math.PI) {
+            headingErr = headingErr + Math.PI*2;
+        }
+        return headingErr;
     }
 
     /**

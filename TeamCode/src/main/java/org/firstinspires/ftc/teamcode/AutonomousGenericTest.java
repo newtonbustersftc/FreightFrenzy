@@ -6,6 +6,8 @@ import com.acmerobotics.roadrunner.trajectory.*;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.util.AngleMath;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -122,26 +124,26 @@ public class AutonomousGenericTest extends LinearOpMode {
     }
 
     void setupTaskList2() {
-//        PIDMecanumMoveTask pmm1 = new PIDMecanumMoveTask(robotHardware,robotProfile);
-//        pmm1.setPower(0.3);
-//        pmm1.setPath(new Pose2d(0,0,0), new Pose2d(10, 0, 0));
-//
-        //taskList.add(pmm1);
+        PIDMecanumMoveTask pmm1 = new PIDMecanumMoveTask(robotHardware,robotProfile);
+        pmm1.setPower(0.5);
+        pmm1.setPath(new Pose2d(0,0,0), new Pose2d(40, 0, 0));
+
+        taskList.add(pmm1);
 
         MecanumRotateMoveTask mrm1 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        mrm1.setRotateHeading(new Pose2d(0,0,0), new Pose2d(10, 0, 0), MecanumRotateMoveTask.Direction.STRAIGHT);
+        mrm1.setRotateHeading(new Pose2d(40,0,0), new Pose2d(40, 0, Math.PI/2), AngleMath.Direction.ANTI_CLOCKWISE);
         mrm1.setPower(0.3);
         taskList.add(mrm1);
 
+        PIDMecanumMoveTask pmm2 = new PIDMecanumMoveTask(robotHardware, robotProfile);
+        pmm2.setPath(new Pose2d(40,0,Math.PI/2), new Pose2d(40, -40, Math.PI/2));
+        pmm2.setPower(0.3);
+        taskList.add(pmm2);
+
         MecanumRotateMoveTask mrm2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        mrm2.setRotateHeading(new Pose2d(10,0,0), new Pose2d(10, 0, Math.PI/2), MecanumRotateMoveTask.Direction.ANTI_CLOCKWISE);
+        mrm2.setRotateHeading(new Pose2d(40,-40,Math.PI/2), new Pose2d(45, -40, 0), AngleMath.Direction.CLOCKWISE);
         mrm2.setPower(0.3);
         taskList.add(mrm2);
-
-        MecanumRotateMoveTask mrm3 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        mrm3.setRotateHeading(new Pose2d(10,0,0), new Pose2d(10, -10, Math.PI/2), MecanumRotateMoveTask.Direction.STRAIGHT);
-        mrm3.setPower(0.3);
-        taskList.add(mrm3);
 
 //        PIDMecanumMoveTask pmm2 = new PIDMecanumMoveTask(robotHardware,robotProfile);
 //        pmm2.setPower(0.3);
