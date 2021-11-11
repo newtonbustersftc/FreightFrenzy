@@ -113,10 +113,13 @@ public class RealSenseLocalizer implements Localizer {
     @Nullable
     @Override
     public Pose2d getPoseVelocity() {
-        //variable up is updated in update()
-
         ChassisSpeeds velocity = t265Update.velocity;
-        return new Pose2d(velocity.vyMetersPerSecond /INCH_TO_METER,velocity.vxMetersPerSecond /INCH_TO_METER,velocity.omegaRadiansPerSecond);
+
+        double vX = (velocity.vyMetersPerSecond/INCH_TO_METER)*Math.cos(-originOffset.getHeading()) +
+                (velocity.vxMetersPerSecond/INCH_TO_METER)*Math.sin(-originOffset.getHeading());
+        double vY = (velocity.vyMetersPerSecond/INCH_TO_METER) * Math.sin(originOffset.getHeading()) +
+                (velocity.vxMetersPerSecond/INCH_TO_METER)*Math.cos(- originOffset.getHeading());
+        return new Pose2d(vX, vY, velocity.omegaRadiansPerSecond);
     }
 
     /**

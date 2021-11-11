@@ -92,8 +92,7 @@ public class DriverOpModeTest extends OpMode {
         }
 
         telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
-        telemetry.addData("Encoder L:", robotHardware.getEncoderCounts(RobotHardware.EncoderType.LEFT));
-        telemetry.addData("Encoder R:", robotHardware.getEncoderCounts(RobotHardware.EncoderType.RIGHT));
+        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
    }
 
     @Override
