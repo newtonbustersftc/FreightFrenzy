@@ -158,6 +158,13 @@ public class RobotVision {
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true);
         vuforia.setFrameQueueCapacity(1);
 
+        // No need for tracking target for now
+        // trackingTargetSetup(parameters)
+        Logger.logFile("Vuforia Initialized");
+    }
+
+
+    void trackingTargetSetup(VuforiaLocalizer.Parameters parameters) {
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
         targets = this.vuforia.loadTrackablesFromAsset("FreightFrenzy");
@@ -237,7 +244,6 @@ public class RobotVision {
             //((VuforiaTrackableDefaultListener) trackable.getListener()).setCameraLocationOnRobot(webcamName, robotFromCamera);
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
         }
-        Logger.logFile("Vuforia Initialized");
     }
 
     public boolean isTargetVisible() {

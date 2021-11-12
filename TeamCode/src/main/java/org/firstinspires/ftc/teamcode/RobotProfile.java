@@ -68,6 +68,13 @@ public class RobotProfile {
         hardwareSpec.cameraLeftDisplacement = -1.5f;
         hardwareSpec.cameraHeadingOffset = -2.5f;
         hardwareSpec.realSenseAngleModifier = Math.PI/2;
+        hardwareSpec.liftPositionZero = 50;
+        hardwareSpec.liftPositionBottom = 540;
+        hardwareSpec.liftPositionMiddle = 1200;
+        hardwareSpec.liftPositionTop = 1625;
+        hardwareSpec.liftMotorPower = 0.3;
+        hardwareSpec.boxFlapOpen = 0.6;
+        hardwareSpec.boxFlapClose = 0.35;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -138,6 +145,13 @@ public class RobotProfile {
         float cameraLeftDisplacement;
         double cameraHeadingOffset;
         double realSenseAngleModifier;
+        int liftPositionZero;
+        int liftPositionBottom;
+        int liftPositionMiddle;
+        int liftPositionTop;
+        double liftMotorPower;
+        double boxFlapOpen;
+        double boxFlapClose;
     }
 
     class FeedForwardParam {

@@ -11,27 +11,38 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
-import org.firstinspires.ftc.teamcode.drive.BulkMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.BulkTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 import org.openftc.revextensions2.ExpansionHubServo;
 import org.openftc.revextensions2.RevBulkData;
+
 import com.spartronics4915.lib.T265Camera;
 import java.text.DecimalFormat;
-import java.util.Locale;
 
 public class RobotHardware {
+    public enum LiftPosition {
+        ZERO, BOTTOM, MIDDLE, TOP;
+        private static LiftPosition[] vals = values();
+
+        public LiftPosition next() {
+            return (this.ordinal() < vals.length - 1) ? vals[this.ordinal() + 1] : this;
+        }
+
+        public LiftPosition prev() { // can not goto init position
+            return (this.ordinal() > 1) ? vals[this.ordinal() - 1] : vals[1];
+        }
+    }
+    LiftPosition currLiftPos;
+
     HardwareMap hardwareMap;
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
     ExpansionHubMotor liftMotor, duckMotor, intakeMotor;
-    DigitalChannel led1, led2, led3;
-    ExpansionHubServo servo;
+    DigitalChannel led4, led5;
+    ExpansionHubServo boxFlapServo;
+    DigitalChannel liftBottom;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
     SampleMecanumDrive mecanumDrive;
@@ -39,11 +50,13 @@ public class RobotHardware {
     RobotVision robotVision;
     static T265Camera t265 = null;
     DecimalFormat nf2 = new DecimalFormat("#.##");
-
     //Servo ;
     //DigitalChannel ;
     //Rev2mDistanceSensor ;
     RobotProfile profile;
+
+    public int originLiftMotorEncoder;
+    boolean isDelivered;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
         Logger.logFile("RobotHardware init()");
@@ -73,7 +86,6 @@ public class RobotHardware {
         frMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
         expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub");
         intakeMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("IntakeMotor");
         intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -81,21 +93,26 @@ public class RobotHardware {
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         duckMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("DuckMotor");
         duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        led1 = hardwareMap.digitalChannel.get("LED1");
-        led2 = hardwareMap.digitalChannel.get("LED2");
-        led3 = hardwareMap.digitalChannel.get("LED3");
-        initLeds();
+        duckMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //led4 = hardwareMap.digitalChannel.get("LED4");
+        //led5 = hardwareMap.digitalChannel.get("LED5");
+        //initLeds();
+
+        //touch sensor
+        liftBottom = hardwareMap.get(DigitalChannel.class, "LiftBottom");
+        liftBottom.setMode(DigitalChannel.Mode.INPUT);
+
+        boxFlapServo = (ExpansionHubServo)hardwareMap.servo.get("BoxFlap");
 
         Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
         getBulkData1();
         getBulkData2();
-
-        DriveConstants.kA = profile.rrFeedForwardParam.kA;
-        DriveConstants.kV = profile.rrFeedForwardParam.kV;
-        DriveConstants.kStatic = profile.rrFeedForwardParam.kStatic;
-        SampleMecanumDrive.HEADING_PID = new PIDCoefficients(profile.rrHeadingPID.p,profile.rrHeadingPID.i,profile.rrHeadingPID.d);
-        SampleMecanumDrive.TRANSLATIONAL_PID = new PIDCoefficients(profile.rrTranslationPID.p,profile.rrTranslationPID.i,profile.rrTranslationPID.d);
-        //mecanumDrive = new BulkMecanumDrive(this, rrMotor, rlMotor, frMotor, flMotor);
+//TODO
+//        DriveConstants.kA = profile.rrFeedForwardParam.kA;
+//        DriveConstants.kV = profile.rrFeedForwardParam.kV;
+//        DriveConstants.kStatic = profile.rrFeedForwardParam.kStatic;
+//        SampleMecanumDrive.HEADING_PID = new PIDCoefficients(profile.rrHeadingPID.p,profile.rrHeadingPID.i,profile.rrHeadingPID.d);
+//        SampleMecanumDrive.TRANSLATIONAL_PID = new PIDCoefficients(profile.rrTranslationPID.p,profile.rrTranslationPID.i,profile.rrTranslationPID.d);
         mecanumDrive = new SampleMecanumDrive(hardwareMap);
         if (t265 == null) {
             t265 = new T265Camera(new Transform2d(new Translation2d(0, 0), new Rotation2d(0)), 0, hardwareMap.appContext);
@@ -106,6 +123,8 @@ public class RobotHardware {
         realSenseLocalizer = new RealSenseLocalizer(this, true, profile);
         mecanumDrive.setLocalizer(realSenseLocalizer);
         robotVision = new RobotVision();
+
+        currLiftPos = LiftPosition.ZERO;
     }
 
     public T265Camera getT265Camera() {
@@ -149,32 +168,14 @@ public class RobotHardware {
     }
 
     public int getEncoderCounts(EncoderType encoder) {
-        if(encoder == EncoderType.LEFT) {
-            return profile.hardwareSpec.leftEncodeForwardSign * bulkData1.getMotorCurrentPosition(rlMotor);
+        if(encoder == EncoderType.LIFT) {
+            return liftMotor.getCurrentPosition();
         }
-        else if(encoder == EncoderType.RIGHT) {
-            return profile.hardwareSpec.rightEncoderForwardSign * bulkData1.getMotorCurrentPosition(rrMotor);
-        }
-        else if(encoder == EncoderType.HORIZONTAL) {
-            return profile.hardwareSpec.horizontalEncoderForwardSign * bulkData1.getMotorCurrentPosition(frMotor);
-        } else {
-            return 0;
-        }
+        return 0;
     }
 
-    public double getEncoderVelocity(EncoderType encoder) {
-        if(encoder == EncoderType.LEFT) {
-            return profile.hardwareSpec.leftEncodeForwardSign * bulkData1.getMotorVelocity(rlMotor);
-        }
-        else if(encoder == EncoderType.RIGHT) {
-            return profile.hardwareSpec.rightEncoderForwardSign * bulkData1.getMotorVelocity(rrMotor);
-        }
-        else if(encoder == EncoderType.HORIZONTAL) {
-            return profile.hardwareSpec.horizontalEncoderForwardSign * bulkData1.getMotorVelocity(frMotor);
-        }
-        else {
-            return 0;
-        }
+    public int getEncoderVelocity(EncoderType encoder) {
+        return 0;   // TODO
     }
 
     public void mecanumDriveTest(double power, double angle, double rotation, int sign){
@@ -222,8 +223,8 @@ public class RobotHardware {
         frontRight = frontRight/biggest*power;
         rearLeft = rearLeft/biggest*power;
         rearRight = rearRight/biggest*power;
-        Logger.logFile("Power - FL" + nf2.format(frontLeft) + " FR:"+ nf2.format(frontRight) +
-                        " RL:" + nf2.format(rearLeft) + " RR:" + nf2.format(rearRight));
+//        Logger.logFile("Power - FL" + nf2.format(frontLeft) + " FR:"+ nf2.format(frontRight) +
+//                        " RL:" + nf2.format(rearLeft) + " RR:" + nf2.format(rearRight));
         setMotorPower(frontLeft, frontRight, rearLeft, rearRight);
     }
 
@@ -286,14 +287,72 @@ public class RobotHardware {
         intakeMotor.setPower(0);
     }
 
-    public void startDuck(){
-        duckMotor.setVelocity(profile.hardwareSpec.duckVelocity);
+    public void startDuck(int alliance){
+        duckMotor.setVelocity(-alliance * 500);
+        Logger.logFile("am I here to start Duck??");
+
+//        duckMotor.setVelocity(profile.hardwareSpec.duckVelocity);
+//        long start = System.currentTimeMillis();
+//        double acceleration  = 0.5;
+//        double initVelocity = 0; //velocityFinal = velocityInitial + acceleration * time
+//        double finalVelocity = 0;
+//        duckMotor.setPower(0.5);
+//        finalVelocity = initVelocity + acceleration * ((System.currentTimeMillis()-start)/1000);
+//        duckMotor.setVelocity(finalVelocity);
+//        initVelocity = finalVelocity;
+//        if((System.currentTimeMillis() - start)%100 == 0)
+////            telemetry.addData("duck velocity=" , duckMotor.getVelocity());
+//        if((System.currentTimeMillis() - start)>4000)
+//            duckMotor.setPower(0);
+
     }
 
     public void stopDuck() {
         duckMotor.setPower(0);
     }
 
+    public void setLiftMotorPosition(int pos) {
+        liftMotor.setTargetPosition(pos);
+    }
+
+    public void setLiftPosition(LiftPosition pos) {
+        currLiftPos = pos;
+        liftMotor.setPower(profile.hardwareSpec.liftMotorPower);
+        int newPosNum = 0;
+        switch (pos) {
+            case ZERO:
+                newPosNum = profile.hardwareSpec.liftPositionZero;
+                break;
+            case BOTTOM:
+                newPosNum = profile.hardwareSpec.liftPositionBottom;
+                break;
+            case MIDDLE:
+                newPosNum = profile.hardwareSpec.liftPositionMiddle;
+                break;
+            case TOP:
+                newPosNum = profile.hardwareSpec.liftPositionTop;
+                break;
+        }
+        liftMotor.setTargetPosition(newPosNum);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void liftUp() {
+        setLiftPosition(currLiftPos.next());
+    }
+
+    public void liftDown() {
+        setLiftPosition(currLiftPos.prev());
+    }
+
+    public boolean isLiftMoving() {
+        Logger.logFile("Lift moving velocity: " + liftMotor.getVelocity());
+        return Math.abs(liftMotor.getVelocity())>10;
+    }
+
+    void resetLiftEncoderCount(){
+        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
     /**
      * WARNING WARNING WARNING ****
      * Sensor distance call not supported by BulkData read, this call takes 33ms to complete
@@ -303,24 +362,40 @@ public class RobotHardware {
 
     public void stopAll() {
         setMotorPower(0, 0, 0, 0);
+        liftMotor.setPower(0);
+        intakeMotor.setPower(0);
+        duckMotor.setPower(0);
         if (t265.isStarted()) {
             t265.stop();
         }
     }
 
-    //public enum EncoderType {LEFT, RIGHT, HORIZONTAL, ARM, SHOOTER}
-    //test
-    public enum EncoderType {LEFT, RIGHT, HORIZONTAL}
+    public enum EncoderType {LIFT}
 
-    public void setLed1(boolean on) {
-        led1.setState(!on);
+    public void setLed4(boolean on) {
+        led4.setState(!on);
     }
 
-    public void setLed2(boolean on) {
-        led2.setState(!on);
+    public void setLed5(boolean on) {
+        led5.setState(!on);
     }
 
-    public void setLed3(boolean on) {
-        led3.setState(!on);
+    public void openBoxFlap(){
+        if (currLiftPos!=LiftPosition.ZERO) {
+            boxFlapServo.setPosition(profile.hardwareSpec.boxFlapOpen);
+        }
+    }
+
+    public void closeBoxFlap(){
+        boxFlapServo.setPosition(profile.hardwareSpec.boxFlapClose);
+    }
+
+    public LiftPosition getCurrLiftPos() {
+        return currLiftPos;
+    }
+
+    public boolean liftBottomTouched() {
+        // digital channel: low - touched, high - not touch
+        return liftBottom.getState();
     }
 }

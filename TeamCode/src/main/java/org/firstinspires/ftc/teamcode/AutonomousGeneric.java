@@ -3,17 +3,13 @@ package org.firstinspires.ftc.teamcode;
 import android.content.SharedPreferences;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import java.io.File;
 import java.util.ArrayList;
 
-/**
- * 2019.10.26
- * Created by Ian Q.
- */
 @Autonomous(name="Newton Autonomous", group="Main")
 public class AutonomousGeneric extends LinearOpMode {
 
@@ -21,10 +17,7 @@ public class AutonomousGeneric extends LinearOpMode {
     RobotNavigator navigator;
     RobotProfile robotProfile;
     DriverOptions driverOptions;
-
-    int leftEncoderCounts;
-    int rightEncoderCounts;
-    int horizontalEncoderCounts;
+//    RobotVision robotVision;
 
     ArrayList<RobotControl> taskList;
 
@@ -32,71 +25,73 @@ public class AutonomousGeneric extends LinearOpMode {
     int countTasks = 0;
     private int delay;
 
-    enum PfPose {
-        RED_START, BLUE_START, RED_WAREHOUSE, BLUE_WAREHOUSE, RED_CAROUSEL, BLUE_CAROUSEL,
-        RED_STORAGE, BLUE_STORAGE, RED_SHIPPINGHUB, BLUE_SHIPPINGHUB, RED_SHAREDHUB,
-        BLUE_SHAREDHUB
-    }
-
     public void initRobot() {
         try {
             robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            RobotLog.e("RobotProfile reading exception" + e);
         }
 
         Logger.init();
 
         RobotFactory.reset();
-        robotHardware = RobotFactory.getRobotHardware(hardwareMap,robotProfile);
-        robotHardware.initRobotVision();
-        robotHardware.setMotorStopBrake(true);
+
+//        robotHardware = RobotFactory.getRobotHardware(hardwareMap, robotProfile);
+        robotHardware = new RobotHardware();
+        robotHardware.init(hardwareMap, robotProfile);
+
+//        robotHardware.setMotorStopBrake(true);
+
+        resetLiftPosition();
 
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
 
+        driverOptions = new DriverOptions();
         Logger.logFile("Init completed");
+        try {
+            SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
+            String delayString = prefs.getString("DELAY_PREF", "").replace(" sec", "");
+            driverOptions.setDelay(Integer.parseInt(delayString));
+            Logger.logFile("delay: " + driverOptions.getDelay());
 
-        SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
-        driverOptions.setStartingPositionModes(prefs.getString("START_POS_MODES_PREF", ""));
-        driverOptions.setParking(prefs.getString("PARKING_PREF", ""));
-        driverOptions.setDelay(prefs.getInt("DELAY_PREF", 0));
-        driverOptions.setDeliveryRoutes(prefs.getString("DELIVERY_ROUTES_PREF", ""));
+            driverOptions.setStartingPositionModes(prefs.getString("START_POS_MODES_PREF", ""));
+            driverOptions.setParking(prefs.getString("PARKING_PREF", ""));
+            driverOptions.setDeliveryRoutes(prefs.getString("DELIVERY_ROUTES_PREF", ""));
+            driverOptions.setDoCarousel(prefs.getString("DUCK_CAROUSEL", "").equals("yes") ? true : false);
+            Logger.logFile("starting position: " + driverOptions.getStartingPositionModes());
+            Logger.logFile("parking: " + driverOptions.getParking());
+            Logger.logFile("delivery route: " + driverOptions.getDeliveryRoutes());
+        }
+        catch (Exception e) {
+            this.delay = 0;
+        }
     }
 
     @Override
     public void runOpMode() {
         initRobot();
         robotHardware.setMotorStopBrake(false); // so we can adjust the robot
-
-        // reset arm position
-        int warningSoundID = hardwareMap.appContext.getResources().getIdentifier("backing_up", "raw", hardwareMap.appContext.getPackageName());
-        if (warningSoundID != 0) {
-            Logger.logFile("Found warning sound backing_up");
-            if (SoundPlayer.getInstance().preload(hardwareMap.appContext, warningSoundID)) {
-                SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, warningSoundID);
-            }
-        }
+        robotHardware.initRobotVision();
+        resetLiftPosition();
         telemetry.addData("READY...", "NOW");
         waitForStart();
-        robotHardware.getBulkData1();
-        robotHardware.getBulkData2();
+//        robotHardware.getBulkData1();
+//        robotHardware.getBulkData2();
 
-        robotHardware.getLocalizer().update();
-        robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START_STATE"));
-        robotHardware.setMotorStopBrake(true);  // so no sliding when we move
+//        robotHardware.getLocalizer().update();
+        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0, 0, 0));
+//        robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START_STATE"));
+
+//        robotHardware.setMotorStopBrake(true);  // so no sliding when we move
+
         RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition();
         Logger.logFile("recognition result: " + goal);
+
         AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, robotHardware, robotProfile, goal);
-        //goWobbleTask(driverOptions.getStartingPositionModes());
-        //if (driverOptions.getDuckPosition().contains("yes")) {//5 points - do nothing but parking
-        //    taskList = builder.buildParkingOnlyTask(driverOptions.getParking());
-        //}
-        // do the task list building after click start, which we should have the skystone position
-        //AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, skystonePosition, robotHardware, navigator, robotProfile);
-        taskList = new ArrayList<RobotControl>();
-        //prepareTaskList(goal);
 
-
+        taskList = builder.buildRedLeftTasks();
 
         TaskReporter.report(taskList);
         Logger.logFile("Task list items: " + taskList.size());
@@ -112,6 +107,7 @@ public class AutonomousGeneric extends LinearOpMode {
 
             robotHardware.getBulkData1();
             robotHardware.getBulkData2();
+            robotHardware.getLocalizer().update();
 
             if (taskList.size() > 0) {
                 taskList.get(0).execute();
@@ -136,7 +132,8 @@ public class AutonomousGeneric extends LinearOpMode {
         try {
             Logger.logFile("Autonomous - Final Location:" + navigator.getLocationString());
             Logger.flushToFile();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
         }
 
         robotHardware.setMotorStopBrake(false);
@@ -147,11 +144,19 @@ public class AutonomousGeneric extends LinearOpMode {
         return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
     }
 
-
-
-
-
-
-
-
+    void resetLiftPosition() {
+        robotHardware.getBulkData1();
+        robotHardware.getBulkData2();
+        while (!robotHardware.liftBottomTouched()) {
+            int currArmPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
+            robotHardware.setLiftMotorPosition(currArmPos-10);
+            try {
+                Thread.sleep(100);
+            }
+            catch (Exception e) {
+            }
+        }
+        robotHardware.resetLiftEncoderCount();
+        robotHardware.setLiftPosition(RobotHardware.LiftPosition.ZERO);
+    }
 }
