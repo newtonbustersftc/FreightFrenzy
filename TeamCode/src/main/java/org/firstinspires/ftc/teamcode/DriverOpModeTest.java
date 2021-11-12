@@ -79,7 +79,7 @@ public class DriverOpModeTest extends OpMode {
             robotHardware.stopIntake();
         }
         if (gamepad1.dpad_right) {
-            robotHardware.startDuck(-1);
+            robotHardware.startDuck();
         }
         else {
             robotHardware.stopDuck();
@@ -92,7 +92,8 @@ public class DriverOpModeTest extends OpMode {
         }
 
         telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
-    }
+        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
+   }
 
     @Override
     public void stop() {
@@ -105,7 +106,7 @@ public class DriverOpModeTest extends OpMode {
             Log.e("DriverOpMode", Log.getStackTraceString(e));
         }
     }
-    private void handleMovement() {
+   private void handleMovement() {
         double turn = gamepad1.right_stick_x / 2;
         double power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
         double moveAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4.5;

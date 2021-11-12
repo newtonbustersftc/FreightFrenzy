@@ -4,10 +4,10 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.localization.Localizer;
 
 /**
- * 2019.10.26
- * PID
- * Created by Claire Zheng
- */
+     * 2019.10.26
+     * PID
+     * Created by Claire Zheng
+     */
 
 public class PIDMecanumMoveTask implements RobotControl {
 
@@ -162,7 +162,7 @@ public class PIDMecanumMoveTask implements RobotControl {
         double currentDistance = Math.hypot(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX());
         double pwr = power;
         if (targetDistance - currentDistance <= 15) {
-            pwr = minPower + (targetDistance - currentDistance) / 15 * (power - minPower);
+             pwr = minPower + (targetDistance - currentDistance) / 15 * (power - minPower);
         }
         robot.mecanumDrive2(pwr, targetAngle - posCorrection - endPos.getHeading(), -headCorrection);
         loopCount++;
@@ -174,3 +174,4 @@ public class PIDMecanumMoveTask implements RobotControl {
         robot.setMotorPower(0,0,0,0);
     }
 }
+

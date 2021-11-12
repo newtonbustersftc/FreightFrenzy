@@ -29,9 +29,6 @@ public class AutonomousGenericTest extends LinearOpMode {
     int countTasks = 0;
     Pose2d pos;
 
-    PIDMecanumMoveTask lastMovement;
-    Pose2d lastPos;
-
     public void initRobot() {
         try{
             robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
@@ -56,7 +53,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         Logger.logFile("Recognition Result: " + robotVision.getAutonomousRecognition());
         taskList = new ArrayList<RobotControl>();
-//        setupTaskList2();
+        setupTaskList2();
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
             taskList.get(0).prepare();
@@ -67,21 +64,6 @@ public class AutonomousGenericTest extends LinearOpMode {
         int cnt = 100;
         double veloSum = 0;
         Logger.logFile("Main Task Loop started");
-
-        PIDMecanumMoveTask pmm1 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-        pmm1.setPath(new Pose2d(0,0,0), new Pose2d(-22, 0, Math.toRadians(15)));
-        pmm1.setPower(0.5);
-        taskList.add(pmm1);
-        taskList.add(new DuckCarouselSpinTask(robotHardware, 1));
-        PIDMecanumMoveTask pmm2 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-        pmm2.setPath(new Pose2d(-22, 0, Math.toRadians(15)), new Pose2d(45, 0, 0));
-        pmm2.setPower(0.5);
-        taskList.add(pmm2);
-
-
-        if (taskList.size() > 0) {
-            taskList.get(0).prepare();
-        }
 
         while (opModeIsActive()) {
             loopCount++;
@@ -95,7 +77,6 @@ public class AutonomousGenericTest extends LinearOpMode {
             }
             catch (Exception ex) {
             }
-
             /*Specific test for motor velocity */
 // append to shooting velocity csv file
             /* End Testing code */
@@ -120,13 +101,6 @@ public class AutonomousGenericTest extends LinearOpMode {
         }
     }
 
-
-    void addMovement(Pose2d beginP, Pose2d endP) {
-        lastMovement = new PIDMecanumMoveTask(robotHardware, robotProfile);
-        lastMovement.setPath(beginP, endP);
-        taskList.add(lastMovement);
-        lastPos = endP;
-    }
     Pose2d getProfilePose(String name) {
         RobotProfile.AutoPose ap = robotProfile.poses.get(name);
         return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
