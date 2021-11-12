@@ -1,0 +1,144 @@
+{
+  "headingPID": {
+    "p": 5.0,
+    "i": 0.05,
+    "d": 0.0,
+    "f": 0.0
+  },
+  "distancePID": {
+    "p": 0.5,
+    "i": 0.01,
+    "d": 0.0,
+    "f": 0.0
+  },
+  "rrHeadingPID": {
+    "p": 8.0,
+    "i": 0.05,
+    "d": 0.0,
+    "f": 0.0
+  },
+  "rrTranslationPID": {
+    "p": 10.0,
+    "i": 0.1,
+    "d": 0.0,
+    "f": 0.0
+  },
+  "cvParam": {
+    "maskUpperH": 70,
+    "maskUpperS": 255,
+    "maskUpperV": 255,
+    "maskLowerH": 40,
+    "maskLowerS": 80,
+    "maskLowerV": 40,
+    "cropTop": 30,
+    "minArea": 10
+  },
+  "hardwareSpec": {
+    "trackWheelDiameter": 3.8,
+    "trackWheelCPR": 4000.0,
+    "leftRightWheelDist": 41.0,
+    "leftEncodeForwardSign": 1,
+    "rightEncoderForwardSign": -1,
+    "horizontalEncoderForwardSign": -1,
+    "grabberOpenPos": 0.21,
+    "grabberClosePos": 0.64,
+    "armInitPos": 0,
+    "armGrabPos": 1900,
+    "armHoldPos": 450,
+    "armDeliverPos": 1400,
+    "armReverseDelay": 100,
+    "armReverseDelta": 30,
+    "armPower": 0.5,
+    "armPowerLow": 0.3,
+    "shooterOpen": 0.55,
+    "shooterClose": 0.685,
+    "ringPusherUp": 0.78,
+    "ringPusherShoot": 0.5,
+    "ringPusherDown": 0.17,
+    "intakeVelocity": 600,
+    "duckVelocity": 200,
+    "duckSpinTime": 5000,
+    "ringHolderUp": 0.338,
+    "ringHolderDown": 0.555,
+    "ringHolderDown2": 0.48,
+    "cameraForwardDisplacement": 1.5,
+    "cameraVerticalDisplacement": 16.5,
+    "cameraLeftDisplacement": -1.5,
+    "cameraHeadingOffset": -2.5,
+    "realSenseAngleModifier": 90,
+    "liftPositionZero":50,
+    "liftPositionBottom":540,
+    "liftPositionMiddle":1200,
+    "liftPositionTop":1750,
+    "liftMotorPower": 0.3,
+    "boxFlapOpen":0.35,
+    "boxFlapClose": 0.6
+  },
+  "rrFeedForwardParam": {
+    "kA": 0.0,
+    "kV": 0.0001,
+    "kStatic": 0.27846
+  },
+  "poses": {
+    "RED_DUCK_START": {
+      "x": 0,
+      "y": 0,
+      "heading": 180.0
+    },
+    "RED_DUCK_1": {
+      "x": -10,
+      "y": -10.0,
+      "heading": 135.0
+    },
+    "RED_DUCK_CAROUSEL": {
+      "x": -20.0,
+      "y": -2.0,
+      "heading": 210.0
+    },
+    "RED_DUCK_2": {
+      "x": -15,
+      "y": -40.0,
+      "heading": 180.0
+    },
+    "RED_DUCK_HUB": {
+      "x": 6,
+      "y": -40.0,
+      "heading": 180.0
+    },
+    "RED_DUCK_PARK": {
+      "x": -24,
+      "y": -30.0,
+      "heading": 180.0
+    },
+    "BLUE_DUCK_START": {
+      "x": 0,
+      "y": 0,
+      "heading": 180.0
+    },
+    "BLUE_DUCK_1": {
+      "x": -10,
+      "y": -5.0,
+      "heading": 180.0
+    },
+    "BLUE_DUCK_CAROUSEL": {
+      "x": -20.0,
+      "y": -5,
+      "heading": 180.0
+    },
+    "BLUE_DUCK_2": {
+      "x": -20,
+      "y": 40.0,
+      "heading": 180.0
+    },
+    "BLUE_DUCK_HUB": {
+      "x": 6,
+      "y": 40.0,
+      "heading": 180.0
+    },
+    "BLUE_DUCK_PARK": {
+      "x": -24,
+      "y": 30.0,
+      "heading": 180.0
+    }
+  }
+}
