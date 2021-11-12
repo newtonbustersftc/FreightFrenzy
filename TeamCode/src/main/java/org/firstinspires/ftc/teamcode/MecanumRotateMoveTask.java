@@ -83,7 +83,7 @@ public class MecanumRotateMoveTask implements RobotControl {
     public void prepare() {
         robot.setMotorStopBrake(true);
         currentAngle = startPose.getHeading();
-        targetAngle = endPose.getHeading();
+        targetAngle = AngleMath.normalizeAngle(endPose.getHeading());
         turnSign = (turnDirection==AngleMath.Direction.ANTI_CLOCKWISE)?-1:1;
         if (turnDirection==AngleMath.Direction.STRAIGHT) {
             slowRotate = true;
@@ -122,14 +122,13 @@ public class MecanumRotateMoveTask implements RobotControl {
             slowRotate = true;
             // now direction should be get close to finish, if overshot, turn back
             rotatePwr = minPower + AngleMath.absDeltaAngle(currentAngle, endPose.getHeading())/rotateStop * (power - minPower);
-            if (currentAngle < endPose.getHeading() || (currentAngle-endPose.getHeading()>Math.PI)) {
-                // we going to turn left
+            if (AngleMath.getDirection(currentAngle, endPose.getHeading())== AngleMath.Direction.ANTI_CLOCKWISE) {
                 rotatePwr = -rotatePwr;
             }
         }
         robot.mecanumDrive2(movePwr, moveAngle - currentAngle, rotatePwr);
-        //Logger.logFile("Rotating current " + currPose +
-        //        " move angle:" + Math.toDegrees((moveAngle)) + " Pwr:" + movePwr + " rot:" + rotatePwr);
+        Logger.logFile("Rotating current " + currPose +
+                " move angle:" + Math.toDegrees((moveAngle)) + " Pwr:" + movePwr + " rot:" + rotatePwr);
     }
 
     public void cleanUp() {

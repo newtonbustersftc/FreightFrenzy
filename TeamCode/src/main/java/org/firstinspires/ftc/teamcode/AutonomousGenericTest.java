@@ -53,7 +53,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         Logger.logFile("Recognition Result: " + robotVision.getAutonomousRecognition());
         taskList = new ArrayList<RobotControl>();
-        setupTaskList2();
+        setupTaskList3();
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
             taskList.get(0).prepare();
@@ -150,5 +150,12 @@ public class AutonomousGenericTest extends LinearOpMode {
 //        pmm2.setPath(new Pose2d(1,0,Math.PI/2), new Pose2d(10, -10, Math.PI/2));
 //
 //        taskList.add(pmm2);
+    }
+
+    void setupTaskList3() {
+        MecanumRotateMoveTask mrm1 = new MecanumRotateMoveTask(robotHardware, robotProfile);
+        mrm1.setRotateHeading(new Pose2d(00, 0, 0), new Pose2d(00, -5, -Math.PI / 4));
+        mrm1.setPower(0.3);
+        taskList.add(mrm1);
     }
 }
