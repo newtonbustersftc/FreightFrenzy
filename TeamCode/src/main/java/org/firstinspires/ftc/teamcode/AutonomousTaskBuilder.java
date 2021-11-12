@@ -99,24 +99,29 @@ public class AutonomousTaskBuilder {
 
     public ArrayList<RobotControl> buildTaskList(RobotVision.AutonomousGoal goal) {
         //TODO - switch for start up position
-        ArrayList<RobotControl> taskList = buildRedLeftTasks();
-
+        if (startingPositionModes.endsWith("DUCK")) {
+            ArrayList<RobotControl> taskList = buildDuckTasks(startingPositionModes);
+        }
+        else {
+            taskList = new ArrayList<>();   // TODO: create buildDepotTasks
+        }
         robotHardware.getLocalizer().setPoseEstimate(startPos);
         return taskList;
     }
 
-    public ArrayList<RobotControl> buildRedLeftTasks(){
-        startPos = robotProfile.getProfilePose("RED_START_LEFT");
-        Pose2d pos1 = robotProfile.getProfilePose("RED_LEFT_1");
-        Pose2d duckSpinPos = robotProfile.getProfilePose("RED_CAROUSEL");
-        Pose2d pos2 = robotProfile.getProfilePose("RED_LEFT_2");
-        Pose2d hubPos = robotProfile.getProfilePose("RED_LEFT_HUB");
+    public ArrayList<RobotControl> buildDuckTasks(String startPosStr){
+        startPos = robotProfile.getProfilePose(startPosStr + "_START");
+        Pose2d pos1 = robotProfile.getProfilePose(startPosStr + "_1");
+        Pose2d duckSpinPos = robotProfile.getProfilePose(startPosStr + "_CAROUSEL");
+        Pose2d pos2 = robotProfile.getProfilePose(startPosStr + "_2");
+        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
+        Pose2d parkPos = robotProfile.getProfilePose(startPosStr + "_PARK");
         MecanumRotateMoveTask m1 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        m1.setRotateHeading(startPos, pos1, AngleMath.Direction.CLOCKWISE);
+        m1.setRotateHeading(startPos, pos1);
         m1.setPower(0.5);
         taskList.add(m1);
         MecanumRotateMoveTask m2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        m2.setRotateHeading(pos1, duckSpinPos, AngleMath.Direction.ANTI_CLOCKWISE);
+        m2.setRotateHeading(pos1, duckSpinPos);
         m2.setTimeOut(2000);
         m2.setPower(0.3);
         taskList.add(m2);
@@ -131,11 +136,11 @@ public class AutonomousTaskBuilder {
         m4.setPath(pos2, hubPos);
         m4.setPower(0.5);
         taskList.add(m4);
-
         taskList.add(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
-
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
-
+        PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
+        m4.setPath(hubPos, parkPos);
+        taskList.add(m4);
         return taskList;
     }
 

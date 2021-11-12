@@ -24,13 +24,15 @@ public class AutonomousOptions extends OpMode {
     public static final String PARKING_PREF = "parking";
     public static final String DELIVERY_ROUTES_PREF = "delivery routes";
     public static final String DUCK_CAROUSEL_PREF = "carousel";
+
     // ADD preference values here
-    public static final String[] START_POS_MODES = {"BLUE_LEFT", "BLUE_RIGHT", "RED_LEFT", "RED_RIGHT"};
+    public static final String[] START_POS_MODES = {"BLUE_DUCK", "BLUE_DEPOT", "RED_DUCK", "RED_DEPOT"};
     public static final String[] DELAYS = {"0 " + "sec", "1 sec", "2 sec", "3 sec", "4 sec", "5 sec", "25 sec"};
     public static final String[] PARKING_LOCATION = {"RED_STORAGE", "BLUE_STORAGE", "RED_WAREHOUSE_WALL", "BLUE_WAREHOUSE_WALL", "RED_WAREHOUSE_CENTRAL", "BLUE_WAREHOUSE_CENTRAL"};
     public static final String[] DELIVERY_ROUTES = {"RED_ROUTE_NOBARRIER", "BLUE_ROUTE_NOBARRIER", "RED_ROUTE_BARRIER", "BLUE_ROUTE_BARRIER"};
     public static final String[] DUCK_CAROUSEL = {"yes","no"};
     private static final String NONE = "none";
+
     public static Map<String, String[]> prefMap = new HashMap<>();
     private static String[] prefKeys = {START_POS_MODES_PREF, DELAY_PREF, PARKING_PREF};
     private static int keyIdx = 0;
@@ -97,7 +99,6 @@ public class AutonomousOptions extends OpMode {
 //        }
 
         for (int i = 0; i < prefKeys.length; i++ ) {
-
             if (keyIdx == i) {
                 String cap = prefKeys[i].toUpperCase();
                 telemetry.addData("*" + cap + "*", prefs.getString(prefKeys[i], NONE));

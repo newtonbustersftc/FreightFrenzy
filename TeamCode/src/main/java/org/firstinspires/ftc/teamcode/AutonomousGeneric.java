@@ -52,7 +52,7 @@ public class AutonomousGeneric extends LinearOpMode {
         Logger.logFile("Init completed");
         try {
             SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
-            String delayString = prefs.getString("DELAY_PREF", "").replace(" sec", "");
+            String delayString = prefs.getString("DELAY_PREF", "0").replace(" sec", "");
             driverOptions.setDelay(Integer.parseInt(delayString));
             Logger.logFile("delay: " + driverOptions.getDelay());
 
@@ -60,13 +60,16 @@ public class AutonomousGeneric extends LinearOpMode {
 //            driverOptions.setParking(prefs.getString("PARKING_PREF", ""));
 //            driverOptions.setDeliveryRoutes(prefs.getString("DELIVERY_ROUTES_PREF", ""));
 //            driverOptions.setDoCarousel(prefs.getString("DUCK_CAROUSEL", "").equals("yes") ? true : false);
+
             Logger.logFile("starting position: " + driverOptions.getStartingPositionModes());
             Logger.logFile("parking: " + driverOptions.getParking());
             Logger.logFile("delivery route: " + driverOptions.getDeliveryRoutes());
         }
         catch (Exception e) {
+            RobotLog.e("SharedPref exception " + e);
             this.delay = 0;
         }
+        Logger.logFile("Done with init in autonomous");
     }
 
     @Override
@@ -151,7 +154,7 @@ public class AutonomousGeneric extends LinearOpMode {
         while (!robotHardware.liftBottomTouched()) {
             int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
             Logger.logFile("Lift current Position " + currLiftPos);
-            robotHardware.setLiftMotorPosition(currLiftPos-50);
+            robotHardware.setLiftMotorPosition(currLiftPos - 50);
             try {
                 Thread.sleep(100);
             }
