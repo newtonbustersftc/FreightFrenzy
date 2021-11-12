@@ -32,7 +32,7 @@ public class RobotHardware {
         }
 
         public LiftPosition prev() { // can not goto init position
-            return (this.ordinal() > 1) ? vals[this.ordinal() - 1] : vals[1];
+            return (this.ordinal() > 0) ? vals[this.ordinal() - 1] : vals[0];
         }
     }
     LiftPosition currLiftPos;
