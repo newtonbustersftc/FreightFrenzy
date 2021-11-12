@@ -16,15 +16,14 @@ public class DriverOpMode extends OpMode {
     RobotHardware robotHardware;
     RobotProfile robotProfile;
 
-    enum ActionMode {INTAKE, SHOOTING, REVERSE, STOP};
-    ActionMode currentMode = ActionMode.STOP;
+    enum IntakeMode { INTAKE, REVERSE, STOP}
+    IntakeMode currIntakeMode = IntakeMode.STOP;
 
     Pose2d currPose;
-    Pose2d shootingPose;
     double fieldHeadingOffset;
 
     boolean fieldMode;
-    int fieldModeSign = 1;  // RED side = 1, BLUE side = -1
+    int fieldModeSign = -1;  // RED side = 1, BLUE side = -1
     boolean dpadRightPressed = false;
     boolean dpadLeftPressed = false;
     boolean aPressed = false;
@@ -35,7 +34,7 @@ public class DriverOpMode extends OpMode {
 
     // DriveThru combos
     RobotControl currentTask = null;
-    RobotVision robotVision;
+
 
     @Override
     public void init() {
@@ -43,6 +42,7 @@ public class DriverOpMode extends OpMode {
             robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
         }
         catch (Exception e) {
+            System.out.println(e.getStackTrace());
         }
 
         fieldMode = true; //robot starts in field orientation
@@ -54,19 +54,19 @@ public class DriverOpMode extends OpMode {
         //robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
         //robotHardware.initLeds();   // need to init everytime
+        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+        //ensure lift is reset at the beginning and the end
 
         // Based on the Autonomous mode starting position, define the heading offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
-        if (prefs.getString(START_POS_MODES_PREF, "RED_1").startsWith("RED")) {
+        if (prefs.getString(START_POS_MODES_PREF, "NONE").startsWith("RED")) {
             fieldModeSign = 1;
         }
         else {
             fieldModeSign = -1;
         }
-
-        //shootingPose = robotProfile.getProfilePose("SHOOT-DRIVER");
+        Logger.logFile("DriverOpMode: " + prefs.getString(START_POS_MODES_PREF, "NONE"));
         setupCombos();
-
     }
 
     /**
@@ -78,9 +78,9 @@ public class DriverOpMode extends OpMode {
         robotHardware.getBulkData1();
         //Read values from the expansion hub
         robotHardware.getBulkData2();
-        //robotHardware.getTrackingWheelLocalizer().update();
-        //currPose = robotHardware.getTrackingWheelLocalizer().getPoseEstimate();
-        currPose = new Pose2d(0,0,0);   // for now
+        robotHardware.getLocalizer().update();
+        currPose = robotHardware.getLocalizer().getPoseEstimate();
+        //currPose = new Pose2d(0,0,0);   // for now
         //Handling autonomous task loop
         if (currentTask != null) {
             if (gamepad1.left_bumper && gamepad1.right_bumper) {
@@ -100,16 +100,50 @@ public class DriverOpMode extends OpMode {
             handleMovement();
         }
         telemetry.addData("CurrPose", currPose);
+
+        handleIntake();
+
+        if (gamepad1.dpad_up && !dpadUpPressed) {
+            robotHardware.liftUp();
+        }
+        else if (gamepad1.dpad_down && !dpadDownPressed) {
+            robotHardware.liftDown();
+        }
+        dpadUpPressed = gamepad1.dpad_up;
+        dpadDownPressed = gamepad1.dpad_down;
+
+        if (!xPressed && gamepad1.x) {
+            Logger.logFile("field red=" + fieldModeSign);
+            if (fieldModeSign == 1) //red
+                robotHardware.startDuck(1);
+            else
+                robotHardware.startDuck(-1);
+            xPressed = true;
+        }
+        if (!gamepad1.x) {
+            robotHardware.stopDuck();
+            xPressed = false;
+        }
+
+        //make a toggle button
+        if (gamepad1.y) {
+            robotHardware.openBoxFlap();
+        }
+        else {
+            robotHardware.closeBoxFlap();
+        }
     }
 
     @Override
     public void stop() {
+        robotHardware.stopAll();
         try {
             Logger.logFile("DriverOpMode stop() called");
             //robotVision.deactivateNavigationTarget();
             Logger.flushToFile();
         }
         catch (Exception e) {
+            System.out.println(e.getStackTrace());
         }
     }
 
@@ -132,7 +166,7 @@ public class DriverOpMode extends OpMode {
     private void handleMovement() {
         double turn = gamepad1.right_stick_x/2;
         double power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-        double moveAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI/4;
+        double moveAngle = Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI/4;
 
         if (fieldMode) {
             moveAngle += -currPose.getHeading() - fieldHeadingOffset + fieldModeSign*Math.PI/2;
@@ -144,6 +178,7 @@ public class DriverOpMode extends OpMode {
             power = power/3;
             turn = turn/3;
         }
+
         robotHardware.mecanumDriveTest(power, moveAngle, turn, 0);
 
         // toggle field mode on/off.
@@ -159,37 +194,15 @@ public class DriverOpMode extends OpMode {
     /**
      * Uses up  down keypad to switch to different modes between shooting, stop, reverse, and intake
      */
-    private void handleIntakeAndShoot() {
-        if (!dpadUpPressed && gamepad1.dpad_up) {
-            switch (currentMode) {
-                case STOP:
-                case SHOOTING:
-                case REVERSE:
-                    robotHardware.startIntake();
-                    currentMode = ActionMode.INTAKE;
-                    break;
-                case INTAKE:
-                    robotHardware.reverseIntake();
-                    currentMode = ActionMode.SHOOTING;
-                    break;
-            }
+    private void handleIntake() {
+        if (gamepad1.dpad_left) {
+            robotHardware.reverseIntake();
         }
-        dpadUpPressed = gamepad1.dpad_up;
-        if (!dpadDownPressed && gamepad1.dpad_down) {
-            switch (currentMode) {
-                case SHOOTING:
-                case REVERSE:
-                    robotHardware.stopIntake();
-                    currentMode = ActionMode.STOP;
-                    break;
-                case INTAKE:
-                case STOP:
-                    robotHardware.reverseIntake();
-                    currentMode = ActionMode.REVERSE;
-                    break;
-            }
+        else if (gamepad1.dpad_right) {
+            robotHardware.startIntake();
         }
 
+        dpadLeftPressed = gamepad1.dpad_left;
     }
 
 

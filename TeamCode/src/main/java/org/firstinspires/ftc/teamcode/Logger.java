@@ -38,7 +38,7 @@ public class Logger {
             String timestamp = new SimpleDateFormat("HH:mm:ss.SSS", Locale.US).format(new Date());
 
             pw.println(timestamp + " " + message);
-            //pw.flush();     // for now
+            pw.flush();     // for now
         } catch (Exception e) {
             throw new RuntimeException("cannot write to file");
         }
