@@ -23,18 +23,16 @@ public class AutonomousOptions extends OpMode {
     public static final String DELAY_PREF = "delay";
     public static final String PARKING_PREF = "parking";
     public static final String DELIVERY_ROUTES_PREF = "delivery routes";
-    public static final String DUCK_CAROUSEL_PREF = "carousel";
 
     // ADD preference values here
     public static final String[] START_POS_MODES = {"BLUE_DUCK", "BLUE_DEPOT", "RED_DUCK", "RED_DEPOT"};
     public static final String[] DELAYS = {"0 " + "sec", "1 sec", "2 sec", "3 sec", "4 sec", "5 sec", "25 sec"};
     public static final String[] PARKING_LOCATION = {"RED_STORAGE", "BLUE_STORAGE", "RED_WAREHOUSE_WALL", "BLUE_WAREHOUSE_WALL", "RED_WAREHOUSE_CENTRAL", "BLUE_WAREHOUSE_CENTRAL"};
-    public static final String[] DELIVERY_ROUTES = {"RED_ROUTE_NOBARRIER", "BLUE_ROUTE_NOBARRIER", "RED_ROUTE_BARRIER", "BLUE_ROUTE_BARRIER"};
-    public static final String[] DUCK_CAROUSEL = {"yes","no"};
+    public static final String[] DELIVERY_ROUTES = {"RED_ROUTE_WALL", "BLUE_ROUTE_WALL", "RED_ROUTE_CENTRAL", "BLUE_ROUTE_CENTRAL"};
     private static final String NONE = "none";
 
     public static Map<String, String[]> prefMap = new HashMap<>();
-    private static String[] prefKeys = {START_POS_MODES_PREF, DELAY_PREF, PARKING_PREF};
+    private static String[] prefKeys = {START_POS_MODES_PREF, DELAY_PREF, PARKING_PREF, DELIVERY_ROUTES_PREF};
     private static int keyIdx = 0;
 
     //private static String[] prefKeys = prefMap.keySet().toArray(new String[prefMap.keySet().size()]);
@@ -45,7 +43,6 @@ public class AutonomousOptions extends OpMode {
         prefMap.put(START_POS_MODES_PREF, START_POS_MODES);
         prefMap.put(PARKING_PREF, PARKING_LOCATION);
         prefMap.put(DELIVERY_ROUTES_PREF, DELIVERY_ROUTES);
-        prefMap.put(DUCK_CAROUSEL_PREF, DUCK_CAROUSEL);
     }
 
 //    static {
