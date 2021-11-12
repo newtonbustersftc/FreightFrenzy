@@ -52,14 +52,13 @@ public class AutonomousGeneric extends LinearOpMode {
         Logger.logFile("Init completed");
         try {
             SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
-            String delayString = prefs.getString("DELAY_PREF", "0").replace(" sec", "");
+            String delayString = prefs.getString("delay", "0").replace(" sec", "");
             driverOptions.setDelay(Integer.parseInt(delayString));
             Logger.logFile("delay: " + driverOptions.getDelay());
 
-            driverOptions.setStartingPositionModes(prefs.getString("START_POS_MODES_PREF", ""));
-//            driverOptions.setParking(prefs.getString("PARKING_PREF", ""));
-//            driverOptions.setDeliveryRoutes(prefs.getString("DELIVERY_ROUTES_PREF", ""));
-//            driverOptions.setDoCarousel(prefs.getString("DUCK_CAROUSEL", "").equals("yes") ? true : false);
+            driverOptions.setStartingPositionModes(prefs.getString("starting position", ""));
+            driverOptions.setParking(prefs.getString("parking", ""));
+            driverOptions.setDeliveryRoutes(prefs.getString("delivery routes", ""));
 
             Logger.logFile("starting position: " + driverOptions.getStartingPositionModes());
             Logger.logFile("parking: " + driverOptions.getParking());
