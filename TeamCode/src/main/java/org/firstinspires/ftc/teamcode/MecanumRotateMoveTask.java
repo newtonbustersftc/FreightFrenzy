@@ -124,8 +124,8 @@ public class MecanumRotateMoveTask implements RobotControl {
             }
         }
         robot.mecanumDrive2(movePwr, moveAngle - currentAngle, rotatePwr);
-        Logger.logFile("Rotating current " + currPose +
-                " move angle:" + Math.toDegrees((moveAngle)) + " Pwr:" + movePwr + " rot:" + rotatePwr);
+        //Logger.logFile("Rotating current " + currPose +
+        //        " move angle:" + Math.toDegrees((moveAngle)) + " Pwr:" + movePwr + " rot:" + rotatePwr);
     }
 
     public void cleanUp() {

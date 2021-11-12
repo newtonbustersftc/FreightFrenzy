@@ -72,14 +72,15 @@ public class DriverOpModeTest extends OpMode {
             fieldMode = false;  //good luck driving
         }
         // test controls
+        int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
         if (gamepad1.dpad_up) {
-            robotHardware.startIntake();
+            robotHardware.setLiftMotorPosition(currLiftPos+20);
         }
-        else {
-            robotHardware.stopIntake();
+        if (gamepad1.dpad_down) {
+            robotHardware.setLiftMotorPosition(currLiftPos-20);
         }
         if (gamepad1.dpad_right) {
-            robotHardware.startDuck();
+            //robotHardware.startDuck();
         }
         else {
             robotHardware.stopDuck();
@@ -93,6 +94,7 @@ public class DriverOpModeTest extends OpMode {
 
         telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
         telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
+        telemetry.addData("Lift:", currLiftPos);
    }
 
     @Override

@@ -86,7 +86,7 @@ public class AutonomousTaskBuilder {
 
         switch (goal) {
             case LEFT:
-                this.targetLiftLevel = RobotHardware.LiftPosition.ZERO;
+                this.targetLiftLevel = RobotHardware.LiftPosition.BOTTOM;
                 break;
             case MIDDLE:
                 this.targetLiftLevel = RobotHardware.LiftPosition.MIDDLE;
@@ -97,7 +97,7 @@ public class AutonomousTaskBuilder {
         }
     }
 
-    public ArrayList<RobotControl> buildTaskList() {
+    public ArrayList<RobotControl> buildTaskList(RobotVision.AutonomousGoal goal) {
         //TODO - switch for start up position
         ArrayList<RobotControl> taskList = buildRedLeftTasks();
 
@@ -117,15 +117,20 @@ public class AutonomousTaskBuilder {
         taskList.add(m1);
         MecanumRotateMoveTask m2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
         m2.setRotateHeading(pos1, duckSpinPos, AngleMath.Direction.ANTI_CLOCKWISE);
+        m2.setTimeOut(2000);
         m2.setPower(0.3);
         taskList.add(m2);
+        //taskList.add(new RobotSleep(3000));
         taskList.add(new DuckCarouselSpinTask(robotHardware, 1));
         MecanumRotateMoveTask m3 = new MecanumRotateMoveTask(robotHardware, robotProfile);
         m3.setRotateHeading(duckSpinPos, pos2, AngleMath.Direction.CLOCKWISE);
         m3.setPower(0.5);
+        taskList.add(m3);
+        //taskList.add(new RobotSleep(3000));
         PIDMecanumMoveTask m4 = new PIDMecanumMoveTask(robotHardware, robotProfile);
         m4.setPath(pos2, hubPos);
         m4.setPower(0.5);
+        taskList.add(m4);
 
         taskList.add(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
 

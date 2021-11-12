@@ -231,7 +231,7 @@ public class RobotHardware {
     public void mecanumDrive2(double power, double angle, double rotation){
 
         //10/28/2019, Will, Ian Athena implemented and tested the drive method
-        double robotAngle = Math.PI / 2 - angle - Math.PI / 4;
+        double robotAngle = Math.PI / 2 + angle - Math.PI / 4;
         double frontLeft = power * Math.cos(robotAngle) + rotation;
         double frontRight = power * Math.sin(robotAngle) - rotation;
         double rearLeft = power * Math.sin(robotAngle) + rotation;
@@ -288,7 +288,7 @@ public class RobotHardware {
     }
 
     public void startDuck(int alliance){
-        duckMotor.setVelocity(-alliance * 500);
+        duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckVelocity);
         Logger.logFile("am I here to start Duck??");
 
 //        duckMotor.setVelocity(profile.hardwareSpec.duckVelocity);
@@ -312,10 +312,13 @@ public class RobotHardware {
     }
 
     public void setLiftMotorPosition(int pos) {
+        liftMotor.setPower(profile.hardwareSpec.liftMotorPower);
         liftMotor.setTargetPosition(pos);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public void setLiftPosition(LiftPosition pos) {
+        Logger.logFile("Setting lift position to: " + pos);
         currLiftPos = pos;
         liftMotor.setPower(profile.hardwareSpec.liftMotorPower);
         int newPosNum = 0;
@@ -396,6 +399,6 @@ public class RobotHardware {
 
     public boolean liftBottomTouched() {
         // digital channel: low - touched, high - not touch
-        return liftBottom.getState();
+        return !liftBottom.getState();
     }
 }

@@ -57,9 +57,9 @@ public class AutonomousGeneric extends LinearOpMode {
             Logger.logFile("delay: " + driverOptions.getDelay());
 
             driverOptions.setStartingPositionModes(prefs.getString("START_POS_MODES_PREF", ""));
-            driverOptions.setParking(prefs.getString("PARKING_PREF", ""));
-            driverOptions.setDeliveryRoutes(prefs.getString("DELIVERY_ROUTES_PREF", ""));
-            driverOptions.setDoCarousel(prefs.getString("DUCK_CAROUSEL", "").equals("yes") ? true : false);
+//            driverOptions.setParking(prefs.getString("PARKING_PREF", ""));
+//            driverOptions.setDeliveryRoutes(prefs.getString("DELIVERY_ROUTES_PREF", ""));
+//            driverOptions.setDoCarousel(prefs.getString("DUCK_CAROUSEL", "").equals("yes") ? true : false);
             Logger.logFile("starting position: " + driverOptions.getStartingPositionModes());
             Logger.logFile("parking: " + driverOptions.getParking());
             Logger.logFile("delivery route: " + driverOptions.getDeliveryRoutes());
@@ -91,7 +91,7 @@ public class AutonomousGeneric extends LinearOpMode {
 
         AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, robotHardware, robotProfile, goal);
 
-        taskList = builder.buildRedLeftTasks();
+        taskList = builder.buildTaskList(goal);
 
         TaskReporter.report(taskList);
         Logger.logFile("Task list items: " + taskList.size());
@@ -145,11 +145,13 @@ public class AutonomousGeneric extends LinearOpMode {
     }
 
     void resetLiftPosition() {
+        Logger.logFile("Resetting Lift Position, bottom sensor: " + robotHardware.liftBottomTouched());
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
         while (!robotHardware.liftBottomTouched()) {
-            int currArmPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
-            robotHardware.setLiftMotorPosition(currArmPos-10);
+            int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
+            Logger.logFile("Lift current Position " + currLiftPos);
+            robotHardware.setLiftMotorPosition(currLiftPos-50);
             try {
                 Thread.sleep(100);
             }
