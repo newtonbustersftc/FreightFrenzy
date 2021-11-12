@@ -46,6 +46,10 @@ public class MecanumRotateMoveTask implements RobotControl {
         this.minPower = minPower;
     }
 
+    public void setRotateHeading(Pose2d startPose, Pose2d endPose) {
+        setRotateHeading(startPose, endPose, AngleMath.getDirection(startPose.getHeading(), endPose.getHeading()));
+    }
+
     public void setRotateHeading(Pose2d startPose, Pose2d endPose, AngleMath.Direction turnDirection) {
         this.startPose = startPose;
         this.endPose = endPose;
@@ -53,7 +57,7 @@ public class MecanumRotateMoveTask implements RobotControl {
     }
 
     public String toString() {
-        return "Rotate from " + startPose + " to " + endPose + " curr:";
+        return "Rotate from " + startPose + " to " + endPose + " " + turnDirection;
     }
 
     public void setTimeOut(long timeOut) {

@@ -126,22 +126,22 @@ public class AutonomousGenericTest extends LinearOpMode {
     void setupTaskList2() {
         PIDMecanumMoveTask pmm1 = new PIDMecanumMoveTask(robotHardware,robotProfile);
         pmm1.setPower(0.5);
-        pmm1.setPath(new Pose2d(0,0,0), new Pose2d(40, 0, 0));
+        pmm1.setPath(new Pose2d(0,0,0), new Pose2d(20, 0, 0));
 
         taskList.add(pmm1);
 
         MecanumRotateMoveTask mrm1 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        mrm1.setRotateHeading(new Pose2d(40,0,0), new Pose2d(40, 0, Math.PI/2), AngleMath.Direction.ANTI_CLOCKWISE);
+        mrm1.setRotateHeading(new Pose2d(20,0,0), new Pose2d(20, 0, Math.PI/2));
         mrm1.setPower(0.3);
         taskList.add(mrm1);
 
         PIDMecanumMoveTask pmm2 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-        pmm2.setPath(new Pose2d(40,0,Math.PI/2), new Pose2d(40, -40, Math.PI/2));
+        pmm2.setPath(new Pose2d(20,0,Math.PI/2), new Pose2d(20, -20, Math.PI/2));
         pmm2.setPower(0.3);
         taskList.add(pmm2);
 
         MecanumRotateMoveTask mrm2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        mrm2.setRotateHeading(new Pose2d(40,-40,Math.PI/2), new Pose2d(45, -40, 0), AngleMath.Direction.CLOCKWISE);
+        mrm2.setRotateHeading(new Pose2d(20,-20,Math.PI/2), new Pose2d(30, -20, 0));
         mrm2.setPower(0.3);
         taskList.add(mrm2);
 

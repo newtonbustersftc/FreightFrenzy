@@ -5,6 +5,24 @@ import org.firstinspires.ftc.teamcode.MecanumRotateMoveTask;
 public class AngleMath {
     public enum Direction { STRAIGHT, CLOCKWISE, ANTI_CLOCKWISE }
 
+    public static Direction getDirection(double origin, double angle) {
+        double a = normalizeAngle(angle) - normalizeAngle(origin);
+        if (a>=0) {
+            if (a>Math.PI) {
+                return Direction.CLOCKWISE;
+            }
+            else {
+                return Direction.ANTI_CLOCKWISE;
+            }
+        }
+        else {
+            if (a>-Math.PI) {
+                return Direction.CLOCKWISE;
+            }
+            return Direction.ANTI_CLOCKWISE;
+        }
+    }
+
     public static double absDeltaAngle(double ang1, double ang2) {
         ang1 = normalizeAngle(ang1);
         ang2 = normalizeAngle(ang2);
