@@ -7,9 +7,11 @@ public class AngleMath {
 
     public static Direction getDirection(double origin, double angle) {
         double a = normalizeAngle(angle) - normalizeAngle(origin);
-        if (a>=0) {
+        if (a>0) {
             if (a>Math.PI) {
                 return Direction.CLOCKWISE;
+            }else if(a==0){
+                return Direction.STRAIGHT;
             }
             else {
                 return Direction.ANTI_CLOCKWISE;

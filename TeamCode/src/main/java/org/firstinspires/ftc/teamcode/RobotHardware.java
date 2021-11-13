@@ -290,8 +290,10 @@ public class RobotHardware {
     }
 
     public void startDuck(int alliance){
-        duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckVelocity);
-        Logger.logFile("am I here to start Duck??");
+        if(alliance==1)  //red
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckVelocity);
+        else
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckVelocity*0.9);
 
 //        duckMotor.setVelocity(profile.hardwareSpec.duckVelocity);
 //        long start = System.currentTimeMillis();

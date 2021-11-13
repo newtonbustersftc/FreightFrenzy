@@ -6,9 +6,9 @@ public class DuckCarouselSpinTask implements RobotControl {
     boolean isBeginning;
     long begin;
 
-    public DuckCarouselSpinTask(RobotHardware hardware, int teamAlliance){  //1 is RED, -1 is BLUE
+    public DuckCarouselSpinTask(RobotHardware hardware, String teamAlliance){  //1 is RED, -1 is BLUE
         this.robotHardware = hardware;
-        this.alliance = teamAlliance;
+        this.alliance = teamAlliance.contains("RED") ? 1 : -1;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class DuckCarouselSpinTask implements RobotControl {
 
     @Override
     public boolean isDone() {
-        if((System.currentTimeMillis() - begin) > 5000){
+        if((System.currentTimeMillis() - begin) > 3000){
             return true;
         }
         return false;
