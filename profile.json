@@ -71,7 +71,7 @@
     "liftPositionMiddle":1200,
     "liftPositionTop":1750,
     "liftMotorPower": 0.3,
-    "boxFlapOpen":0.35,
+    "boxFlapOpen":0.3,
     "boxFlapClose": 0.6
   },
   "rrFeedForwardParam": {
@@ -117,12 +117,12 @@
     },
     "BLUE_DUCK_1": {
       "x": -10,
-      "y": -5.0,
+      "y": 5.0,
       "heading": 180.0
     },
     "BLUE_DUCK_CAROUSEL": {
       "x": -20.0,
-      "y": -5,
+      "y": 5,
       "heading": 180.0
     },
     "BLUE_DUCK_2": {
