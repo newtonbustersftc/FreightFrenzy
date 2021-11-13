@@ -76,6 +76,7 @@ public class RobotProfile {
         hardwareSpec.liftMotorPower = 0.3;
         hardwareSpec.boxFlapOpen = 0.6;
         hardwareSpec.boxFlapClose = 0.35;
+        hardwareSpec.dropToHubTime = 2000;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -174,6 +175,7 @@ public class RobotProfile {
         double liftMotorPower;
         double boxFlapOpen;
         double boxFlapClose;
+        int dropToHubTime;
     }
 
     class FeedForwardParam {
