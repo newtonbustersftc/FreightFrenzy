@@ -12,6 +12,7 @@ import com.spartronics4915.lib.T265Camera;
 import org.firstinspires.ftc.teamcode.util.GoalTargetRecognition;
 
 import java.io.File;
+import java.util.Locale;
 
 @TeleOp(name="DriverOpMode Test", group="Test")
 //@Disabled
@@ -19,6 +20,7 @@ public class DriverOpModeTest extends OpMode {
     RobotHardware robotHardware;
     RobotVision robotVision;
     boolean fieldMode;
+    boolean isRedTeam;
     RobotProfile robotProfile;
 
     Pose2d currPose;
@@ -53,6 +55,9 @@ public class DriverOpModeTest extends OpMode {
         double encoderMeasurementCovariance = 0.8;
 // Set to the starting pose of the robot
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
+        String startPosStr = prefs.getString("starting position", "none");
+        Logger.logFile("StartPos:" + startPosStr);
+        isRedTeam = startPosStr.toUpperCase(Locale.ROOT).startsWith("RED");
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
     }
 
@@ -92,9 +97,9 @@ public class DriverOpModeTest extends OpMode {
             robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,Math.PI/2));
         }
 
-        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
-        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
-        telemetry.addData("Lift:", currLiftPos);
+//        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
+//        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
+//        telemetry.addData("Lift:", currLiftPos);
    }
 
     @Override
@@ -109,18 +114,33 @@ public class DriverOpModeTest extends OpMode {
         }
     }
    private void handleMovement() {
-        double turn = gamepad1.right_stick_x / 2;
-        double power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-        double moveAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4.5;
+       double turn = gamepad1.right_stick_x/4;
+       double power = Math.hypot(gamepad1.left_stick_x, gamepad1.left_stick_y);
+       double padAngle = Math.atan2(gamepad1.left_stick_y, -gamepad1.left_stick_x) + Math.PI/2;
 
-        if (fieldMode) {
-            moveAngle += currPose.getHeading() - fieldHeadingOffset - Math.PI / 2;
-        }
+       double movAngle;
+       if (fieldMode) {
+           movAngle = padAngle+((isRedTeam)?Math.PI/2:-Math.PI/2) - currPose.getHeading();
+       }
+       else {
+           movAngle = padAngle;
+       }
+       if (gamepad1.left_bumper) {
+           power = power/3;
+           turn = turn/3;
+       }
+       robotHardware.mecanumDrive2(power, movAngle, turn);
+       telemetry.addData("Stick: ", Math.toDegrees(padAngle));
+       telemetry.addData("Move: ", Math.toDegrees(movAngle));
+       telemetry.addData("Power:", power);
+       telemetry.addData("Mode: ", (fieldMode)?"Field":"Robot");
 
-        if (gamepad1.left_bumper) {
-            power = power / 3.5;
-            turn = turn / 13;
-        }
-        robotHardware.mecanumDriveTest(power, moveAngle, turn, 0);
+       // toggle field mode on/off.
+       // Driver 1: left trigger - enable; right trigger - disable
+       if (gamepad1.left_trigger > 0) {
+           fieldMode = true;
+       } else if (gamepad1.right_trigger > 0) {
+           fieldMode = false;  //good luck driving
+       }
     }
 }

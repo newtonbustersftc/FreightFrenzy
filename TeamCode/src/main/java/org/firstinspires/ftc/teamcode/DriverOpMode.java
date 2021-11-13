@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.io.File;
+import java.util.Locale;
 
 import static org.firstinspires.ftc.teamcode.AutonomousOptions.START_POS_MODES_PREF;
 
@@ -20,7 +21,7 @@ public class DriverOpMode extends OpMode {
     IntakeMode currIntakeMode = IntakeMode.STOP;
 
     Pose2d currPose;
-    double fieldHeadingOffset;
+    boolean isRedTeam;
 
     boolean fieldMode;
     int fieldModeSign = -1;  // RED side = 1, BLUE side = -1
@@ -59,13 +60,9 @@ public class DriverOpMode extends OpMode {
 
         // Based on the Autonomous mode starting position, define the heading offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
-        if (prefs.getString(START_POS_MODES_PREF, "NONE").startsWith("RED")) {
-            fieldModeSign = 1;
-        }
-        else {
-            fieldModeSign = -1;
-        }
-        Logger.logFile("DriverOpMode: " + prefs.getString(START_POS_MODES_PREF, "NONE"));
+        String startPosStr = prefs.getString("starting position", "NONE");
+        isRedTeam = startPosStr.toUpperCase(Locale.ROOT).startsWith("RED");
+        Logger.logFile("DriverOpMode: " + startPosStr);
         setupCombos();
     }
 
@@ -164,28 +161,26 @@ public class DriverOpMode extends OpMode {
      * Left trigger to enable field mode, right trigger to enable robot-oriented mode
      */
     private void handleMovement() {
-        double turn = gamepad1.right_stick_x/2;
-        double power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-        double moveAngle = Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI/4;
+        double turn = gamepad1.right_stick_x / 4;
+        double power = Math.hypot(gamepad1.left_stick_x, gamepad1.left_stick_y);
+        double padAngle = Math.atan2(gamepad1.left_stick_y, -gamepad1.left_stick_x) + Math.PI / 2;
 
+        double movAngle;
         if (fieldMode) {
-            moveAngle += -currPose.getHeading() - fieldHeadingOffset + fieldModeSign*Math.PI/2;
+            movAngle = padAngle + ((isRedTeam) ? Math.PI / 2 : -Math.PI / 2) - currPose.getHeading();
+        } else {
+            movAngle = padAngle;
         }
-
-        //power = power;
-        turn = turn / 4;
-        if (gamepad1.left_bumper) { // further bring it down
-            power = power/3;
-            turn = turn/3;
+        if (gamepad1.left_bumper) {
+            power = power / 3;
+            turn = turn / 3;
         }
-
-        robotHardware.mecanumDriveTest(power, moveAngle, turn, 0);
+        robotHardware.mecanumDrive2(power, movAngle, turn);
 
         // toggle field mode on/off.
         // Driver 1: left trigger - enable; right trigger - disable
         if (gamepad1.left_trigger > 0) {
             fieldMode = true;
-            fieldHeadingOffset = currPose.getHeading();
         } else if (gamepad1.right_trigger > 0) {
             fieldMode = false;  //good luck driving
         }

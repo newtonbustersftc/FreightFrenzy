@@ -154,8 +154,13 @@ public class AutonomousGenericTest extends LinearOpMode {
 
     void setupTaskList3() {
         MecanumRotateMoveTask mrm1 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        mrm1.setRotateHeading(new Pose2d(00, 0, 0), new Pose2d(00, -5, -Math.PI / 4));
+        mrm1.setRotateHeading(new Pose2d(00, 0, 0), new Pose2d(-15, -15, -Math.PI / 3));
         mrm1.setPower(0.3);
         taskList.add(mrm1);
+        taskList.add(new RobotSleep(1000));
+        MecanumRotateMoveTask mrm2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
+        mrm2.setRotateHeading(new Pose2d(-15, -15, -Math.PI / 3), new Pose2d(00, 0, 0));
+        mrm2.setPower(0.3);
+        taskList.add(mrm2);
     }
 }
