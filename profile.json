@@ -56,7 +56,8 @@
     "ringPusherShoot": 0.5,
     "ringPusherDown": 0.17,
     "intakeVelocity": 1000,
-    "duckVelocity": 500,
+    "duckDriveVelocity": 550,
+    "duckAutoVelocity": 500,
     "duckSpinTime": 3000,
     "ringHolderUp": 0.338,
     "ringHolderDown": 0.555,
@@ -70,7 +71,7 @@
     "liftPositionBottom":540,
     "liftPositionMiddle":1200,
     "liftPositionTop":1750,
-    "liftMotorPower": 0.3,
+    "liftMotorPower": 0.6,
     "boxFlapOpen":0.25,
     "boxFlapClose": 0.6
   },
@@ -86,13 +87,13 @@
       "heading": 0
     },
     "BLUE_DEPOT_1": {
-      "x": 0,
-      "y": -15,
+      "x": -12,
+      "y": 0,
       "heading": 0
     },
     "BLUE_DEPOT_2": {
       "x": -12,
-      "y": -23,
+      "y": 23,
       "heading": 0
     },
     "BLUE_DEPOT_3": {
@@ -101,12 +102,12 @@
       "heading": 0
     },
     "BLUE_DEPOT_HUB": {
-      "x": -12,
-      "y": -23,
-      "heading": 300
+      "x": -17,
+      "y": 27,
+      "heading": 60
     },
     "BLUE_DEPOT_WAREHOUSE": {
-      "x": 24,
+      "x": 26,
       "y": 5,
       "heading": 0
     },
@@ -116,8 +117,8 @@
       "heading": 0
     },
     "RED_DEPOT_1": {
-      "x": 0,
-      "y": -15,
+      "x": -12,
+      "y": -5,
       "heading": 0
     },
     "RED_DEPOT_2": {
@@ -137,7 +138,7 @@
     },
     "RED_DEPOT_WAREHOUSE": {
       "x": 24,
-      "y": 5,
+      "y": -5,
       "heading": 0
     },
     "RED_DUCK_START": {

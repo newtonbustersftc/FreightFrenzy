@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
@@ -12,7 +11,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
@@ -92,8 +90,7 @@ public class RobotHardware {
         liftMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("LiftMotor");
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         duckMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("DuckMotor");
-//        duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        duckMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         duckMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //led4 = hardwareMap.digitalChannel.get("LED4");
@@ -289,26 +286,18 @@ public class RobotHardware {
         intakeMotor.setPower(0);
     }
 
+    public void startDuckAuto(int alliance) {
+        if(alliance==1)  //red
+            duckMotor.setVelocity(alliance * profile.hardwareSpec.duckAutoVelocity);
+        else
+            duckMotor.setVelocity(alliance * profile.hardwareSpec.duckAutoVelocity *0.9);
+    }
+
     public void startDuck(int alliance){
         if(alliance==1)  //red
-            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckVelocity);
+            duckMotor.setVelocity(alliance * profile.hardwareSpec.duckDriveVelocity);
         else
-            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckVelocity*0.9);
-
-//        duckMotor.setVelocity(profile.hardwareSpec.duckVelocity);
-//        long start = System.currentTimeMillis();
-//        double acceleration  = 0.5;
-//        double initVelocity = 0; //velocityFinal = velocityInitial + acceleration * time
-//        double finalVelocity = 0;
-//        duckMotor.setPower(0.5);
-//        finalVelocity = initVelocity + acceleration * ((System.currentTimeMillis()-start)/1000);
-//        duckMotor.setVelocity(finalVelocity);
-//        initVelocity = finalVelocity;
-//        if((System.currentTimeMillis() - start)%100 == 0)
-////            telemetry.addData("duck velocity=" , duckMotor.getVelocity());
-//        if((System.currentTimeMillis() - start)>4000)
-//            duckMotor.setPower(0);
-
+            duckMotor.setVelocity(alliance * profile.hardwareSpec.duckDriveVelocity *0.9);
     }
 
     public void stopDuck() {

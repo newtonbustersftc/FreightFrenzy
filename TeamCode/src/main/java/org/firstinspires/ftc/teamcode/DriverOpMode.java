@@ -34,6 +34,7 @@ public class DriverOpMode extends OpMode {
     boolean xPressed = false;
     boolean dpadUpPressed = false;
     boolean dpadDownPressed = false;
+    SequentialComboTask deliverTask;
 
     // DriveThru combos
     RobotControl currentTask = null;
@@ -57,7 +58,7 @@ public class DriverOpMode extends OpMode {
         //robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
         //robotHardware.initLeds();   // need to init everytime
-        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+       // robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         //ensure lift is reset at the beginning and the end
 
         // Based on the Autonomous mode starting position, define the heading offset for field mode
@@ -100,10 +101,11 @@ public class DriverOpMode extends OpMode {
                 }
             }
         }
-        else {
-            handleMovement();
-        }
+
+        handleMovement();
+
         telemetry.addData("CurrPose", currPose);
+        telemetry.addData("fieldMode", fieldMode);
 
         handleIntake();
 
@@ -113,8 +115,8 @@ public class DriverOpMode extends OpMode {
         else if (gamepad1.right_bumper && !rightBumperPressed) {
             robotHardware.liftDown();
         }
-        dpadUpPressed = gamepad1.left_bumper;
-        dpadDownPressed = gamepad1.right_bumper;
+        leftBumperPressed = gamepad1.left_bumper;
+        rightBumperPressed = gamepad1.right_bumper;
 
         if (!xPressed && gamepad1.x) {
             Logger.logFile("field red=" + fieldModeSign);
@@ -133,12 +135,18 @@ public class DriverOpMode extends OpMode {
             resetLiftPosition();
         }
 
+        if(gamepad1.share){
+            robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+        }
+
         if (gamepad1.y) {
-            robotHardware.openBoxFlap();
+            //robotHardware.openBoxFlap();
+            currentTask = deliverTask;
+            deliverTask.prepare();
         }
-        else {
-            robotHardware.closeBoxFlap();
-        }
+//        else {
+//            robotHardware.closeBoxFlap();
+//        }
     }
 
     @Override
@@ -202,15 +210,15 @@ public class DriverOpMode extends OpMode {
     private void handleIntake() {
         if (gamepad1.left_trigger > 0) {
             robotHardware.startIntake();
-        } else {
+        }
+        else if (gamepad1.right_trigger > 0) {
+            robotHardware.reverseIntake();
+        }
+        else {
             robotHardware.stopIntake();
         }
 
-        if (gamepad1.right_trigger > 0) {
-            robotHardware.reverseIntake();
-        } else {
-            robotHardware.stopIntake();
-        }
+
 
 //        if(gamepad1.right_bumper){
 //            robotHardware.stopIntake();
@@ -242,6 +250,8 @@ public class DriverOpMode extends OpMode {
      * Define combo task for driver op mode
      */
     void setupCombos() {
-
+        deliverTask = new SequentialComboTask();
+        deliverTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
+        deliverTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
     }
 }

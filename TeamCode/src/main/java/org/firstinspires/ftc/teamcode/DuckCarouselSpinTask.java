@@ -14,7 +14,7 @@ public class DuckCarouselSpinTask implements RobotControl {
     @Override
     public void prepare() {
         begin = System.currentTimeMillis();
-        robotHardware.startDuck(alliance);
+        robotHardware.startDuckAuto(alliance);
     }
 
     @Override
