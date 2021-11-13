@@ -22,9 +22,7 @@ public class DriverOpMode extends OpMode {
 
     Pose2d currPose;
     boolean isRedTeam;
-
     boolean fieldMode;
-    int fieldModeSign = -1;  // RED side = 1, BLUE side = -1
     boolean dpadRightPressed = false;
     boolean dpadLeftPressed = false;
     boolean aPressed = false;
@@ -110,8 +108,7 @@ public class DriverOpMode extends OpMode {
         dpadDownPressed = gamepad1.dpad_down;
 
         if (!xPressed && gamepad1.x) {
-            Logger.logFile("field red=" + fieldModeSign);
-            if (fieldModeSign == 1) //red
+            if (isRedTeam) //red
                 robotHardware.startDuck(1);
             else
                 robotHardware.startDuck(-1);
