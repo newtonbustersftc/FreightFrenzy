@@ -27,6 +27,8 @@ public class DriverOpMode extends OpMode {
     boolean isRedTeam;
     boolean dpadRightPressed = false;
     boolean dpadLeftPressed = false;
+    boolean leftBumperPressed = false;
+    boolean rightBumperPressed = false;
     boolean aPressed = false;
     boolean yPressed = false;
     boolean xPressed = false;
@@ -62,6 +64,7 @@ public class DriverOpMode extends OpMode {
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
         if (prefs.getString(START_POS_MODES_PREF, "NONE").startsWith("RED")) {
             fieldModeSign = 1;
+            isRedTeam = true;
         }
         else {
             fieldModeSign = -1;
@@ -104,14 +107,14 @@ public class DriverOpMode extends OpMode {
 
         handleIntake();
 
-        if (gamepad1.dpad_up && !dpadUpPressed) {
+        if (gamepad1.left_bumper && !leftBumperPressed) {
             robotHardware.liftUp();
         }
-        else if (gamepad1.dpad_down && !dpadDownPressed) {
+        else if (gamepad1.right_bumper && !rightBumperPressed) {
             robotHardware.liftDown();
         }
-        dpadUpPressed = gamepad1.dpad_up;
-        dpadDownPressed = gamepad1.dpad_down;
+        dpadUpPressed = gamepad1.left_bumper;
+        dpadDownPressed = gamepad1.right_bumper;
 
         if (!xPressed && gamepad1.x) {
             Logger.logFile("field red=" + fieldModeSign);
@@ -124,6 +127,10 @@ public class DriverOpMode extends OpMode {
         if (!gamepad1.x) {
             robotHardware.stopDuck();
             xPressed = false;
+        }
+
+        if(gamepad1.b){
+            resetLiftPosition();
         }
 
         if (gamepad1.y) {
@@ -164,29 +171,27 @@ public class DriverOpMode extends OpMode {
      * Left trigger to enable field mode, right trigger to enable robot-oriented mode
      */
     private void handleMovement() {
-        double turn = gamepad1.right_stick_x/2;
-        double power = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-        double moveAngle = Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI/4;
+        double turn = gamepad1.right_stick_x / 2;
+        double power = Math.hypot(gamepad1.left_stick_x, gamepad1.left_stick_y);
+        double padAngle = Math.atan2(gamepad1.left_stick_y, -gamepad1.left_stick_x) + Math.PI / 2;
 
+        double movAngle;
         if (fieldMode) {
-            moveAngle += -currPose.getHeading() - fieldHeadingOffset + fieldModeSign*Math.PI/2;
+            movAngle = padAngle + ((isRedTeam) ? Math.PI / 2 : -Math.PI / 2) - currPose.getHeading();
+        } else {
+            movAngle = padAngle;
         }
-
-        //power = power;
-        turn = turn / 4;
-        if (gamepad1.left_bumper) { // further bring it down
-            power = power/3;
-            turn = turn/3;
+        if (gamepad1.dpad_left) {
+            power = power / 3;
+            turn = turn / 3;
         }
-
-        robotHardware.mecanumDriveTest(power, moveAngle, turn, 0);
+        robotHardware.mecanumDrive2(power, movAngle, turn);
 
         // toggle field mode on/off.
         // Driver 1: left trigger - enable; right trigger - disable
-        if (gamepad1.left_trigger > 0) {
+        if (gamepad1.dpad_down) {
             fieldMode = true;
-            fieldHeadingOffset = currPose.getHeading();
-        } else if (gamepad1.right_trigger > 0) {
+        } else if (gamepad1.dpad_right) {
             fieldMode = false;  //good luck driving
         }
     }
@@ -195,19 +200,41 @@ public class DriverOpMode extends OpMode {
      * Uses up  down keypad to switch to different modes between shooting, stop, reverse, and intake
      */
     private void handleIntake() {
-        if (gamepad1.dpad_left) {
-            robotHardware.reverseIntake();
-        } else {
-            robotHardware.stopIntake();
-        }
-
-        if (gamepad1.dpad_right) {
+        if (gamepad1.left_trigger > 0) {
             robotHardware.startIntake();
         } else {
             robotHardware.stopIntake();
         }
 
-        dpadLeftPressed = gamepad1.dpad_left;
+        if (gamepad1.right_trigger > 0) {
+            robotHardware.reverseIntake();
+        } else {
+            robotHardware.stopIntake();
+        }
+
+//        if(gamepad1.right_bumper){
+//            robotHardware.stopIntake();
+//        }
+
+//        dpadLeftPressed = gamepad1.dpad_left;
+    }
+
+    void resetLiftPosition() {
+        Logger.logFile("Resetting Lift Position, bottom sensor: " + robotHardware.liftBottomTouched());
+        robotHardware.getBulkData1();
+        robotHardware.getBulkData2();
+        while (!robotHardware.liftBottomTouched()) {
+            int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
+            Logger.logFile("Lift current Position " + currLiftPos);
+            robotHardware.setLiftMotorPosition(currLiftPos - 25);
+            try {
+                Thread.sleep(10);
+            }
+            catch (Exception e) {
+            }
+        }
+        robotHardware.resetLiftEncoderCount();
+        robotHardware.setLiftPosition(RobotHardware.LiftPosition.ZERO);
     }
 
 

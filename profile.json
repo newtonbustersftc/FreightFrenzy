@@ -55,8 +55,8 @@
     "ringPusherUp": 0.78,
     "ringPusherShoot": 0.5,
     "ringPusherDown": 0.17,
-    "intakeVelocity": 600,
-    "duckVelocity": 200,
+    "intakeVelocity": 1000,
+    "duckVelocity": 550,
     "duckSpinTime": 5000,
     "ringHolderUp": 0.338,
     "ringHolderDown": 0.555,
@@ -66,12 +66,12 @@
     "cameraLeftDisplacement": -1.5,
     "cameraHeadingOffset": -2.5,
     "realSenseAngleModifier": 90,
-    "liftPositionZero":50,
+    "liftPositionZero":0,
     "liftPositionBottom":540,
     "liftPositionMiddle":1200,
     "liftPositionTop":1750,
     "liftMotorPower": 0.3,
-    "boxFlapOpen":0.35,
+    "boxFlapOpen":0.25,
     "boxFlapClose": 0.6
   },
   "rrFeedForwardParam": {
@@ -80,6 +80,66 @@
     "kStatic": 0.27846
   },
   "poses": {
+    "BLUE_DEPOT_START": {
+      "x": 0,
+      "y": 0,
+      "heading": 0
+    },
+    "BLUE_DEPOT_1": {
+      "x": 0,
+      "y": -15,
+      "heading": 0
+    },
+    "BLUE_DEPOT_2": {
+      "x": -12,
+      "y": -23,
+      "heading": 0
+    },
+    "BLUE_DEPOT_3": {
+      "x": -12,
+      "y": 5,
+      "heading": 0
+    },
+    "BLUE_DEPOT_HUB": {
+      "x": -12,
+      "y": -23,
+      "heading": 300
+    },
+    "BLUE_DEPOT_WAREHOUSE": {
+      "x": 24,
+      "y": 5,
+      "heading": 0
+    },
+    "BLUE_DEPOT_START": {
+      "x": 0,
+      "y": 0,
+      "heading": 0
+    },
+    "BLUE_DEPOT_1": {
+      "x": 0,
+      "y": -15,
+      "heading": 0
+    },
+    "BLUE_DEPOT_2": {
+      "x": -12,
+      "y": -23,
+      "heading": 0
+    },
+    "BLUE_DEPOT_3": {
+      "x": -12,
+      "y": 5,
+      "heading": 0
+    },
+    "BLUE_DEPOT_HUB": {
+      "x": -12,
+      "y": -23,
+      "heading": 300
+    },
+    "BLUE_DEPOT_WAREHOUSE": {
+      "x": 24,
+      "y": 5,
+      "heading": 0
+    },
     "RED_DUCK_START": {
       "x": 0,
       "y": 0,

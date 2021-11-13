@@ -44,6 +44,7 @@ public class AutonomousGeneric extends LinearOpMode {
 //        robotHardware.setMotorStopBrake(true);
 
         resetLiftPosition();
+        robotHardware.closeBoxFlap();
 
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
@@ -153,7 +154,7 @@ public class AutonomousGeneric extends LinearOpMode {
         while (!robotHardware.liftBottomTouched()) {
             int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
             Logger.logFile("Lift current Position " + currLiftPos);
-            robotHardware.setLiftMotorPosition(currLiftPos - 50);
+            robotHardware.setLiftMotorPosition(currLiftPos - 25);
             try {
                 Thread.sleep(100);
             }

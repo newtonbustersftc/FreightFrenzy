@@ -92,8 +92,10 @@ public class RobotHardware {
         liftMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("LiftMotor");
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         duckMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("DuckMotor");
-        duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         duckMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        duckMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         //led4 = hardwareMap.digitalChannel.get("LED4");
         //led5 = hardwareMap.digitalChannel.get("LED5");
         //initLeds();
@@ -385,7 +387,8 @@ public class RobotHardware {
 
     public void openBoxFlap(){
         if (currLiftPos!=LiftPosition.ZERO) {
-            boxFlapServo.setPosition(profile.hardwareSpec.boxFlapOpen);
+            boxFlapServo.setPosition(0.3);
+            //boxFlapServo.setPosition(profile.hardwareSpec.boxFlapOpen);
         }
     }
 

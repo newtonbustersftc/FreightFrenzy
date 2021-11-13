@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.lifecycle.Lifecycle;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 
 import org.firstinspires.ftc.teamcode.util.AngleMath;
@@ -103,9 +105,76 @@ public class AutonomousTaskBuilder {
             ArrayList<RobotControl> taskList = buildDuckTasks(startingPositionModes);
         }
         else {
-            taskList = new ArrayList<>();   // TODO: create buildDepotTasks
+            ArrayList<RobotControl> taskList = buildDepotTasks(startingPositionModes);
+            //taskList = new ArrayList<>();   // TODO: create buildDepotTasks
         }
         robotHardware.getLocalizer().setPoseEstimate(startPos);
+        return taskList;
+    }
+
+    public ArrayList<RobotControl> buildDepotTasks(String startPosStr){
+
+        startPos = robotProfile.getProfilePose(startPosStr + "_START");
+        Pose2d pos1 = robotProfile.getProfilePose(startPosStr + "_1");
+        Pose2d pos2 = robotProfile.getProfilePose(startPosStr + "_2");
+        Pose2d pos3 = robotProfile.getProfilePose(startPosStr + "_3");
+        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
+        Pose2d warehousePos = robotProfile.getProfilePose(startPosStr + "_WAREHOUSE");
+        //Pose2d parkPos = robotProfile.getProfilePose(startPosStr + "_PARK");
+        PIDMecanumMoveTask m1 = new PIDMecanumMoveTask(robotHardware, robotProfile);
+        m1.setPath(startPos, pos1);
+        m1.setPower(0.5);
+        taskList.add(m1);
+        MecanumRotateMoveTask m2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
+        m2.setRotateHeading(startPos, hubPos);
+        m2.setPower(0.5);
+
+        taskList.add(m2);
+//        MecanumRotateMoveTask m2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
+//        m2.setRotateHeading(pos1, hubPos);
+//        m2.setPower(0.3);
+//        taskList.add(m2);
+        taskList.add(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
+        taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
+        taskList.add(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
+
+        MecanumRotateMoveTask m3 = new MecanumRotateMoveTask(robotHardware, robotProfile);
+        m3.setRotateHeading(hubPos, startPos);
+        m3.setPower(0.3);
+        taskList.add(m3);
+
+        PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
+        m5.setPath(startPos, warehousePos);
+         taskList.add(m5);
+
+//        MecanumRotateMoveTask m3 = new MecanumRotateMoveTask(robotHardware, robotProfile);
+//        m3.setRotateHeading(hubPos, pos2);
+//        m3.setPower(0.3);
+//        taskList.add(m3);
+//
+//        PIDMecanumMoveTask m4 = new PIDMecanumMoveTask(robotHardware, robotProfile);
+//        m4.setPath(pos2, pos3);
+//        m4.setPower(0.3);
+//        taskList.add(m4);
+//
+//        PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
+//        m5.setPath(pos3, warehousePos);
+//        m5.setPower(0.3);
+//        taskList.add(m5);
+
+        //taskList.add(new IntakeTask(robotHardware, robotProfile));
+
+
+//        //taskList.add(new RobotSleep(3000));
+//        PIDMecanumMoveTask m4 = new PIDMecanumMoveTask(robotHardware, robotProfile);
+//        m4.setPath(pos2, hubPos);
+//        m4.setPower(0.5);
+//        taskList.add(m4);
+//        taskList.add(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
+//        taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
+//        PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
+//        m4.setPath(hubPos, parkPos);
+//        taskList.add(m4);
         return taskList;
     }
 
@@ -114,7 +183,7 @@ public class AutonomousTaskBuilder {
         Pose2d pos1 = robotProfile.getProfilePose(startPosStr + "_1");
         Pose2d duckSpinPos = robotProfile.getProfilePose(startPosStr + "_CAROUSEL");
         Pose2d pos2 = robotProfile.getProfilePose(startPosStr + "_2");
-        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
+        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "HUB");
         Pose2d parkPos = robotProfile.getProfilePose(startPosStr + "_PARK");
         MecanumRotateMoveTask m1 = new MecanumRotateMoveTask(robotHardware, robotProfile);
         m1.setRotateHeading(startPos, pos1);
