@@ -24,6 +24,7 @@ public class DriverOpMode extends OpMode {
 
     boolean fieldMode;
     int fieldModeSign = -1;  // RED side = 1, BLUE side = -1
+    boolean isRedTeam;
     boolean dpadRightPressed = false;
     boolean dpadLeftPressed = false;
     boolean aPressed = false;
@@ -125,7 +126,6 @@ public class DriverOpMode extends OpMode {
             xPressed = false;
         }
 
-        //make a toggle button
         if (gamepad1.y) {
             robotHardware.openBoxFlap();
         }
@@ -197,9 +197,14 @@ public class DriverOpMode extends OpMode {
     private void handleIntake() {
         if (gamepad1.dpad_left) {
             robotHardware.reverseIntake();
+        } else {
+            robotHardware.stopIntake();
         }
-        else if (gamepad1.dpad_right) {
+
+        if (gamepad1.dpad_right) {
             robotHardware.startIntake();
+        } else {
+            robotHardware.stopIntake();
         }
 
         dpadLeftPressed = gamepad1.dpad_left;
