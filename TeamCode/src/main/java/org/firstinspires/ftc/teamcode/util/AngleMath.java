@@ -41,7 +41,7 @@ public class AngleMath {
                 ang = toAngle - fromAngle;
             }
             else {
-                ang = fromAngle + Math.PI*2 - toAngle;
+                ang = toAngle + Math.PI*2 - fromAngle;
             }
         }
         else {  // CLOCKWISE
