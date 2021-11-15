@@ -288,16 +288,16 @@ public class RobotHardware {
 
     public void startDuckAuto(int alliance) {
         if(alliance==1)  //red
-            duckMotor.setVelocity(alliance * profile.hardwareSpec.duckAutoVelocity);
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckAutoVelocity);
         else
-            duckMotor.setVelocity(alliance * profile.hardwareSpec.duckAutoVelocity *0.9);
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckAutoVelocity *0.9);
     }
 
     public void startDuck(int alliance){
         if(alliance==1)  //red
-            duckMotor.setVelocity(alliance * profile.hardwareSpec.duckDriveVelocity);
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckDriveVelocity);
         else
-            duckMotor.setVelocity(alliance * profile.hardwareSpec.duckDriveVelocity *0.9);
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckDriveVelocity *0.9);
     }
 
     public void stopDuck() {
