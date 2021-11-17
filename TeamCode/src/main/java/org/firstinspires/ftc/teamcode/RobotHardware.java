@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
@@ -22,7 +24,7 @@ import java.text.DecimalFormat;
 
 public class RobotHardware {
     public enum LiftPosition {
-        ZERO, BOTTOM, MIDDLE, TOP;
+        NOT_INIT, ZERO, BOTTOM, MIDDLE, TOP;
         private static LiftPosition[] vals = values();
 
         public LiftPosition next() {
@@ -123,7 +125,7 @@ public class RobotHardware {
         mecanumDrive.setLocalizer(realSenseLocalizer);
         robotVision = new RobotVision();
 
-        currLiftPos = LiftPosition.ZERO;
+        currLiftPos = LiftPosition.NOT_INIT;
     }
 
     public T265Camera getT265Camera() {
@@ -311,7 +313,7 @@ public class RobotHardware {
     }
 
     public void setLiftPosition(LiftPosition pos) {
-        Logger.logFile("Setting lift position to: " + pos);
+//        Logger.logFile("Setting lift position to: " + pos);
         currLiftPos = pos;
         liftMotor.setPower(profile.hardwareSpec.liftMotorPower);
         int newPosNum = 0;
@@ -334,7 +336,11 @@ public class RobotHardware {
     }
 
     public void liftUp() {
-        setLiftPosition(currLiftPos.next());
+        currLiftPos = currLiftPos.next();
+        if(currLiftPos ==LiftPosition.ZERO) {
+            currLiftPos = currLiftPos.next(); //goes up to Bottom
+        }
+        setLiftPosition(currLiftPos);
     }
 
     public void liftDown() {
@@ -349,6 +355,25 @@ public class RobotHardware {
     void resetLiftEncoderCount(){
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
+
+    void resetLiftPositionAutonomous() {
+        Logger.logFile("Resetting Lift Position, bottom sensor: " + liftBottomTouched());
+        getBulkData1();
+        getBulkData2();
+        while (!liftBottomTouched()) {
+            int currLiftPos = getEncoderCounts(RobotHardware.EncoderType.LIFT);
+            Logger.logFile("Lift current Position " + currLiftPos);
+            setLiftMotorPosition(currLiftPos - 25);
+            try {
+                Thread.sleep(100);
+            }
+            catch (Exception e) {
+            }
+        }
+        resetLiftEncoderCount();
+        setLiftPosition(RobotHardware.LiftPosition.ZERO);
+    }
+
     /**
      * WARNING WARNING WARNING ****
      * Sensor distance call not supported by BulkData read, this call takes 33ms to complete
