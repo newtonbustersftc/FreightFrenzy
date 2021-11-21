@@ -62,7 +62,8 @@ public class RobotProfile {
         hardwareSpec.rightEncoderForwardSign = -1;
         hardwareSpec.horizontalEncoderForwardSign = -1;
         hardwareSpec.intakeVelocity = 1000.0;
-        hardwareSpec.duckVelocity = 550;
+        hardwareSpec.duckDriveVelocity = 550;
+        hardwareSpec.duckAutoVelocity = 200;
         hardwareSpec.duckSpinTime = 5000;
         hardwareSpec.cameraForwardDisplacement = 1.5f;
         hardwareSpec.cameraVerticalDisplacement = 16.5f;
@@ -161,7 +162,8 @@ public class RobotProfile {
         int rightEncoderForwardSign;
         int horizontalEncoderForwardSign;
         double intakeVelocity;
-        int duckVelocity;
+        int duckDriveVelocity;
+        int duckAutoVelocity;
         long duckSpinTime;
         float cameraForwardDisplacement;
         float cameraVerticalDisplacement;

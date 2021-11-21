@@ -60,7 +60,7 @@ public class DriverOpMode extends OpMode {
         //robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
         //robotHardware.initLeds();   // need to init everytime
-        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+       // robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         //ensure lift is reset at the beginning and the end
 
         // Based on the Autonomous mode starting position, define the heading offset for field mode
@@ -73,6 +73,7 @@ public class DriverOpMode extends OpMode {
             fieldModeSign = -1;
         }
         Logger.logFile("DriverOpMode: " + prefs.getString(START_POS_MODES_PREF, "NONE"));
+
         setupCombos();
     }
 
@@ -87,6 +88,7 @@ public class DriverOpMode extends OpMode {
         robotHardware.getBulkData2();
         robotHardware.getLocalizer().update();
         currPose = robotHardware.getLocalizer().getPoseEstimate();
+
         //currPose = new Pose2d(0,0,0);   // for now
         //Handling autonomous task loop
         if (currentTask != null) {
@@ -116,8 +118,8 @@ public class DriverOpMode extends OpMode {
         else if (gamepad1.right_bumper && !rightBumperPressed) {
             robotHardware.liftDown();
         }
-        dpadUpPressed = gamepad1.left_bumper;
-        dpadDownPressed = gamepad1.right_bumper;
+        leftBumperPressed = gamepad1.left_bumper;
+        rightBumperPressed = gamepad1.right_bumper;
 
         if (!xPressed && gamepad1.x) {
             Logger.logFile("field red=" + fieldModeSign);
@@ -133,16 +135,22 @@ public class DriverOpMode extends OpMode {
         }
 
         if(gamepad1.b){
-            resetLiftPosition();
+            robotHardware.setLiftPosition(RobotHardware.LiftPosition.NOT_INIT);
+            currentTask = new ResetLiftPositionDriverOpModeTask(robotHardware);
+        }
+
+        if(gamepad1.share){
+            robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         }
 
         if (gamepad1.y) {
+            //robotHardware.openBoxFlap();
             currentTask = deliverTask;
-            currentTask.prepare();
+            deliverTask.prepare();
         }
-        else {
-            robotHardware.closeBoxFlap();
-        }
+//        else {
+//            robotHardware.closeBoxFlap();
+//        }
     }
 
     @Override
@@ -228,6 +236,11 @@ public class DriverOpMode extends OpMode {
 //        else {
 //            robotHardware.stopIntake();
 //        }
+//        else {
+//            robotHardware.stopIntake();
+//        }
+
+
 
 //        if(gamepad1.right_bumper){
 //            robotHardware.stopIntake();
@@ -236,23 +249,7 @@ public class DriverOpMode extends OpMode {
 //        dpadLeftPressed = gamepad1.dpad_left;
     }
 
-    void resetLiftPosition() {
-        Logger.logFile("Resetting Lift Position, bottom sensor: " + robotHardware.liftBottomTouched());
-        robotHardware.getBulkData1();
-        robotHardware.getBulkData2();
-        while (!robotHardware.liftBottomTouched()) {
-            int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
-            Logger.logFile("Lift current Position " + currLiftPos);
-            robotHardware.setLiftMotorPosition(currLiftPos - 25);
-            try {
-                Thread.sleep(10);
-            }
-            catch (Exception e) {
-            }
-        }
-        robotHardware.resetLiftEncoderCount();
-        robotHardware.setLiftPosition(RobotHardware.LiftPosition.ZERO);
-    }
+
 
 
     /**

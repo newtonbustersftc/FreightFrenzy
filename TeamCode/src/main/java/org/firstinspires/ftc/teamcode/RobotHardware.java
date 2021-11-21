@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
@@ -12,7 +13,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
@@ -24,7 +24,7 @@ import java.text.DecimalFormat;
 
 public class RobotHardware {
     public enum LiftPosition {
-        ZERO, BOTTOM, MIDDLE, TOP;
+        NOT_INIT, ZERO, BOTTOM, MIDDLE, TOP;
         private static LiftPosition[] vals = values();
 
         public LiftPosition next() {
@@ -92,8 +92,7 @@ public class RobotHardware {
         liftMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("LiftMotor");
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         duckMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("DuckMotor");
-//        duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        duckMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         duckMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //led4 = hardwareMap.digitalChannel.get("LED4");
@@ -126,7 +125,7 @@ public class RobotHardware {
         mecanumDrive.setLocalizer(realSenseLocalizer);
         robotVision = new RobotVision();
 
-        currLiftPos = LiftPosition.ZERO;
+        currLiftPos = LiftPosition.NOT_INIT;
     }
 
     public T265Camera getT265Camera() {
@@ -299,24 +298,18 @@ public class RobotHardware {
         intakeMotor.setPower(0);
     }
 
+    public void startDuckAuto(int alliance) {
+        if(alliance==1)  //red
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckAutoVelocity);
+        else
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckAutoVelocity *0.9);
+    }
+
     public void startDuck(int alliance){
-        duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckVelocity);
-        Logger.logFile("am I here to start Duck??");
-
-//        duckMotor.setVelocity(profile.hardwareSpec.duckVelocity);
-//        long start = System.currentTimeMillis();
-//        double acceleration  = 0.5;
-//        double initVelocity = 0; //velocityFinal = velocityInitial + acceleration * time
-//        double finalVelocity = 0;
-//        duckMotor.setPower(0.5);
-//        finalVelocity = initVelocity + acceleration * ((System.currentTimeMillis()-start)/1000);
-//        duckMotor.setVelocity(finalVelocity);
-//        initVelocity = finalVelocity;
-//        if((System.currentTimeMillis() - start)%100 == 0)
-////            telemetry.addData("duck velocity=" , duckMotor.getVelocity());
-//        if((System.currentTimeMillis() - start)>4000)
-//            duckMotor.setPower(0);
-
+        if(alliance==1)  //red
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckDriveVelocity);
+        else
+            duckMotor.setVelocity(-alliance * profile.hardwareSpec.duckDriveVelocity *0.9);
     }
 
     public void stopDuck() {
@@ -330,7 +323,7 @@ public class RobotHardware {
     }
 
     public void setLiftPosition(LiftPosition pos) {
-        Logger.logFile("Setting lift position to: " + pos);
+//        Logger.logFile("Setting lift position to: " + pos);
         currLiftPos = pos;
         liftMotor.setPower(profile.hardwareSpec.liftMotorPower);
         int newPosNum = 0;
@@ -353,7 +346,11 @@ public class RobotHardware {
     }
 
     public void liftUp() {
-        setLiftPosition(currLiftPos.next());
+        currLiftPos = currLiftPos.next();
+        if(currLiftPos ==LiftPosition.ZERO) {
+            currLiftPos = currLiftPos.next(); //goes up to Bottom
+        }
+        setLiftPosition(currLiftPos);
     }
 
     public void liftDown() {
@@ -368,6 +365,25 @@ public class RobotHardware {
     void resetLiftEncoderCount(){
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
+
+    void resetLiftPositionAutonomous() {
+        Logger.logFile("Resetting Lift Position, bottom sensor: " + liftBottomTouched());
+        getBulkData1();
+        getBulkData2();
+        while (!liftBottomTouched()) {
+            int currLiftPos = getEncoderCounts(RobotHardware.EncoderType.LIFT);
+            Logger.logFile("Lift current Position " + currLiftPos);
+            setLiftMotorPosition(currLiftPos - 25);
+            try {
+                Thread.sleep(100);
+            }
+            catch (Exception e) {
+            }
+        }
+        resetLiftEncoderCount();
+        setLiftPosition(RobotHardware.LiftPosition.ZERO);
+    }
+
     /**
      * WARNING WARNING WARNING ****
      * Sensor distance call not supported by BulkData read, this call takes 33ms to complete

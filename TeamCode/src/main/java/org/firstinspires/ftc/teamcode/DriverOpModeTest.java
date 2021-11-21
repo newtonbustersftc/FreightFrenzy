@@ -8,7 +8,10 @@ import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Transform2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.spartronics4915.lib.T265Camera;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.GoalTargetRecognition;
 
 import java.io.File;
@@ -85,11 +88,13 @@ public class DriverOpModeTest extends OpMode {
             robotHardware.setLiftMotorPosition(currLiftPos-20);
         }
         if (gamepad1.dpad_right) {
-            //robotHardware.startDuck();
+            robotHardware.duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robotHardware.duckMotor.setVelocity(500);
         }
         else {
             robotHardware.stopDuck();
         }
+
         if (gamepad1.x) {
             robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,00,0));
         }

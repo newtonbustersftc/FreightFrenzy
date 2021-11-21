@@ -43,7 +43,7 @@ public class AutonomousGeneric extends LinearOpMode {
 
 //        robotHardware.setMotorStopBrake(true);
 
-        resetLiftPosition();
+        robotHardware.resetLiftPositionAutonomous();
         robotHardware.closeBoxFlap();
 
         robotHardware.getBulkData1();
@@ -77,7 +77,7 @@ public class AutonomousGeneric extends LinearOpMode {
         initRobot();
         robotHardware.setMotorStopBrake(false); // so we can adjust the robot
         robotHardware.initRobotVision();
-        resetLiftPosition();
+        robotHardware.resetLiftPositionAutonomous();
         telemetry.addData("READY...", "NOW");
         waitForStart();
 //        robotHardware.getBulkData1();
@@ -147,21 +147,4 @@ public class AutonomousGeneric extends LinearOpMode {
         return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
     }
 
-    void resetLiftPosition() {
-        Logger.logFile("Resetting Lift Position, bottom sensor: " + robotHardware.liftBottomTouched());
-        robotHardware.getBulkData1();
-        robotHardware.getBulkData2();
-        while (!robotHardware.liftBottomTouched()) {
-            int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
-            Logger.logFile("Lift current Position " + currLiftPos);
-            robotHardware.setLiftMotorPosition(currLiftPos - 25);
-            try {
-                Thread.sleep(100);
-            }
-            catch (Exception e) {
-            }
-        }
-        robotHardware.resetLiftEncoderCount();
-        robotHardware.setLiftPosition(RobotHardware.LiftPosition.ZERO);
-    }
 }

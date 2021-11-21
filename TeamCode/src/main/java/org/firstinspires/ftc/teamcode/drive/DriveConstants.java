@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode.drive;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+
+import org.firstinspires.ftc.teamcode.Logger;
 
 /*
  * Constants shared between multiple drive types.
@@ -21,15 +24,14 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = 540;
-    public static final double MAX_RPM = 312;
+    public static final double TICKS_PER_REV = 385;  // 540
+    public static final double MAX_RPM = 435;   //312
 
     /*
      * Set the first flag appropriately. If using the built-in motor velocity PID, update
      * MOTOR_VELO_PID with the tuned coefficients from DriveVelocityPIDTuner.
      */
-    public static final boolean RUN_USING_ENCODER = true;
-    public static final PIDCoefficients MOTOR_VELO_PID = null;
+    public static final boolean RUN_USING_ENCODER = false;
 
     /*
      * These are physical constants that can be determined from your robot (including the track
@@ -41,7 +43,8 @@ public class DriveConstants {
      */
     public static double WHEEL_RADIUS = 3.75/2; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 10.5; // in
+    public static double TRACK_WIDTH = 10.25; // in
+    public static double WHEEL_BASE = 11.5;
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -49,16 +52,18 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV = 0.01649; //1.0 / rpmToVelocity(MAX_RPM);
-    public static double kA = 0.00008;
-    public static double kStatic = 0.06867;
+    public static double kV = 0.01177; //1.0 / rpmToVelocity(MAX_RPM);
+    public static double kA = 0.00000;
+    public static double kStatic = 0.09681;
 
     //test by BL
     public static double MAX_ACCEL = 30;
     public static double MAX_VEL = 30;   //need to verify about 30 : MAX_VEL = rpmToVelocity(MAX_RPM); AutomaticFeedforwardTuner.java
-    public static double kP = 0.01588;
-    public static double kI = 0.00001;
-    public static double kD = 0.04386;
+    public static double kP = 10;
+    public static double kI = 0.5;
+    public static double kD = 0.1;
+
+    public static final PIDCoefficients MOTOR_VELO_PID = null;
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
@@ -69,12 +74,13 @@ public class DriveConstants {
      * forces acceleration-limited profiling). All distance units are inches.
      */
     public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(
-            40.0, 30.0, 0.0,
+            MAX_VEL, MAX_ACCEL, 0.0,
             Math.toRadians(180.0), Math.toRadians(180.0), 0.0
     );
 
 
     public static double encoderTicksToInches(double ticks) {
+        Logger.logFile("encoderTicksToInches shouldn't be here");
         return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
     }
 

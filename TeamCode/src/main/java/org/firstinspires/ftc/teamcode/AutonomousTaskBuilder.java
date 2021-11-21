@@ -101,15 +101,16 @@ public class AutonomousTaskBuilder {
 
     public ArrayList<RobotControl> buildTaskList(RobotVision.AutonomousGoal goal) {
         //TODO - switch for start up position
+        ArrayList<RobotControl> taskList1 = null;
         if (startingPositionModes.endsWith("DUCK")) {
-            ArrayList<RobotControl> taskList = buildDuckTasks(startingPositionModes);
+             taskList1 = buildDuckTasks(startingPositionModes);
         }
         else {
-            ArrayList<RobotControl> taskList = buildDepotTasks(startingPositionModes);
+             taskList1 = buildDepotTasks(startingPositionModes);
             //taskList = new ArrayList<>();   // TODO: create buildDepotTasks
         }
         robotHardware.getLocalizer().setPoseEstimate(startPos);
-        return taskList;
+        return taskList1;
     }
 
     public ArrayList<RobotControl> buildDepotTasks(String startPosStr){
@@ -126,9 +127,8 @@ public class AutonomousTaskBuilder {
         m1.setPower(0.5);
         taskList.add(m1);
         MecanumRotateMoveTask m2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        m2.setRotateHeading(startPos, hubPos);
+        m2.setRotateHeading(pos1, hubPos);
         m2.setPower(0.5);
-
         taskList.add(m2);
 //        MecanumRotateMoveTask m2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
 //        m2.setRotateHeading(pos1, hubPos);
@@ -183,7 +183,8 @@ public class AutonomousTaskBuilder {
         Pose2d pos1 = robotProfile.getProfilePose(startPosStr + "_1");
         Pose2d duckSpinPos = robotProfile.getProfilePose(startPosStr + "_CAROUSEL");
         Pose2d pos2 = robotProfile.getProfilePose(startPosStr + "_2");
-        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "HUB");
+        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
+        Pose2d pos3 = robotProfile.getProfilePose(startPosStr + "_3");
         Pose2d parkPos = robotProfile.getProfilePose(startPosStr + "_PARK");
         MecanumRotateMoveTask m1 = new MecanumRotateMoveTask(robotHardware, robotProfile);
         m1.setRotateHeading(startPos, pos1);
@@ -195,9 +196,9 @@ public class AutonomousTaskBuilder {
         m2.setPower(0.3);
         taskList.add(m2);
         //taskList.add(new RobotSleep(3000));
-        taskList.add(new DuckCarouselSpinTask(robotHardware, 1));
+        taskList.add(new DuckCarouselSpinTask(robotHardware, startPosStr));
         MecanumRotateMoveTask m3 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        m3.setRotateHeading(duckSpinPos, pos2, AngleMath.Direction.CLOCKWISE);
+        m3.setRotateHeading(duckSpinPos, pos2);
         m3.setPower(0.5);
         taskList.add(m3);
         //taskList.add(new RobotSleep(3000));
@@ -208,8 +209,15 @@ public class AutonomousTaskBuilder {
         taskList.add(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
         PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-        m4.setPath(hubPos, parkPos);
-        taskList.add(m4);
+        m5.setPath(hubPos, pos3);
+        m5.setPower(0.5);
+        taskList.add(m5);
+        PIDMecanumMoveTask m6 = new PIDMecanumMoveTask(robotHardware, robotProfile);
+        m6.setPath(pos3, parkPos);
+        m6.setPower(0.5);
+        taskList.add(m6);
+        taskList.add(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
+
         return taskList;
     }
 

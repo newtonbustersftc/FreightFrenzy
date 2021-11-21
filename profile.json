@@ -56,8 +56,9 @@
     "ringPusherShoot": 0.5,
     "ringPusherDown": 0.17,
     "intakeVelocity": 1000,
-    "duckVelocity": 550,
-    "duckSpinTime": 5000,
+    "duckDriveVelocity": 550,
+    "duckAutoVelocity": 500,
+    "duckSpinTime": 3000,
     "ringHolderUp": 0.338,
     "ringHolderDown": 0.555,
     "ringHolderDown2": 0.48,
@@ -70,7 +71,7 @@
     "liftPositionBottom":540,
     "liftPositionMiddle":1200,
     "liftPositionTop":1750,
-    "liftMotorPower": 0.3,
+    "liftMotorPower": 1.0,
     "boxFlapOpen":0.25,
     "boxFlapClose": 0.6
   },
@@ -86,13 +87,13 @@
       "heading": 0
     },
     "BLUE_DEPOT_1": {
-      "x": 0,
-      "y": -15,
+      "x": -12,
+      "y": 0,
       "heading": 0
     },
     "BLUE_DEPOT_2": {
       "x": -12,
-      "y": -23,
+      "y": 23,
       "heading": 0
     },
     "BLUE_DEPOT_3": {
@@ -101,43 +102,43 @@
       "heading": 0
     },
     "BLUE_DEPOT_HUB": {
-      "x": -12,
-      "y": -23,
-      "heading": 300
+      "x": -17,
+      "y": 27,
+      "heading": 60
     },
     "BLUE_DEPOT_WAREHOUSE": {
-      "x": 24,
+      "x": 26,
       "y": 5,
       "heading": 0
     },
-    "BLUE_DEPOT_START": {
+    "RED_DEPOT_START": {
       "x": 0,
       "y": 0,
       "heading": 0
     },
-    "BLUE_DEPOT_1": {
-      "x": 0,
-      "y": -15,
+    "RED_DEPOT_1": {
+      "x": -12,
+      "y": -5,
       "heading": 0
     },
-    "BLUE_DEPOT_2": {
+    "RED_DEPOT_2": {
       "x": -12,
       "y": -23,
       "heading": 0
     },
-    "BLUE_DEPOT_3": {
+    "RED_DEPOT_3": {
       "x": -12,
       "y": 5,
       "heading": 0
     },
-    "BLUE_DEPOT_HUB": {
-      "x": -12,
-      "y": -23,
+    "RED_DEPOT_HUB": {
+      "x": -15,
+      "y": -25,
       "heading": 300
     },
-    "BLUE_DEPOT_WAREHOUSE": {
+    "RED_DEPOT_WAREHOUSE": {
       "x": 24,
-      "y": 5,
+      "y": -5,
       "heading": 0
     },
     "RED_DUCK_START": {
@@ -151,23 +152,28 @@
       "heading": 135.0
     },
     "RED_DUCK_CAROUSEL": {
-      "x": -20.0,
+      "x": -22.0,
       "y": -2.0,
       "heading": 210.0
     },
     "RED_DUCK_2": {
       "x": -15,
-      "y": -40.0,
+      "y": -38.0,
       "heading": 180.0
     },
     "RED_DUCK_HUB": {
-      "x": 6,
-      "y": -40.0,
+      "x": 7,
+      "y": -34.0,
+      "heading": 180.0
+    },
+    "RED_DUCK_3": {
+      "x": -24,
+      "y": -34.0,
       "heading": 180.0
     },
     "RED_DUCK_PARK": {
       "x": -24,
-      "y": -30.0,
+      "y": -28.0,
       "heading": 180.0
     },
     "BLUE_DUCK_START": {
@@ -176,23 +182,28 @@
       "heading": 180.0
     },
     "BLUE_DUCK_1": {
-      "x": -10,
-      "y": -5.0,
-      "heading": 180.0
+      "x": -12,
+      "y": 10.0,
+      "heading": 200.0
     },
     "BLUE_DUCK_CAROUSEL": {
       "x": -20.0,
-      "y": -5,
-      "heading": 180.0
+      "y": 8,
+      "heading": 170.0
     },
     "BLUE_DUCK_2": {
-      "x": -20,
+      "x": -23,
       "y": 40.0,
       "heading": 180.0
     },
     "BLUE_DUCK_HUB": {
-      "x": 6,
+      "x": 9,
       "y": 40.0,
+      "heading": 180.0
+    },
+    "BLUE_DUCK_3": {
+      "x": -24,
+      "y": 42.0,
       "heading": 180.0
     },
     "BLUE_DUCK_PARK": {
