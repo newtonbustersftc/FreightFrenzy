@@ -10,10 +10,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
+import org.firstinspires.ftc.teamcode.Logger;
+import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.RobotProfile;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.LoggingUtil;
 import org.firstinspires.ftc.teamcode.util.RegressionUtil;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,18 +39,29 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.rpmToVelocity;
 @Autonomous(group = "drive")
 public class AutomaticFeedforwardTuner extends LinearOpMode {
     public static final double MAX_POWER = 0.7;
-    public static final double DISTANCE = 70; // in
+    public static final double DISTANCE = 100; // in
 
     @Override
     public void runOpMode() throws InterruptedException {
-        if (RUN_USING_ENCODER) {
-            RobotLog.setGlobalErrorMsg("Feedforward constants usually don't need to be tuned " +
-                    "when using the built-in drive motor velocity PID.");
-        }
+//        if (RUN_USING_ENCODER) {
+//            RobotLog.setGlobalErrorMsg("Feedforward constants usually don't need to be tuned " +
+//                    "when using the built-in drive motor velocity PID.");
+//        }
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        SampleMecanumDrive drive;
+        RobotProfile robotProfile = null;
+        try{
+            robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
+        } catch (Exception e) {
+        }
+
+        Logger.init();
+        RobotHardware robotHardware = new RobotHardware();
+        robotHardware.init(hardwareMap, robotProfile);
+        drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
+        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
 
         NanoClock clock = NanoClock.system();
 

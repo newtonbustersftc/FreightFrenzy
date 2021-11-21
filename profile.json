@@ -71,7 +71,7 @@
     "liftPositionBottom":540,
     "liftPositionMiddle":1200,
     "liftPositionTop":1750,
-    "liftMotorPower": 0.6,
+    "liftMotorPower": 1.0,
     "boxFlapOpen":0.25,
     "boxFlapClose": 0.6
   },
