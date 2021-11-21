@@ -226,12 +226,14 @@ public class DriverOpMode extends OpMode {
             leftTriggerPressed = false;
         }
 
-//        else {
-//            robotHardware.stopIntake();
-//        }
-
         if (gamepad1.right_trigger > 0) {
+            if (currentTask == intakeAndLift) {
+                currentTask = null;
+            }
             robotHardware.reverseIntake();
+        }
+        else if (currentTask != intakeAndLift) {
+            robotHardware.stopIntake();
         }
 //        else {
 //            robotHardware.stopIntake();
@@ -258,7 +260,7 @@ public class DriverOpMode extends OpMode {
     void setupCombos() {
         intakeAndLift = new SequentialComboTask();
         intakeAndLift.addTask(new AutoIntakeTask(robotHardware));
-        intakeAndLift.addTask(new RobotSleep(200));
+        intakeAndLift.addTask(new RobotSleep(500));
         intakeAndLift.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.MIDDLE));
 
         deliverTask = new SequentialComboTask();

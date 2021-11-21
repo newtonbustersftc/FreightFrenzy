@@ -79,7 +79,15 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware.initRobotVision();
         robotHardware.resetLiftPositionAutonomous();
         telemetry.addData("READY...", "NOW");
-        waitForStart();
+        while (!isStarted()) {
+            sleep(10);
+            RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(false);
+            telemetry.addData("goal",goal);
+            robotHardware.getLocalizer().update();
+            Pose2d currPose = robotHardware.getLocalizer().getPoseEstimate();
+            telemetry.addData("CurrPose", currPose);
+            telemetry.update();
+        }
 //        robotHardware.getBulkData1();
 //        robotHardware.getBulkData2();
 

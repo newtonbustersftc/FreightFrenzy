@@ -73,7 +73,7 @@ public class RobotProfile {
         hardwareSpec.liftPositionZero = 0;
         hardwareSpec.liftPositionBottom = 540;
         hardwareSpec.liftPositionMiddle = 1200;
-        hardwareSpec.liftPositionTop = 1625;
+        hardwareSpec.liftPositionTop = 1950;
         hardwareSpec.liftMotorPower = 0.3;
         hardwareSpec.boxFlapOpen = 0.25;
         hardwareSpec.boxFlapClose = 0.35;
