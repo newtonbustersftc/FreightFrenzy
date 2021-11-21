@@ -177,7 +177,15 @@ public class RobotHardware {
     }
 
     public int getEncoderVelocity(EncoderType encoder) {
-        return 0;   // TODO
+        if(encoder == EncoderType.LIFT) {
+            return bulkData2.getMotorVelocity(liftMotor);
+        }
+        else if (encoder == EncoderType.INTAKE){
+            return bulkData2.getMotorVelocity(intakeMotor);
+        }
+        else {
+            return 0;
+        }
     }
 
     public void mecanumDriveTest(double power, double angle, double rotation, int sign){
@@ -278,11 +286,13 @@ public class RobotHardware {
     }
 
     public void startIntake() {
-        intakeMotor.setVelocity(profile.hardwareSpec.intakeVelocity);
+        intakeMotor.setPower(1);
+        //intakeMotor.setVelocity(profile.hardwareSpec.intakeVelocity);
     }
 
     public void reverseIntake() {
-        intakeMotor.setVelocity(-profile.hardwareSpec.intakeVelocity);
+        intakeMotor.setPower(-1);
+        //intakeMotor.setVelocity(-profile.hardwareSpec.intakeVelocity);
     }
 
     public void stopIntake() {
@@ -375,7 +385,7 @@ public class RobotHardware {
         }
     }
 
-    public enum EncoderType {LIFT}
+    public enum EncoderType {LIFT, INTAKE}
 
     public void setLed4(boolean on) {
         led4.setState(!on);

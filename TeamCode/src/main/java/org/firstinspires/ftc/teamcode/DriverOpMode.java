@@ -34,8 +34,11 @@ public class DriverOpMode extends OpMode {
     boolean xPressed = false;
     boolean dpadUpPressed = false;
     boolean dpadDownPressed = false;
+    boolean leftTriggerPressed = false;
+    boolean rightTriggerPressed = false;
 
     // DriveThru combos
+    SequentialComboTask intakeAndLift, deliverTask;
     RobotControl currentTask = null;
 
 
@@ -100,9 +103,9 @@ public class DriverOpMode extends OpMode {
                 }
             }
         }
-        else {
-            handleMovement();
-        }
+
+        handleMovement();
+
         telemetry.addData("CurrPose", currPose);
 
         handleIntake();
@@ -134,7 +137,8 @@ public class DriverOpMode extends OpMode {
         }
 
         if (gamepad1.y) {
-            robotHardware.openBoxFlap();
+            currentTask = deliverTask;
+            currentTask.prepare();
         }
         else {
             robotHardware.closeBoxFlap();
@@ -200,17 +204,30 @@ public class DriverOpMode extends OpMode {
      * Uses up  down keypad to switch to different modes between shooting, stop, reverse, and intake
      */
     private void handleIntake() {
-        if (gamepad1.left_trigger > 0) {
-            robotHardware.startIntake();
-        } else {
-            robotHardware.stopIntake();
+        if (gamepad1.left_trigger > 0 && !leftTriggerPressed) {
+            currentTask = intakeAndLift;
+            currentTask.prepare();
+
+//            currentTask = new AutoIntakeTask(robotHardware);
+//            currentTask.prepare();
+            leftTriggerPressed = true;
+
+            //robotHardware.startIntake();
         }
+        if(!(gamepad1.left_trigger > 0)){
+            leftTriggerPressed = false;
+        }
+
+//        else {
+//            robotHardware.stopIntake();
+//        }
 
         if (gamepad1.right_trigger > 0) {
             robotHardware.reverseIntake();
-        } else {
-            robotHardware.stopIntake();
         }
+//        else {
+//            robotHardware.stopIntake();
+//        }
 
 //        if(gamepad1.right_bumper){
 //            robotHardware.stopIntake();
@@ -242,6 +259,13 @@ public class DriverOpMode extends OpMode {
      * Define combo task for driver op mode
      */
     void setupCombos() {
+        intakeAndLift = new SequentialComboTask();
+        intakeAndLift.addTask(new AutoIntakeTask(robotHardware));
+        intakeAndLift.addTask(new RobotSleep(200));
+        intakeAndLift.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.MIDDLE));
 
+        deliverTask = new SequentialComboTask();
+        deliverTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
+        deliverTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
     }
 }
