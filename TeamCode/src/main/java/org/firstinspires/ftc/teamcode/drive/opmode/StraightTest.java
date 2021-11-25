@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.RealSenseLocalizer;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.RobotProfile;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.io.File;
 
@@ -37,7 +38,7 @@ public class StraightTest extends LinearOpMode {
         drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
 
-        Trajectory trajectory = drive.trajectoryBuilder(new Pose2d())
+        TrajectorySequence trajectory = drive.trajectorySequenceBuilder(new Pose2d())
                 .forward(DISTANCE)
                 .build();
 
@@ -45,7 +46,7 @@ public class StraightTest extends LinearOpMode {
 
         if (isStopRequested()) return;
 
-        drive.followTrajectory(trajectory);
+        drive.followTrajectorySequence(trajectory);
         Logger.logFile("Final:" + robotHardware.getLocalizer().getPoseEstimate());
     }
 }

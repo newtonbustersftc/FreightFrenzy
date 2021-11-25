@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.Logger;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.RobotProfile;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.io.File;
 
@@ -35,8 +36,8 @@ public class StrafeTest extends LinearOpMode {
         robotHardware.init(hardwareMap, robotProfile);
         drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
 
-        Trajectory trajectory = drive.trajectoryBuilder(new Pose2d())
-                .strafeRight(DISTANCE)
+        TrajectorySequence trajectory = drive.trajectorySequenceBuilder(new Pose2d())
+                .strafeLeft(DISTANCE)
                 .build();
 
         waitForStart();
@@ -44,7 +45,7 @@ public class StrafeTest extends LinearOpMode {
 
         if (isStopRequested()) return;
 
-        drive.followTrajectory(trajectory);
+        drive.followTrajectorySequence(trajectory);
         Logger.logFile("Final:" + robotHardware.getLocalizer().getPoseEstimate());
     }
 }

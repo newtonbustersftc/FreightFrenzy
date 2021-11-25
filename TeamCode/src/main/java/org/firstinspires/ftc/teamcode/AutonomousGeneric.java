@@ -75,7 +75,7 @@ public class AutonomousGeneric extends LinearOpMode {
     @Override
     public void runOpMode() {
         initRobot();
-        robotHardware.setMotorStopBrake(false); // so we can adjust the robot
+        robotHardware.setMotorStopBrake(false); // so we can adjust the robot00
         robotHardware.initRobotVision();
         robotHardware.resetLiftPositionAutonomous();
         telemetry.addData("READY...", "NOW");

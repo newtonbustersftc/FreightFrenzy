@@ -1,8 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
+//import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.acmerobotics.roadrunner.trajectory.*;
+import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,6 +21,7 @@ import org.firstinspires.ftc.teamcode.util.AngleMath;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 /**
@@ -28,6 +40,8 @@ public class AutonomousGenericTest extends LinearOpMode {
     long loopCount = 0;
     int countTasks = 0;
     Pose2d pos;
+    private TrajectoryVelocityConstraint velConstraint;
+    private TrajectoryAccelerationConstraint accelConstraint;
 
     public void initRobot() {
         try{
@@ -53,7 +67,8 @@ public class AutonomousGenericTest extends LinearOpMode {
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         Logger.logFile("Recognition Result: " + robotVision.getAutonomousRecognition());
         taskList = new ArrayList<RobotControl>();
-        setupTaskList3();
+//        setupTaskList3();
+        setupTaskList1();
         if (taskList.size()>0) {
             Logger.logFile("Task Prepare " + taskList.get(0));
             taskList.get(0).prepare();
@@ -107,14 +122,16 @@ public class AutonomousGenericTest extends LinearOpMode {
     }
 
     void setupTaskList1() {
-        DriveConstraints constraints = new DriveConstraints(5.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
-        DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+//        DriveConstraints constraints = new DriveConstraints(5.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+//        DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+        velConstraint = getVelocityConstraint(MAX_VEL, MAX_ANG_VEL, TRACK_WIDTH);
+        accelConstraint = getAccelerationConstraint(MAX_ACCEL);
         // move to shoot
-        Pose2d p0 = new Pose2d(0,0,0);
-        Pose2d p1 = new Pose2d(0, 5, 0);
+        Pose2d p0 = new Pose2d(0,0,180);
+        Pose2d p1 = new Pose2d(0, 5, 90);
         //Pose2d p2 = new Pose2d(10,5,0);
         Trajectory trj = robotHardware.mecanumDrive.trajectoryBuilder(p0)
-                .forward(10, constraints)
+                .forward(10, velConstraint, accelConstraint)
                 //.splineToSplineHeading(p2, p2.getHeading(), constraints)
                 .build();
         SplineMoveTask moveTask1 = new SplineMoveTask(robotHardware.mecanumDrive, trj);
@@ -162,5 +179,15 @@ public class AutonomousGenericTest extends LinearOpMode {
         mrm2.setRotateHeading(new Pose2d(-15, -15, -Math.PI / 3), new Pose2d(00, 0, 0));
         mrm2.setPower(0.3);
         taskList.add(mrm2);
+    }
+    public static TrajectoryVelocityConstraint getVelocityConstraint(double maxVel, double maxAngularVel, double trackWidth) {
+        return new MinVelocityConstraint(Arrays.asList(
+                new AngularVelocityConstraint(maxAngularVel),
+                new MecanumVelocityConstraint(maxVel, trackWidth)
+        ));
+    }
+
+    public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
+        return new ProfileAccelerationConstraint(maxAccel);
     }
 }

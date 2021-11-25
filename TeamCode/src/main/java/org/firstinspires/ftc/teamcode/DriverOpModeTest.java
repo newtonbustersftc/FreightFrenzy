@@ -83,6 +83,7 @@ public class DriverOpModeTest extends OpMode {
         int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
         if (gamepad1.dpad_up) {
             robotHardware.setLiftMotorPosition(currLiftPos+20);
+
         }
         if (gamepad1.dpad_down) {
             robotHardware.setLiftMotorPosition(currLiftPos-20);
@@ -108,7 +109,7 @@ public class DriverOpModeTest extends OpMode {
 
 //        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
 //        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
-//        telemetry.addData("Lift:", currLiftPos);
+        telemetry.addData("Lift:", currLiftPos);
    }
 
     @Override

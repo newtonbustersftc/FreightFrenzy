@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
-import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
+//import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.teamcode.Logger;
@@ -32,6 +32,12 @@ public class DriveConstants {
      * MOTOR_VELO_PID with the tuned coefficients from DriveVelocityPIDTuner.
      */
     public static final boolean RUN_USING_ENCODER = false;
+    public static PIDFCoefficients MOTOR_VELO_PID;
+
+    static {
+        MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0,
+                getMotorVelocityF());
+    }
 
     /*
      * These are physical constants that can be determined from your robot (including the track
@@ -62,8 +68,9 @@ public class DriveConstants {
     public static double kP = 10;
     public static double kI = 0.5;
     public static double kD = 0.1;
-
-    public static final PIDCoefficients MOTOR_VELO_PID = null;
+    public static double MAX_ANG_VEL = Math.toRadians(60);
+    public static double MAX_ANG_ACCEL = Math.toRadians(60);
+//    public static final PIDCoefficients MOTOR_VELO_PID = null;
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
@@ -73,10 +80,10 @@ public class DriveConstants {
      * acceleration values are required, and the jerk values are optional (setting a jerk of 0.0
      * forces acceleration-limited profiling). All distance units are inches.
      */
-    public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(
-            MAX_VEL, MAX_ACCEL, 0.0,
-            Math.toRadians(180.0), Math.toRadians(180.0), 0.0
-    );
+//    public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(
+//            MAX_VEL, MAX_ACCEL, 0.0,
+//            Math.toRadians(180.0), Math.toRadians(180.0), 0.0
+//    );
 
 
     public static double encoderTicksToInches(double ticks) {

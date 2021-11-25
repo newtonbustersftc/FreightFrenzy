@@ -1,4 +1,4 @@
 
 dependencies {
-    implementation 'com.acmerobotics.dashboard:dashboard:0.3.10'
+    implementation 'com.acmerobotics.dashboard:dashboard:0.4.3'
 }

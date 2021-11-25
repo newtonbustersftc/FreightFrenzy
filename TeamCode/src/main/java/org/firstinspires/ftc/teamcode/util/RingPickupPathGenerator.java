@@ -4,7 +4,13 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
-import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
+import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
+//import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Segment;
@@ -12,7 +18,13 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.firstinspires.ftc.teamcode.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 
 /**
  * Defines the parameter needs to calculate the robot poses to pick up a ring by the wall
@@ -33,6 +45,9 @@ class WallHandleParam {
     double finalOffsetY;
     double heading;
 
+    private TrajectoryVelocityConstraint velConstraint;
+    private TrajectoryAccelerationConstraint accelConstraint;
+
     public WallHandleParam(double mx, double my, double ex, double ey, double fx, double fy, double h) {
         multiplierX = mx;
         multiplierY = my;
@@ -45,9 +60,12 @@ class WallHandleParam {
 }
 
 public class RingPickupPathGenerator {
+    private static TrajectoryVelocityConstraint velConstraint;
+    private static TrajectoryAccelerationConstraint accelConstraint;
+
     static TrajectoryBuilder currBuilder;
-    DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
-    DriveConstraints constraintsWall = new DriveConstraints(20.0, 15.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+//    DriveConstraints constraints = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
+//    DriveConstraints constraintsWall = new DriveConstraints(20.0, 15.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
     static double lastHeading = 0;
     public static double FIELD_WIDTH = 140.0; // 60cm x 6 / 2.54 = 141.7
     static double ROBOT_WIDTH = 18.0;
@@ -86,17 +104,19 @@ public class RingPickupPathGenerator {
     public RingPickupPathGenerator(Pose2d startPose, Pose2d endPose) {
         this.startPose = startPose;
         this.endPose = endPose;
+        velConstraint = getVelocityConstraint(MAX_VEL, MAX_ANG_VEL, TRACK_WIDTH);
+        accelConstraint = getAccelerationConstraint(MAX_ACCEL);
     }
 
     /**
      * Overwrite the default drive constraints if needed
      * @param driveConstraints
      */
-    public void setDriveConstraints(DriveConstraints driveConstraints) {
-        if (driveConstraints!=null) {
-            this.constraints = driveConstraints;
-        }
-    }
+//    public void setDriveConstraints(DriveConstraints driveConstraints) {
+//        if (driveConstraints!=null) {
+//            this.constraints = driveConstraints;
+//        }
+//    }
 
     /**
      * We are at starting p1, need to add the move to p2 with p3 as next point
@@ -143,7 +163,7 @@ public class RingPickupPathGenerator {
             // distance to next point
             double d1p = tmpP1a.distance(toVector2D(p2));
             boolean reverse = d1p>p2.distTo(p1.vec());
-            currBuilder = new TrajectoryBuilder(p1, reverse, constraints);
+            currBuilder = new TrajectoryBuilder(p1, reverse, velConstraint, accelConstraint);
             Logger.logFile("ADS Spline from " + p1 + (reverse?" Reverse" : ""));
             if (reverse && p2f==null) {
                 // make sure it get the angle right if had to reverse on first leg, so we add a point before getting to the ring
@@ -155,10 +175,10 @@ public class RingPickupPathGenerator {
         currBuilder.splineToSplineHeading(new Pose2d(p2, lastHeading), lastHeading);
         Logger.logFile("ADS Spline to " + p2);
         if (p2f != null) {
-            currBuilder.splineToSplineHeading(new Pose2d(p2f, lastHeading), lastHeading, constraintsWall);
+            currBuilder.splineToSplineHeading(new Pose2d(p2f, lastHeading), lastHeading, velConstraint, accelConstraint);
             moves.add(currBuilder.build());
             Logger.logFile("ADS Spline to " + p2f);
-            currBuilder = new TrajectoryBuilder(new Pose2d(p2f, lastHeading), true, constraints);
+            currBuilder = new TrajectoryBuilder(new Pose2d(p2f, lastHeading), velConstraint, accelConstraint );
             Logger.logFile("ADS Spline from " + p2f);
         }
     }
@@ -337,6 +357,17 @@ public class RingPickupPathGenerator {
             }
         }
         return 0;
+    }
+
+    public static TrajectoryVelocityConstraint getVelocityConstraint(double maxVel, double maxAngularVel, double trackWidth) {
+        return new MinVelocityConstraint(Arrays.asList(
+                new AngularVelocityConstraint(maxAngularVel),
+                new MecanumVelocityConstraint(maxVel, trackWidth)
+        ));
+    }
+
+    public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
+        return new ProfileAccelerationConstraint(maxAccel);
     }
 
     class DistToSeg implements Comparator<Vector2d> {

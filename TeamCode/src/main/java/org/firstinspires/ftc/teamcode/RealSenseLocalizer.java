@@ -58,7 +58,7 @@ public class RealSenseLocalizer implements Localizer {
         } else {
             RobotLog.v("NULL Camera Update");
         }
-        return new Pose2d(postEstimate.getX(), postEstimate.getY(), norm(postEstimate.getHeading()));
+        return new Pose2d(postEstimate.getX(), -postEstimate.getY(), norm(postEstimate.getHeading()));
     }
 
     @Override
@@ -124,7 +124,7 @@ public class RealSenseLocalizer implements Localizer {
             Logger.logFile("getPoseVelocity:" + vX + ", " + vY + ", " + Math.toDegrees(velocity.omegaRadiansPerSecond));
         }
 
-        return new Pose2d(vX, vY, velocity.omegaRadiansPerSecond);
+        return new Pose2d(vX, -vY, velocity.omegaRadiansPerSecond);
     }
 
     /**
