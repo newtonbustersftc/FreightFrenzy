@@ -51,7 +51,7 @@ public class RealSenseLocalizer implements Localizer {
             Pose2d centerPose = translateRobotCenter(t265Pose);
             postEstimate = fieldTranslate(originOffset, centerPose); //offsets the pose to be what the pose estimate is;
             sampleN++;
-            if (sampleN%100==0) {
+            if (sampleN%10==0) {
                 Logger.logFile("getPoseEstimate - t265Pose:" + t265Pose + " center:" + centerPose + " origin: " + originOffset +
                         " estimate:" + postEstimate);
             }

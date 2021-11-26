@@ -91,25 +91,25 @@ public class RobotProfile {
         cvParam.minArea = 5;
 
         poses = new HashMap<String, AutoPose>();
-        poses.put("RED_START_LEFT", new AutoPose(0,0,180));
-        poses.put("RED_LEFT_1", new AutoPose(-10, -10, 135));
+        poses.put("RED_START_DUCK", new AutoPose(0,0,180));
+        poses.put("RED_LEFT_1", new AutoPose(23, 24, 270));
         poses.put("RED_CAROUSEL", new AutoPose(-20, -2, 210));
         poses.put("RED_LEFT_2", new AutoPose(-15, -40, 180));
         poses.put("RED_LEFT_HUB", new AutoPose(6, -40, 180));
 
-        poses.put("RED_START_RIGHT", new AutoPose(0,0,180));
+        poses.put("RED_START_DEPOT", new AutoPose(0,0,180));
         poses.put("RED_RIGHT_1", new AutoPose(-10, -10, 135));
         poses.put("RED_CAROUSEL", new AutoPose(-20, -2, 210));
         poses.put("RED_RIGHT_2", new AutoPose(-15, -40, 180));
         poses.put("RED_RIGHT_HUB", new AutoPose(6, -40, 180));
 
-        poses.put("BLUE_START_RIGHT", new AutoPose(0, 0, 180));
+        poses.put("BLUE_START_DUCK", new AutoPose(0, 0, 180));
         poses.put("BLUE_RIGHT_1", new AutoPose(-10, 10, 225));
         poses.put("BLUE_CAROUSEL", new AutoPose(-20, 2, 135));
         poses.put("BLUE_RIGHT_2", new AutoPose(-15, 40, 180));
         poses.put("BLUE_RIGHT_HUB", new AutoPose(6, 40, 180));
 
-        poses.put("BLUE_START_LEFT", new AutoPose(0, 0, 180));
+        poses.put("BLUE_START_DEPOT", new AutoPose(0, 0, 180));
         poses.put("BLUE_LEFT_1", new AutoPose(-10, 10, 225));
         poses.put("BLUE_CAROUSEL", new AutoPose(-20, 2, 135));
         poses.put("BLUE_LEFT_2", new AutoPose(-15, 40, 180));

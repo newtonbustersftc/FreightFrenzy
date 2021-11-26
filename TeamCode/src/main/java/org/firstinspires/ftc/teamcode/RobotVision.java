@@ -483,7 +483,8 @@ public class RobotVision {
                 }
                 ndx++;
             }
-            if (saveImage) {
+
+            if(saveImage){
                 //need to save pic to file
                 String timestamp = new SimpleDateFormat("MMdd-HHmmss", Locale.US).format(new Date());
                 Mat mbgr = new Mat();
@@ -491,6 +492,7 @@ public class RobotVision {
                 Imgcodecs.imwrite("/sdcard/FIRST/S" + timestamp + ".jpg", mbgr);
                 mbgr.release();
             }
+
             for (Rect r : ringRecList) {
                 Logger.logFile("Vision Rec:" + r);
             }

@@ -57,7 +57,7 @@
     "ringPusherDown": 0.17,
     "intakeVelocity": 1000,
     "duckDriveVelocity": 550,
-    "duckAutoVelocity": 500,
+    "duckAutoVelocity": 200,
     "duckSpinTime": 3000,
     "ringHolderUp": 0.338,
     "ringHolderDown": 0.555,
@@ -68,9 +68,9 @@
     "cameraHeadingOffset": -2.5,
     "realSenseAngleModifier": 90,
     "liftPositionZero":0,
-    "liftPositionBottom":540,
+    "liftPositionBottom":600,
     "liftPositionMiddle":1200,
-    "liftPositionTop":1750,
+    "liftPositionTop":1950,
     "liftMotorPower": 1.0,
     "boxFlapOpen":0.25,
     "boxFlapClose": 0.6
@@ -144,26 +144,26 @@
     "RED_DUCK_START": {
       "x": 0,
       "y": 0,
-      "heading": 180.0
+      "heading": 270.0
     },
     "RED_DUCK_1": {
-      "x": -10,
-      "y": -10.0,
-      "heading": 135.0
+      "x": 55,
+      "y": 2,
+      "heading": 0
+    },
+    "RED_DUCK_HUB": {
+      "x": 15,
+      "y": 27.0,
+      "heading": 45.0
     },
     "RED_DUCK_CAROUSEL": {
-      "x": -22.0,
-      "y": -2.0,
+      "x": -18.0,
+      "y": 2.0,
       "heading": 210.0
     },
     "RED_DUCK_2": {
       "x": -15,
       "y": -38.0,
-      "heading": 180.0
-    },
-    "RED_DUCK_HUB": {
-      "x": 7,
-      "y": -34.0,
       "heading": 180.0
     },
     "RED_DUCK_3": {
@@ -172,9 +172,9 @@
       "heading": 180.0
     },
     "RED_DUCK_PARK": {
-      "x": -24,
-      "y": -28.0,
-      "heading": 180.0
+      "x": 75,
+      "y": 5,
+      "heading": 0.0
     },
     "BLUE_DUCK_START": {
       "x": 0,
