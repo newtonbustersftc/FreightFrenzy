@@ -95,6 +95,10 @@ public class RealSenseLocalizer implements Localizer {
         return new Pose2d(deltaX, deltaY, robot.getHeading() - orig.getHeading());
     }
 
+    public String getT265Confidence() {
+        return t265Update.confidence.toString();
+    }
+
     /**
      * updates the camera.  Used in
      * @see //org.firstinspires.ftc.teamcode.drivetrain.DriveTrain6547Realsense in update()
