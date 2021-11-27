@@ -193,7 +193,7 @@ public class DriverOpMode extends OpMode {
         } else {
             movAngle = padAngle;
         }
-        if (gamepad1.dpad_left) {
+        if (gamepad1.right_trigger > 0) {
             power = power / 3;
             turn = turn / 3;
         }
@@ -226,7 +226,7 @@ public class DriverOpMode extends OpMode {
             leftTriggerPressed = false;
         }
 
-        if (gamepad1.right_trigger > 0) {
+        if (gamepad1.a) {
             if (currentTask == intakeAndLift) {
                 currentTask = null;
             }
