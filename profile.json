@@ -111,37 +111,42 @@
       "y": 5,
       "heading": 0
     },
+
     "RED_DEPOT_START": {
       "x": 0,
       "y": 0,
       "heading": 0
     },
-    "RED_DEPOT_1": {
-      "x": -12,
-      "y": -5,
-      "heading": 0
-    },
-    "RED_DEPOT_2": {
-      "x": -12,
-      "y": -23,
-      "heading": 0
-    },
-    "RED_DEPOT_3": {
-      "x": -12,
-      "y": 5,
+    "RED_DEPOT_PREHUB": {
+      "x": 0,
+      "y": 3,
       "heading": 0
     },
     "RED_DEPOT_HUB": {
-      "x": -15,
-      "y": -25,
-      "heading": 300
+      "x": -20.5,
+      "y": 29,
+      "heading": 290
     },
-    "RED_DEPOT_WAREHOUSE": {
-      "x": 24,
-      "y": -5,
+    "RED_DEPOT_PREWALL": {
+      "x": 0,
+      "y": 1,
       "heading": 0
     },
-
+    "RED_DEPOT_PARKWALL": {
+      "x": 30,
+      "y": 1,
+      "heading": 0
+    },
+    "RED_DEPOT_PRECENTRAL": {
+      "x": 0,
+      "y": 23,
+      "heading": 0
+    },
+    "RED_DEPOT_PARKCENTRAL": {
+      "x": 35,
+      "y": 25,
+      "heading": 0
+    },
     "RED_DUCK_START": {
       "x": 0,
       "y": 0,
@@ -187,40 +192,6 @@
       "y": 25,
       "heading": 0.0
     },
-
-
-    /*
-        "RED_DUCK_START": {
-          "x": 0,
-          "y": 0,
-          "heading": 270.0
-        },
-        "RED_DUCK_HUB": {
-          "x": 17.5,
-          "y": 17.5,
-          "heading": 70.0
-        },
-        "RED_DUCK_CAROUSEL": {
-          "x": -20.0,
-          "y": 2.0,
-          "heading": 235.0
-        },
-        "RED_DUCK_AFTERCAROUSEL": {
-          "x": -10.0,
-          "y": 12.0,
-          "heading": 270.0
-        },
-        "RED_DUCK_PREPARK": {
-          "x": 56,
-          "y": 0,
-          "heading": 0
-        },
-        "RED_DUCK_PARK": {
-          "x": 75,
-          "y": 0,
-          "heading": 0.0
-        },
-    */
     "BLUE_DUCK_START": {
       "x": 0,
       "y": 0,

@@ -122,7 +122,47 @@ public class AutonomousTaskBuilder {
     }
 
     public void buildDepotTasks(String startPosStr){
+        TrajectoryVelocityConstraint velConstraints = SampleMecanumDrive.getVelocityConstraint(15, 15, 10.25);
+        TrajectoryAccelerationConstraint accConstraint = SampleMecanumDrive.getAccelerationConstraint((15));
+        drive = (SampleMecanumDrive) robotHardware.getMecanumDrive();
 
+        startPos = robotProfile.getProfilePose(startPosStr + "_START");
+        Pose2d preHubPos = robotProfile.getProfilePose(startPosStr + "_PREHUB");
+        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
+        Pose2d preParkPos, parkPos;
+        if (parking.endsWith("WALL")) {
+            preParkPos = robotProfile.getProfilePose(startPosStr + "_PREWALL");
+            parkPos = robotProfile.getProfilePose(startPosStr + "_PARKWALL");
+        }
+        else {
+            preParkPos = robotProfile.getProfilePose(startPosStr + "_PRECENTRAL");
+            parkPos = robotProfile.getProfilePose(startPosStr + "_PARKCENTRAL");
+        }
+
+        Trajectory traj0 =  drive.trajectoryBuilder(startPos)
+                .strafeTo(preHubPos.vec())
+                .build();
+        taskList.add(new SplineMoveTask(drive, traj0));
+
+        ParallelComboTask par1 = new ParallelComboTask();
+        Trajectory traj = drive.trajectoryBuilder(preHubPos, true)
+                .splineTo(new Vector2d(hubPos.getX(), hubPos.getY()), hubPos.getHeading()+Math.PI, velConstraints, accConstraint)
+                .build();
+        par1.addTask(new SplineMoveTask(drive, traj));
+        par1.addTask(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
+        taskList.add(par1);
+
+        taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
+
+        ParallelComboTask par2 = new ParallelComboTask();
+        Trajectory traj4 = drive.trajectoryBuilder(hubPos)
+                .splineTo(new Vector2d(preParkPos.getX(), preParkPos.getY()), preParkPos.getHeading())
+                .splineTo(new Vector2d(parkPos.getX(), parkPos.getY()), parkPos.getHeading())
+                .build();
+        par2.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
+        par2.addTask(new SplineMoveTask(drive, traj4));
+        taskList.add(par2);
+        /*
         drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
 
         startPos = robotProfile.getProfilePose(startPosStr + "_START");
@@ -185,10 +225,11 @@ public class AutonomousTaskBuilder {
 //        PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
 //        m4.setPath(hubPos, parkPos);
 //        taskList.add(m4);
+
+         */
     }
 
     public void buildDuckTasks(String startPosStr){
-
         TrajectoryVelocityConstraint velConstraints = SampleMecanumDrive.getVelocityConstraint(15, 15, 10.25);
         TrajectoryAccelerationConstraint accConstraint = SampleMecanumDrive.getAccelerationConstraint((15));
         drive = (SampleMecanumDrive) robotHardware.getMecanumDrive();
