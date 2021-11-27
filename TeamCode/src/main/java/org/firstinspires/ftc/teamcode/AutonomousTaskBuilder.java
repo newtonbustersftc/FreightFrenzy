@@ -8,7 +8,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
+//import org.firstinspires.ftc.teamcode.
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.AngleMath;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 public class AutonomousTaskBuilder {
     RobotProfile robotProfile;
     RobotHardware robotHardware;
-    ArrayList<RobotControl> taskList = new ArrayList<>();
+    ArrayList<RobotControl> taskList = new ArrayList<RobotControl>();
     DriverOptions driverOptions;
     PIDMecanumMoveTask lastMovement;
     SampleMecanumDrive drive;
@@ -108,20 +108,20 @@ public class AutonomousTaskBuilder {
     }
 
     public ArrayList<RobotControl> buildTaskList(RobotVision.AutonomousGoal goal) {
-        //TODO - switch for start up position
-        ArrayList<RobotControl> taskList1 = null;
+        if (delay>0) {
+            taskList.add(new RobotSleep(delay*1000));
+        }
         if (startingPositionModes.endsWith("DUCK")) {
-             taskList1 = buildDuckTasks(startingPositionModes);
+             buildDuckTasks(startingPositionModes);
         }
         else {
-             taskList1 = buildDepotTasks(startingPositionModes);
-            //taskList = new ArrayList<>();   // TODO: create buildDepotTasks
+             buildDepotTasks(startingPositionModes);
         }
         robotHardware.getLocalizer().setPoseEstimate(startPos);
-        return taskList1;
+        return taskList;
     }
 
-    public ArrayList<RobotControl> buildDepotTasks(String startPosStr){
+    public void buildDepotTasks(String startPosStr){
 
         drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
 
@@ -185,32 +185,45 @@ public class AutonomousTaskBuilder {
 //        PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
 //        m4.setPath(hubPos, parkPos);
 //        taskList.add(m4);
-        return taskList;
     }
 
-    public ArrayList<RobotControl> buildDuckTasks(String startPosStr){
+    public void buildDuckTasks(String startPosStr){
 
         TrajectoryVelocityConstraint velConstraints = SampleMecanumDrive.getVelocityConstraint(15, 15, 10.25);
         TrajectoryAccelerationConstraint accConstraint = SampleMecanumDrive.getAccelerationConstraint((15));
         drive = (SampleMecanumDrive) robotHardware.getMecanumDrive();
 
         startPos = robotProfile.getProfilePose(startPosStr + "_START");
-        Pose2d p1 = robotProfile.getProfilePose(startPosStr + "_1");
-        Pose2d duckSpinPos = robotProfile.getProfilePose(startPosStr + "_CAROUSEL");
-//        Pose2d pos2 = robotProfile.getProfilePose(startPosStr + "_2");
+        Pose2d preHubPos = robotProfile.getProfilePose(startPosStr + "_PREHUB");
         Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
-//        Pose2d pos3 = robotProfile.getProfilePose(startPosStr + "_3");
-        Pose2d parkPos = robotProfile.getProfilePose(startPosStr + "_PARK");
+        Pose2d duckSpinPos = robotProfile.getProfilePose(startPosStr + "_CAROUSEL");
+        Pose2d afterSpinPos = robotProfile.getProfilePose(startPosStr + "_AFTERCAROUSEL");
+        Pose2d preParkPos, parkPos;
+        if (parking.endsWith("WALL")) {
+            preParkPos = robotProfile.getProfilePose(startPosStr + "_PREWALL");
+            parkPos = robotProfile.getProfilePose(startPosStr + "_PARKWALL");
+        }
+        else {
+            preParkPos = robotProfile.getProfilePose(startPosStr + "_PRECENTRAL");
+            parkPos = robotProfile.getProfilePose(startPosStr + "_PARKCENTRAL");
+        }
 
-        Trajectory traj = drive.trajectoryBuilder(startPos, true)
+        Trajectory traj0 =  drive.trajectoryBuilder(startPos)
+                .strafeTo(preHubPos.vec())
+                .build();
+        taskList.add(new SplineMoveTask(drive, traj0));
+
+        ParallelComboTask par1 = new ParallelComboTask();
+        Trajectory traj = drive.trajectoryBuilder(preHubPos, true)
                 .splineTo(new Vector2d(hubPos.getX(), hubPos.getY()), hubPos.getHeading(), velConstraints, accConstraint)
                 .build();
 
-        taskList.add(new SplineMoveTask(drive, traj));
-        taskList.add(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
+        par1.addTask(new SplineMoveTask(drive, traj));
+        par1.addTask(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
+        taskList.add(par1);
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
 
-        Trajectory traj2 = drive.trajectoryBuilder(new Pose2d(hubPos.getX(), hubPos.getY(), hubPos.getHeading() + 180))
+        Trajectory traj2 = drive.trajectoryBuilder(new Pose2d(hubPos.getX(), hubPos.getY(), hubPos.getHeading() + Math.PI))
                 .splineTo(new Vector2d(duckSpinPos.getX(), duckSpinPos.getY()), duckSpinPos.getHeading(), velConstraints, accConstraint)
                 .build();
 
@@ -218,15 +231,18 @@ public class AutonomousTaskBuilder {
         taskList.add(new DuckCarouselSpinTask(robotHardware, startPosStr));
 
         Trajectory traj3 = drive.trajectoryBuilder(duckSpinPos, true)
-                .splineTo(new Vector2d(p1.getX(), p1.getY()), p1.getHeading(), velConstraints, accConstraint)
-                .splineTo(new Vector2d(parkPos.getX(), parkPos.getY()), parkPos.getHeading(), velConstraints, accConstraint)
+                .splineTo(afterSpinPos.vec(), afterSpinPos.getHeading()+Math.PI, velConstraints, accConstraint)
                 .build();
-
         taskList.add(new SplineMoveTask(drive, traj3));
 
-
-
-
+        ParallelComboTask par2 = new ParallelComboTask();
+        Trajectory traj4 = drive.trajectoryBuilder(afterSpinPos)
+                .splineTo(new Vector2d(preParkPos.getX(), preParkPos.getY()), preParkPos.getHeading())
+                .splineTo(new Vector2d(parkPos.getX(), parkPos.getY()), parkPos.getHeading())
+                .build();
+        par2.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
+        par2.addTask(new SplineMoveTask(drive, traj4));
+        taskList.add(par2);
 //        MecanumRotateMoveTask m1 = new MecanumRotateMoveTask(robotHardware, robotProfile);
 //        m1.setRotateHeading(startPos, pos1);
 //        m1.setPower(0.5);
@@ -258,8 +274,6 @@ public class AutonomousTaskBuilder {
 //        m6.setPower(0.5);
 //        taskList.add(m6);
 //        taskList.add(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
-
-        return taskList;
     }
 
     public ArrayList<RobotControl> prepareSHDelivery_WarehouseParkingWall_TaskList(){

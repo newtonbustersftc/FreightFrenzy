@@ -358,7 +358,6 @@ public class RobotHardware {
     }
 
     public boolean isLiftMoving() {
-        Logger.logFile("Lift moving velocity: " + liftMotor.getVelocity());
         return Math.abs(liftMotor.getVelocity())>10;
     }
 
@@ -370,15 +369,10 @@ public class RobotHardware {
         Logger.logFile("Resetting Lift Position, bottom sensor: " + liftBottomTouched());
         getBulkData1();
         getBulkData2();
+        int currLiftPos = getEncoderCounts(RobotHardware.EncoderType.LIFT);
+        setLiftMotorPosition(currLiftPos - 3000);
+        liftMotor.setPower(0.2);
         while (!liftBottomTouched()) {
-            int currLiftPos = getEncoderCounts(RobotHardware.EncoderType.LIFT);
-            Logger.logFile("Lift current Position " + currLiftPos);
-            setLiftMotorPosition(currLiftPos - 25);
-            try {
-                Thread.sleep(100);
-            }
-            catch (Exception e) {
-            }
         }
         resetLiftEncoderCount();
         setLiftPosition(RobotHardware.LiftPosition.ZERO);

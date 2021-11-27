@@ -3,11 +3,16 @@ package org.firstinspires.ftc.teamcode;
 import android.content.SharedPreferences;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 @Autonomous(name="Newton Autonomous", group="Main")
@@ -23,11 +28,15 @@ public class AutonomousGeneric extends LinearOpMode {
 
     long loopCount = 0;
     int countTasks = 0;
+    String profileTimeStr;
     private int delay;
 
     public void initRobot() {
         try {
-            robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
+            File proFile;
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/DD HH:mm:ss");
+            robotProfile = RobotProfile.loadFromFile(proFile = new File("/sdcard/FIRST/profile.json"));
+            profileTimeStr = sdf.format(new java.util.Date(proFile.lastModified()));
         }
         catch (Exception e) {
             RobotLog.e("RobotProfile reading exception" + e);
@@ -78,15 +87,27 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware.setMotorStopBrake(false); // so we can adjust the robot00
         robotHardware.initRobotVision();
         robotHardware.resetLiftPositionAutonomous();
-        telemetry.addData("READY...", "NOW");
+        long loopStart = System.currentTimeMillis();
+        long loopCnt = 0;
+
+        warmUpT265();
+
         while (!isStarted()) {
-            sleep(10);
-            RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(false);
-            telemetry.addData("goal",goal);
             robotHardware.getLocalizer().update();
             Pose2d currPose = robotHardware.getLocalizer().getPoseEstimate();
-            telemetry.addData("CurrPose", currPose);
-            telemetry.update();
+            loopCnt++;
+            if (loopCnt==10000) {
+                // Set to 0,0,0 for once
+                robotHardware.getLocalizer().setPoseEstimate(new Pose2d());
+            }
+            if (loopCnt%10000==0) {
+                RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(false);
+                telemetry.addData("goal",goal);
+                telemetry.addData("CurrPose", currPose);
+                telemetry.addData("T265 CFD:",  ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence());
+                telemetry.addData("LoopTPS:", (loopCnt * 1000 / (System.currentTimeMillis() - loopStart)));
+                telemetry.update();
+            }
         }
 //        robotHardware.getBulkData1();
 //        robotHardware.getBulkData2();
@@ -148,6 +169,54 @@ public class AutonomousGeneric extends LinearOpMode {
         }
 
         robotHardware.setMotorStopBrake(false);
+    }
+
+    void warmUpT265() {
+        boolean warmUp = false;
+        long loopStart = System.currentTimeMillis();
+        long loopCnt = 0;
+        while (!warmUp && !isStarted()) {
+            robotHardware.getLocalizer().update();
+            Pose2d currPose = robotHardware.getLocalizer().getPoseEstimate();
+            loopCnt++;
+            if (loopCnt==1000) {
+                // Set to 0,0,0 for once
+                robotHardware.getLocalizer().setPoseEstimate(new Pose2d());
+            }
+            if (loopCnt%1000==0) {
+                telemetry.addData("Profile:", profileTimeStr);
+                telemetry.addLine("A to warm up, B to skip");
+                telemetry.addData("CurrPose", currPose);
+                telemetry.addData("T265 CFD:",  ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence());
+                telemetry.addData("LoopTPS:", (loopCnt * 1000 / (System.currentTimeMillis() - loopStart)));
+                telemetry.update();
+            }
+            warmUp = gamepad1.a || gamepad1.b;
+        }
+        if (gamepad1.a) {
+            int warningSoundID = hardwareMap.appContext.getResources().getIdentifier("backing_up", "raw", hardwareMap.appContext.getPackageName());
+            if (warningSoundID != 0) {
+                Logger.logFile("Found warning sound backing_up");
+                if (SoundPlayer.getInstance().preload(hardwareMap.appContext, warningSoundID)) {
+                    SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, warningSoundID);
+                }
+            }
+
+            robotHardware.getLocalizer().setPoseEstimate(new Pose2d());
+            SampleMecanumDrive drive = (SampleMecanumDrive) robotHardware.getMecanumDrive();
+            TrajectorySequence trajectory = drive.trajectorySequenceBuilder(new Pose2d())
+                    .waitSeconds(3)
+                    .back(20)
+                    .waitSeconds(0.5)
+                    .forward(20)
+                    .waitSeconds(0.5)
+                    .back(20)
+                    .waitSeconds(0.5)
+                    .forward(20)
+                    .waitSeconds(0.5)
+                    .build();
+            drive.followTrajectorySequence(trajectory);
+        }
     }
 
     Pose2d getProfilePose(String name) {

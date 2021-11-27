@@ -50,11 +50,11 @@ public class RealSenseLocalizer implements Localizer {
             Pose2d t265Pose = new Pose2d(t265Update.pose.getY()/INCH_TO_METER, t265Update.pose.getX()/INCH_TO_METER, t265Update.pose.getHeading());
             Pose2d centerPose = translateRobotCenter(t265Pose);
             postEstimate = fieldTranslate(originOffset, centerPose); //offsets the pose to be what the pose estimate is;
-            sampleN++;
-            if (sampleN%10==0) {
-                Logger.logFile("getPoseEstimate - t265Pose:" + t265Pose + " center:" + centerPose + " origin: " + originOffset +
-                        " estimate:" + postEstimate);
-            }
+//            sampleN++;
+//            if (sampleN%1000==0) {
+//                Logger.logFile("getPoseEstimate - t265Pose:" + t265Pose + " center:" + centerPose + " origin: " + originOffset +
+//                        " estimate:" + postEstimate);
+//            }
         } else {
             RobotLog.v("NULL Camera Update");
         }
@@ -77,7 +77,7 @@ public class RealSenseLocalizer implements Localizer {
         Pose2d origin0 = translateRobotCenter(t265Pose);
         originOffset = new Pose2d(origin0.getX()-(pose2d.getX()*Math.cos(pose2d.getHeading())+pose2d.getY()*Math.sin(pose2d.getHeading())),
                 origin0.getY()-(pose2d.getX()*Math.sin(pose2d.getHeading())-pose2d.getY()*Math.cos(pose2d.getHeading())), origin0.getHeading()-pose2d.getHeading());
-        Logger.logFile("setPoseEstimate - t265Pose:" + t265Pose + " origin:" + originOffset);
+        Logger.logFile("setPoseEstimate - :" + pose2d);
         RobotLog.v("setPoseEstimate - t265Pose:" + t265Pose + " origin:" + originOffset);
     }
 
@@ -106,6 +106,7 @@ public class RealSenseLocalizer implements Localizer {
     @Override
     public void update() {
         Thread.yield();
+        Thread.yield();
         t265Update = slamra.getLastReceivedCameraUpdate();
     }
 
@@ -124,9 +125,9 @@ public class RealSenseLocalizer implements Localizer {
                 (velocity.vxMetersPerSecond/INCH_TO_METER)*Math.sin(-originOffset.getHeading());
         double vY = (velocity.vyMetersPerSecond/INCH_TO_METER) * Math.sin(originOffset.getHeading()) +
                 (velocity.vxMetersPerSecond/INCH_TO_METER)*Math.cos(- originOffset.getHeading());
-        if (sampleN%100==0) {
-            Logger.logFile("getPoseVelocity:" + vX + ", " + vY + ", " + Math.toDegrees(velocity.omegaRadiansPerSecond));
-        }
+//        if (sampleN%1000==0) {
+//            Logger.logFile("getPoseVelocity:" + vX + ", " + vY + ", " + Math.toDegrees(velocity.omegaRadiansPerSecond));
+//        }
 
         return new Pose2d(vX, -vY, velocity.omegaRadiansPerSecond);
     }
