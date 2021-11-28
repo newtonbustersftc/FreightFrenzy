@@ -113,6 +113,7 @@ public class AutonomousGeneric extends LinearOpMode {
 //        robotHardware.getBulkData2();
 
 //        robotHardware.getLocalizer().update();
+        robotHardware.resetImu();
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0, 0, 0));
 //        robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START_STATE"));
 

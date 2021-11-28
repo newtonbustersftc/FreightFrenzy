@@ -154,6 +154,23 @@ public class AutonomousTaskBuilder {
 
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
 
+        //*
+        //Between delivering to hub and parking:
+        //Pick up block, drive to hub and deliver.
+
+        Trajectory traj5 = drive.trajectoryBuilder(hubPos)
+                .splineTo(new Vector2d(preHubPos.getX(), preHubPos.getY()), preHubPos.getHeading())
+                .splineTo(new Vector2d(hubPos.getX(), hubPos.getY()), hubPos.getHeading())
+                .build();
+        ParallelComboTask par3 = new ParallelComboTask();
+        //par3.addTask(move forward?);
+        par3.addTask(new IntakeTask(robotHardware, robotProfile));
+        taskList.add(par3);
+        taskList.add(new SplineMoveTask(drive, traj5));
+        taskList.add(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.TOP));
+        taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
+        //*/
+
         ParallelComboTask par2 = new ParallelComboTask();
         Trajectory traj4 = drive.trajectoryBuilder(hubPos)
                 .splineTo(new Vector2d(preParkPos.getX(), preParkPos.getY()), preParkPos.getHeading())

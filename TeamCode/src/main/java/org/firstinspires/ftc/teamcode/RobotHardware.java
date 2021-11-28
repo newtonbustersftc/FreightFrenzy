@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Log;
 
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Pose2dKt;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Transform2d;
@@ -13,7 +15,11 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.util.AxesSigns;
+import org.firstinspires.ftc.teamcode.util.BNO055IMUUtil;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 import org.openftc.revextensions2.ExpansionHubServo;
@@ -40,12 +46,13 @@ public class RobotHardware {
     HardwareMap hardwareMap;
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
     ExpansionHubMotor liftMotor, duckMotor, intakeMotor;
-    DigitalChannel led4, led5;
+    DigitalChannel led1, led2;
     ExpansionHubServo boxFlapServo;
     DigitalChannel liftBottom;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
     SampleMecanumDrive mecanumDrive;
+    BNO055IMU imu;
     RealSenseLocalizer realSenseLocalizer;
     RobotVision robotVision;
     static T265Camera t265 = null;
@@ -67,11 +74,8 @@ public class RobotHardware {
         rlMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("RLMotor");
         frMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("FRMotor");
         flMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("FLMotor");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.mode = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled = false;
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        resetImu();
 
         flMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rlMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -95,9 +99,9 @@ public class RobotHardware {
         duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         duckMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //led4 = hardwareMap.digitalChannel.get("LED4");
-        //led5 = hardwareMap.digitalChannel.get("LED5");
-        //initLeds();
+        led1 = hardwareMap.digitalChannel.get("LED1");
+        led2 = hardwareMap.digitalChannel.get("LED2");
+        initLeds();
 
         //touch sensor
         liftBottom = hardwareMap.get(DigitalChannel.class, "LiftBottom");
@@ -144,12 +148,10 @@ public class RobotHardware {
     }
 
     public void initLeds() {
-//        led1.setMode(DigitalChannel.Mode.OUTPUT);
-//        led2.setMode(DigitalChannel.Mode.OUTPUT);
-//        led3.setMode(DigitalChannel.Mode.OUTPUT);
-//        led1.setState(true);
-//        led2.setState(true);
-//        led3.setState(true);
+        led1.setMode(DigitalChannel.Mode.OUTPUT);
+        led2.setMode(DigitalChannel.Mode.OUTPUT);
+        led1.setState(true);
+        led2.setState(true);
     }
 
     public MecanumDrive getMecanumDrive() {
@@ -286,12 +288,10 @@ public class RobotHardware {
 
     public void startIntake() {
         intakeMotor.setPower(1);
-        //intakeMotor.setVelocity(profile.hardwareSpec.intakeVelocity);
     }
 
     public void reverseIntake() {
         intakeMotor.setPower(-1);
-        //intakeMotor.setVelocity(-profile.hardwareSpec.intakeVelocity);
     }
 
     public void stopIntake() {
@@ -397,12 +397,12 @@ public class RobotHardware {
 
     public enum EncoderType {LIFT, INTAKE}
 
-    public void setLed4(boolean on) {
-        led4.setState(!on);
+    public void setLed1(boolean on) {
+        led1.setState(!on);
     }
 
-    public void setLed5(boolean on) {
-        led5.setState(!on);
+    public void setLed2(boolean on) {
+        led2.setState(!on);
     }
 
     public void openBoxFlap(){
@@ -423,5 +423,19 @@ public class RobotHardware {
     public boolean liftBottomTouched() {
         // digital channel: low - touched, high - not touch
         return !liftBottom.getState();
+    }
+
+    public double getImuHeading() {
+        return imu.getAngularOrientation().firstAngle;
+    }
+
+    public void resetImu() {
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = false;
+        imu.initialize(parameters);
+        BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
     }
 }

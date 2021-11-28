@@ -16,9 +16,6 @@ public class DriverOpMode extends OpMode {
     RobotHardware robotHardware;
     RobotProfile robotProfile;
 
-    enum IntakeMode { INTAKE, REVERSE, STOP}
-    IntakeMode currIntakeMode = IntakeMode.STOP;
-
     Pose2d currPose;
     double fieldHeadingOffset;
 
@@ -36,6 +33,7 @@ public class DriverOpMode extends OpMode {
     boolean dpadDownPressed = false;
     boolean leftTriggerPressed = false;
     boolean rightTriggerPressed = false;
+    double imuAngleOffset = 0;
 
     // DriveThru combos
     SequentialComboTask intakeAndLift, deliverTask;
@@ -72,6 +70,9 @@ public class DriverOpMode extends OpMode {
         else {
             fieldModeSign = -1;
         }
+        if (prefs.getString(START_POS_MODES_PREF, "NONE").contains("DUCK")) {
+            imuAngleOffset = Math.PI;
+        }
         Logger.logFile("DriverOpMode: " + prefs.getString(START_POS_MODES_PREF, "NONE"));
 
         setupCombos();
@@ -86,12 +87,11 @@ public class DriverOpMode extends OpMode {
         robotHardware.getBulkData1();
         //Read values from the expansion hub
         robotHardware.getBulkData2();
-        robotHardware.getLocalizer().update();
-        currPose = robotHardware.getLocalizer().getPoseEstimate();
 
         //currPose = new Pose2d(0,0,0);   // for now
         //Handling autonomous task loop
         if (currentTask != null) {
+            robotHardware.setLed1(true);
             if (gamepad1.left_bumper && gamepad1.right_bumper) {
                 currentTask.cleanUp();
                 currentTask = null;
@@ -100,15 +100,18 @@ public class DriverOpMode extends OpMode {
                 currentTask.execute();
                 if (currentTask.isDone()) {
                     currentTask.cleanUp();
-                    Logger.logFile("TaskComplete: " + currentTask + " Pose:" + robotHardware.getLocalizer().getPoseEstimate());
+                    Logger.logFile("TaskComplete: " + currentTask);
                     currentTask = null;
                 }
             }
         }
+        else {
+            robotHardware.setLed1(false);
+        }
 
         handleMovement();
 
-        telemetry.addData("CurrPose", currPose);
+        telemetry.addData("Heading", Math.toDegrees(robotHardware.getImuHeading()));
 
         handleIntake();
 
@@ -134,13 +137,9 @@ public class DriverOpMode extends OpMode {
             xPressed = false;
         }
 
-        if(gamepad1.b){
+        if(gamepad1.b && gamepad1.right_bumper){
             robotHardware.setLiftPosition(RobotHardware.LiftPosition.NOT_INIT);
             currentTask = new ResetLiftPositionDriverOpModeTask(robotHardware);
-        }
-
-        if(gamepad1.share){
-            robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         }
 
         if (gamepad1.y) {
@@ -167,17 +166,6 @@ public class DriverOpMode extends OpMode {
     }
 
     /**
-     * Retrieve set pose from profile
-     * @param name name of the robot position
-     * @return
-     */
-    Pose2d getProfilePose(String name) {
-        RobotProfile.AutoPose ap = robotProfile.poses.get(name);
-        return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
-    }
-
-
-    /**
      * Joystick Driving Controls
      * Left bumper for slow motion
      * Left trigger to enable field mode, right trigger to enable robot-oriented mode
@@ -188,23 +176,30 @@ public class DriverOpMode extends OpMode {
         double padAngle = Math.atan2(gamepad1.left_stick_y, -gamepad1.left_stick_x) + Math.PI / 2;
 
         double movAngle;
+
+        robotHardware.setLed2(fieldMode);
         if (fieldMode) {
-            movAngle = padAngle + ((isRedTeam) ? Math.PI / 2 : -Math.PI / 2) - currPose.getHeading();
+            movAngle = padAngle + ((isRedTeam) ? Math.PI / 2 : -Math.PI / 2) - robotHardware.getImuHeading()-imuAngleOffset;
         } else {
             movAngle = padAngle;
         }
-        if (gamepad1.right_trigger > 0) {
+        if (gamepad1.left_trigger > 0) {
             power = power / 3;
             turn = turn / 3;
         }
         robotHardware.mecanumDrive2(power, movAngle, turn);
 
         // toggle field mode on/off.
-        // Driver 1: left trigger - enable; right trigger - disable
+        // Driver 1: dpad down - enable; dpad right - disable
         if (gamepad1.dpad_down) {
             fieldMode = true;
         } else if (gamepad1.dpad_right) {
             fieldMode = false;  //good luck driving
+        }
+        if(gamepad1.share){
+            robotHardware.resetImu();
+            imuAngleOffset = 0;
+            fieldMode = true;
         }
     }
 
@@ -212,19 +207,11 @@ public class DriverOpMode extends OpMode {
      * Uses up  down keypad to switch to different modes between shooting, stop, reverse, and intake
      */
     private void handleIntake() {
-        if (gamepad1.left_trigger > 0 && !leftTriggerPressed) {
+        if (gamepad1.right_trigger > 0 && !rightTriggerPressed) {
             currentTask = intakeAndLift;
             currentTask.prepare();
-
-//            currentTask = new AutoIntakeTask(robotHardware);
-//            currentTask.prepare();
-            leftTriggerPressed = true;
-
-            //robotHardware.startIntake();
         }
-        if(!(gamepad1.left_trigger > 0)){
-            leftTriggerPressed = false;
-        }
+        rightTriggerPressed = (gamepad1.right_trigger>0);
 
         if (gamepad1.a) {
             if (currentTask == intakeAndLift) {
@@ -235,24 +222,7 @@ public class DriverOpMode extends OpMode {
         else if (currentTask != intakeAndLift) {
             robotHardware.stopIntake();
         }
-//        else {
-//            robotHardware.stopIntake();
-//        }
-//        else {
-//            robotHardware.stopIntake();
-//        }
-
-
-
-//        if(gamepad1.right_bumper){
-//            robotHardware.stopIntake();
-//        }
-
-//        dpadLeftPressed = gamepad1.dpad_left;
     }
-
-
-
 
     /**
      * Define combo task for driver op mode
