@@ -56,12 +56,10 @@
     "ringPusherShoot": 0.5,
     "ringPusherDown": 0.17,
     "intakeVelocity": 1000,
+    "intakeTime": 5000,
     "duckDriveVelocity": 550,
     "duckAutoVelocity": 250,
     "duckSpinTime": 3000,
-    "ringHolderUp": 0.338,
-    "ringHolderDown": 0.555,
-    "ringHolderDown2": 0.48,
     "cameraForwardDisplacement": 1.5,
     "cameraVerticalDisplacement": 16.5,
     "cameraLeftDisplacement": -1.5,
@@ -86,32 +84,41 @@
       "y": 0,
       "heading": 0
     },
-    "BLUE_DEPOT_1": {
-      "x": -12,
-      "y": 0,
-      "heading": 0
-    },
-    "BLUE_DEPOT_2": {
-      "x": -12,
-      "y": 23,
-      "heading": 0
-    },
-    "BLUE_DEPOT_3": {
-      "x": -12,
-      "y": 5,
+    "BLUE_DEPOT_PREHUB": {
+      "x": 0,
+      "y": -3,
       "heading": 0
     },
     "BLUE_DEPOT_HUB": {
-      "x": -17,
-      "y": 27,
-      "heading": 60
+      "x": -20,
+      "y": -28,
+      "heading": 70
     },
-    "BLUE_DEPOT_WAREHOUSE": {
-      "x": 26,
-      "y": 5,
+    "BLUE_DEPOT_PREWALL": {
+      "x": 0,
+      "y": -1,
       "heading": 0
     },
-
+    "BLUE_DEPOT_PICKUPWALL": {
+      "x": 37,
+      "y": -1,
+      "heading": 0
+    },
+    "BLUE_DEPOT_PARKWALL": {
+      "x": 30,
+      "y": -1,
+      "heading": 0
+    },
+    "BLUE_DEPOT_PRECENTRAL": {
+      "x": 0,
+      "y": 23,
+      "heading": 0
+    },
+    "BLUE_DEPOT_PARKCENTRAL": {
+      "x": 35,
+      "y": 25,
+      "heading": 0
+    },
     "RED_DEPOT_START": {
       "x": 0,
       "y": 0,
@@ -124,11 +131,16 @@
     },
     "RED_DEPOT_HUB": {
       "x": -20.5,
-      "y": 29,
+      "y": 28,
       "heading": 290
     },
     "RED_DEPOT_PREWALL": {
       "x": 0,
+      "y": 1,
+      "heading": 0
+    },
+    "RED_DEPOT_PICKUPWALL": {
+      "x": 38,
       "y": 1,
       "heading": 0
     },
@@ -159,11 +171,11 @@
     },
     "RED_DUCK_HUB": {
       "x": 19,
-      "y": 24,
+      "y": 25,
       "heading": 70.0
     },
     "RED_DUCK_CAROUSEL": {
-      "x": -18.5,
+      "x": -19,
       "y": 7,
       "heading": 235.0
     },
@@ -188,7 +200,7 @@
       "heading": 0
     },
     "RED_DUCK_PARKCENTRAL": {
-      "x": 75,
+      "x": 80,
       "y": 25,
       "heading": 0.0
     },
@@ -197,35 +209,45 @@
       "y": 0,
       "heading": 180.0
     },
-    "BLUE_DUCK_1": {
-      "x": -12,
-      "y": 10.0,
-      "heading": 200.0
-    },
-    "BLUE_DUCK_CAROUSEL": {
-      "x": -20.0,
-      "y": 8,
-      "heading": 170.0
-    },
-    "BLUE_DUCK_2": {
-      "x": -23,
-      "y": 40.0,
+    "BLUE_DUCK_PREHUB": {
+      "x": 0,
+      "y": -3,
       "heading": 180.0
     },
     "BLUE_DUCK_HUB": {
-      "x": 9,
-      "y": 40.0,
-      "heading": 180.0
+      "x": 19,
+      "y": -23.5,
+      "heading": 290.0
     },
-    "BLUE_DUCK_3": {
+    "BLUE_DUCK_CAROUSEL": {
       "x": -24,
-      "y": 42.0,
-      "heading": 180.0
+      "y": -8,
+      "heading": 135.0
     },
-    "BLUE_DUCK_PARK": {
-      "x": -24,
-      "y": 30.0,
-      "heading": 180.0
+    "BLUE_DUCK_AFTERCAROUSEL": {
+      "x": -8.0,
+      "y": -19.0,
+      "heading": 60.0
+    },
+    "BLUE_DUCK_PREWALL": {
+      "x": 56,
+      "y": -1.75,
+      "heading": 0
+    },
+    "BLUE_DUCK_PARKWALL": {
+      "x": 75,
+      "y": -1.5,
+      "heading": 0.0
+    },
+    "BLUE_DUCK_PRECENTRAL": {
+      "x": 45,
+      "y": -25,
+      "heading": 0
+    },
+    "BLUE_DUCK_PARKCENTRAL": {
+      "x": 80,
+      "y": -25,
+      "heading": 0.0
     }
   }
 }
