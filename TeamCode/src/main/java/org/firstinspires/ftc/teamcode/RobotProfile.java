@@ -62,15 +62,16 @@ public class RobotProfile {
         hardwareSpec.rightEncoderForwardSign = -1;
         hardwareSpec.horizontalEncoderForwardSign = -1;
         hardwareSpec.intakeVelocity = 1000.0;
+        hardwareSpec.intakeTime = 5000;
         hardwareSpec.duckDriveVelocity = 550;
         hardwareSpec.duckAutoVelocity = 200;
-        hardwareSpec.duckSpinTime = 5000;
+        hardwareSpec.duckSpinTime = 3000;
         hardwareSpec.cameraForwardDisplacement = 1.5f;
         hardwareSpec.cameraVerticalDisplacement = 16.5f;
         hardwareSpec.cameraLeftDisplacement = -1.5f;
         hardwareSpec.cameraHeadingOffset = -2.5f;
         hardwareSpec.realSenseAngleModifier = Math.PI/2;
-        hardwareSpec.liftPositionZero = 0;
+        hardwareSpec.liftPositionZero = 20;
         hardwareSpec.liftPositionBottom = 540;
         hardwareSpec.liftPositionMiddle = 1200;
         hardwareSpec.liftPositionTop = 1950;
@@ -162,6 +163,7 @@ public class RobotProfile {
         int rightEncoderForwardSign;
         int horizontalEncoderForwardSign;
         double intakeVelocity;
+        int intakeTime;
         int duckDriveVelocity;
         int duckAutoVelocity;
         long duckSpinTime;

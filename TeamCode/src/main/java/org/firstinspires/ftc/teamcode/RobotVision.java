@@ -494,12 +494,12 @@ public class RobotVision {
             }
 
             for (Rect r : ringRecList) {
-                Logger.logFile("Vision Rec:" + r);
+//                Logger.logFile("Vision Rec:" + r);
             }
-            Logger.logFile("Sorting...");
+//            Logger.logFile("Sorting...");
             Collections.sort(ringRecList, new RectComparator());
             for (Rect r : ringRecList) {
-                Logger.logFile("Vision Rec:" + r);
+//                Logger.logFile("Vision Rec:" + r);
             }
             return input;
         }

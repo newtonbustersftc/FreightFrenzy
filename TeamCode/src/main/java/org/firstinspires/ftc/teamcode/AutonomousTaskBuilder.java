@@ -26,7 +26,6 @@ public class AutonomousTaskBuilder {
     RobotHardware robotHardware;
     ArrayList<RobotControl> taskList = new ArrayList<RobotControl>();
     DriverOptions driverOptions;
-    PIDMecanumMoveTask lastMovement;
     SampleMecanumDrive drive;
     Pose2d startPos;
     int delay;
@@ -42,22 +41,9 @@ public class AutonomousTaskBuilder {
     int starting_x = 0;
     int starting_y = 0;
     int red_left_starting_heading = 0;
-    int red_right_starting_heading = 0;
-    int blue_left_starting_heading = 0;
-    int blue_right_starting_heading = 0;
 
     int red_shipping_hub_x = 150;
     int red_shipping_hub_y = 120;
-    int red_storage_x = 30;
-    int red_storage_y = 88;
-    int red_warehouse_x = 333;
-    int red_warehouse_y = 25;
-    int red_warehouse_parking_central_x = 292;
-    int red_warehouse_parking_central_y = 76;
-    int red_delivery_route_central_y = 76;
-    int red_delivery_route_wall_y = 25;
-    int red_warehouse_parking_wall_y = 25;
-    int red_warehouse_parking_wall_x = 292;
     double red_left_angle_to_hub = 30;  //closewise from y axis
     double red_right_angle_to_hub = 30;  //anticlockwise from y axis
 
@@ -129,6 +115,7 @@ public class AutonomousTaskBuilder {
         startPos = robotProfile.getProfilePose(startPosStr + "_START");
         Pose2d preHubPos = robotProfile.getProfilePose(startPosStr + "_PREHUB");
         Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
+        Pose2d warehousePickupPos = robotProfile.getProfilePose(startPosStr + "_PICKUPWALL");
         Pose2d preParkPos, parkPos;
         if (parking.endsWith("WALL")) {
             preParkPos = robotProfile.getProfilePose(startPosStr + "_PREWALL");
@@ -145,10 +132,10 @@ public class AutonomousTaskBuilder {
         taskList.add(new SplineMoveTask(drive, traj0));
 
         ParallelComboTask par1 = new ParallelComboTask();
-        Trajectory traj = drive.trajectoryBuilder(preHubPos, true)
+        Trajectory traj1 = drive.trajectoryBuilder(preHubPos, true)
                 .splineTo(new Vector2d(hubPos.getX(), hubPos.getY()), hubPos.getHeading()+Math.PI, velConstraints, accConstraint)
                 .build();
-        par1.addTask(new SplineMoveTask(drive, traj));
+        par1.addTask(new SplineMoveTask(drive, traj1));
         par1.addTask(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
         taskList.add(par1);
 
@@ -157,93 +144,31 @@ public class AutonomousTaskBuilder {
         //*
         //Between delivering to hub and parking:
         //Pick up block, drive to hub and deliver.
-
-        Trajectory traj5 = drive.trajectoryBuilder(hubPos)
-                .splineTo(new Vector2d(preHubPos.getX(), preHubPos.getY()), preHubPos.getHeading())
-                .splineTo(new Vector2d(hubPos.getX(), hubPos.getY()), hubPos.getHeading())
+        Trajectory traj2 = drive.trajectoryBuilder(hubPos)
+                .splineTo(new Vector2d(preParkPos.getX(), preParkPos.getY()), preParkPos.getHeading())
+                .splineTo(new Vector2d(warehousePickupPos.getX(), warehousePickupPos.getY()), warehousePickupPos.getHeading())
                 .build();
-        ParallelComboTask par3 = new ParallelComboTask();
-        //par3.addTask(move forward?);
-        par3.addTask(new IntakeTask(robotHardware, robotProfile));
-        taskList.add(par3);
-        taskList.add(new SplineMoveTask(drive, traj5));
-        taskList.add(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.TOP));
-        taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
-        //*/
-
         ParallelComboTask par2 = new ParallelComboTask();
+        par2.addTask(new SplineMoveTask(drive, traj2));
+        par2.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
+        par2.addTask(new IntakeTask(robotHardware, robotProfile));
+        taskList.add(par2);
+
+        taskList.add(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.TOP));
+
+        Trajectory traj3 = drive.trajectoryBuilder(warehousePickupPos, true)
+                .splineTo(new Vector2d(preParkPos.getX(), preParkPos.getY()), preParkPos.getHeading()+Math.PI)
+                .splineTo(new Vector2d(hubPos.getX(), hubPos.getY()), hubPos.getHeading()+Math.PI)
+                .build();
+        taskList.add(new SplineMoveTask(drive, traj3));
+
+        taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
+
         Trajectory traj4 = drive.trajectoryBuilder(hubPos)
                 .splineTo(new Vector2d(preParkPos.getX(), preParkPos.getY()), preParkPos.getHeading())
                 .splineTo(new Vector2d(parkPos.getX(), parkPos.getY()), parkPos.getHeading())
                 .build();
-        par2.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
-        par2.addTask(new SplineMoveTask(drive, traj4));
-        taskList.add(par2);
-        /*
-        drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
-
-        startPos = robotProfile.getProfilePose(startPosStr + "_START");
-        Pose2d pos1 = robotProfile.getProfilePose(startPosStr + "_1");
-        Pose2d pos2 = robotProfile.getProfilePose(startPosStr + "_2");
-        Pose2d pos3 = robotProfile.getProfilePose(startPosStr + "_3");
-        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
-        Pose2d warehousePos = robotProfile.getProfilePose(startPosStr + "_WAREHOUSE");
-        //Pose2d parkPos = robotProfile.getProfilePose(startPosStr + "_PARK");
-        PIDMecanumMoveTask m1 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-        m1.setPath(startPos, pos1);
-        m1.setPower(0.5);
-        taskList.add(m1);
-        MecanumRotateMoveTask m2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        m2.setRotateHeading(pos1, hubPos);
-        m2.setPower(0.5);
-        taskList.add(m2);
-//        MecanumRotateMoveTask m2 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-//        m2.setRotateHeading(pos1, hubPos);
-//        m2.setPower(0.3);
-//        taskList.add(m2);
-        taskList.add(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
-        taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
-        taskList.add(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
-
-        MecanumRotateMoveTask m3 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-        m3.setRotateHeading(hubPos, startPos);
-        m3.setPower(0.3);
-        taskList.add(m3);
-
-        PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-        m5.setPath(startPos, warehousePos);
-         taskList.add(m5);
-
-//        MecanumRotateMoveTask m3 = new MecanumRotateMoveTask(robotHardware, robotProfile);
-//        m3.setRotateHeading(hubPos, pos2);
-//        m3.setPower(0.3);
-//        taskList.add(m3);
-//
-//        PIDMecanumMoveTask m4 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-//        m4.setPath(pos2, pos3);
-//        m4.setPower(0.3);
-//        taskList.add(m4);
-//
-//        PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-//        m5.setPath(pos3, warehousePos);
-//        m5.setPower(0.3);
-//        taskList.add(m5);
-
-        //taskList.add(new IntakeTask(robotHardware, robotProfile));
-
-
-//        //taskList.add(new RobotSleep(3000));
-//        PIDMecanumMoveTask m4 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-//        m4.setPath(pos2, hubPos);
-//        m4.setPower(0.5);
-//        taskList.add(m4);
-//        taskList.add(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
-//        taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
-//        PIDMecanumMoveTask m5 = new PIDMecanumMoveTask(robotHardware, robotProfile);
-//        m4.setPath(hubPos, parkPos);
-//        taskList.add(m4);
-
-         */
+        taskList.add(new SplineMoveTask(drive, traj4));
     }
 
     public void buildDuckTasks(String startPosStr){
@@ -345,45 +270,4 @@ public class AutonomousTaskBuilder {
     public void prepareSHDelivery_WarehousePickup_SHDelivery_WarehouseParkingWallTaskList(){
 
     }
-
-    void init(){
-
-        switch(driverOptions.getStartingPositionModes()){
-            case("RED_LEFT"):
-//                starting_x = 0;
-//                starting_y = 0;
-                red_left_starting_heading = 0;
-                shipping_hub_x = red_shipping_hub_x;
-                shipping_hub_y = red_shipping_hub_y;
-//                hub_heading = red_left_angle_to_hub;
-                direction = AngleMath.Direction.CLOCKWISE;
-                break;
-            case("RED_RIGHT"):
-//                red_right_starting_x = 0; //212;
-//                red_right_starting_y = 0; //20;
-                shipping_hub_x = red_shipping_hub_x;
-                shipping_hub_y = red_shipping_hub_y;
-                hub_heading = red_right_angle_to_hub;
-                direction = AngleMath.Direction.ANTI_CLOCKWISE;
-                break;
-            case("BLUE_LEFT"):
-//                starting_x = 212;
-//                starting_y = 365;
-                shipping_hub_x = blue_shipping_hub_x;
-                shipping_hub_y = blue_shipping_hub_y;
-                hub_heading = blue_left_angle_to_hub;
-                direction = AngleMath.Direction.CLOCKWISE;
-                break;
-            case("BLUE_RIGHT"):
-                starting_x = 90;
-                starting_y = 365;
-                shipping_hub_x = blue_shipping_hub_x;
-                shipping_hub_y = blue_shipping_hub_y;
-                hub_heading = blue_right_angle_to_hub;
-                direction = AngleMath.Direction.ANTI_CLOCKWISE;
-                break;
-            default:
-        }
-    }
-
 }

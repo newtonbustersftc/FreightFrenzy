@@ -27,6 +27,6 @@ public class IntakeTask implements RobotControl {
 
     @Override
     public boolean isDone() {
-        return System.currentTimeMillis()-startTime>robotProfile.hardwareSpec.duckSpinTime;
+        return System.currentTimeMillis()-startTime>robotProfile.hardwareSpec.intakeTime;
     }
 }
