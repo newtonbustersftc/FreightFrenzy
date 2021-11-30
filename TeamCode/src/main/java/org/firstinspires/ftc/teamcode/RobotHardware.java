@@ -121,7 +121,7 @@ public class RobotHardware {
 //        SampleMecanumDrive.TRANSLATIONAL_PID = new PIDCoefficients(profile.rrTranslationPID.p,profile.rrTranslationPID.i,profile.rrTranslationPID.d);
         mecanumDrive = new SampleMecanumDrive(hardwareMap);
         if (t265 == null) {
-            t265 = new T265Camera(new Transform2d(new Translation2d(0, 0), new Rotation2d(0)), 0, hardwareMap.appContext);
+            t265 = new T265Camera(new Transform2d(new Translation2d(0, 0), new Rotation2d(0)), 0.8, hardwareMap.appContext);
         }
         if (!t265.isStarted()) {
             t265.start();
@@ -371,7 +371,8 @@ public class RobotHardware {
         getBulkData1();
         getBulkData2();
         int currLiftPos = getEncoderCounts(RobotHardware.EncoderType.LIFT);
-        setLiftMotorPosition(currLiftPos - 3000);
+        if(!liftBottomTouched())
+            setLiftMotorPosition(currLiftPos - 3000);
         liftMotor.setPower(0.2);
         while (!liftBottomTouched()) {
         }
