@@ -6,6 +6,7 @@ import android.util.Log;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.RobotLog;
 import com.vuforia.Image;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
@@ -34,7 +35,11 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -97,6 +102,7 @@ public class RobotVision {
      * servos, this device is identified using the robot configuration tool in the FTC application.
      */
     WebcamName webcamName = null;
+    OpenCvWebcam rearCamera = null;
 
     private boolean targetVisible = false;
     private float phoneXRotate    = 0;
@@ -523,5 +529,54 @@ public class RobotVision {
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, rx, ry, rz)));
     }
 
+    public void initRearCamera() {
+        rearCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam2"));
+        rearCamera.setMillisecondsPermissionTimeout(2500);
+        rearCamera.openCameraDeviceAsync(
+            new OpenCvCamera.AsyncCameraOpenListener() {
+                @Override
+                public void onOpened() {
+                    RobotLog.i("RearCamera opened");
+                    Logger.logFile("RearCamera opened");
+                    rearCamera.setPipeline(new SavePicturePipeline());
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    Logger.logFile("Failed to open RearCamera: " + errorCode);
+                    RobotLog.e("Failed to open RearCamera: " + errorCode);
+                }
+            }
+        );
+    }
+
+    class SavePicturePipeline extends OpenCvPipeline {
+        int n=0;
+        @Override
+        public Mat processFrame(Mat input) {
+            n++;
+            if (n%5==0) {
+                String timestamp = new SimpleDateFormat("MMdd-HHmmssSSS", Locale.US).format(new Date());
+                Mat mbgr = new Mat();
+                Imgproc.cvtColor(input, mbgr, Imgproc.COLOR_RGB2BGR, 3);
+                Imgcodecs.imwrite("/sdcard/FIRST/REAR-" + timestamp + ".jpg", mbgr);
+                mbgr.release();
+            }
+            return input;
+        }
+    }
+
+    public void startRearCamera() {
+        rearCamera.startStreaming(320, 240, OpenCvCameraRotation.UPSIDE_DOWN);
+    }
+
+    public boolean isRearCameraOpened() {
+        return rearCamera!=null;
+    }
+
+    public void stopRearCamera() {
+        rearCamera.stopStreaming();
+        rearCamera.closeCameraDevice();
+    }
 }
 

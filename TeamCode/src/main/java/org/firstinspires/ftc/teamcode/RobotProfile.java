@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -57,6 +58,12 @@ public class RobotProfile {
         hardwareSpec = new HardwareSpec();
         hardwareSpec.trackWheelDiameter = 3.8;   //cm diameter
         hardwareSpec.trackWheelCPR = 4000;
+        hardwareSpec.AXEL_TRANS_PID_1 = 5;
+        hardwareSpec.AXEL_TRANS_PID_2 = 0.1;
+        hardwareSpec.AXEL_TRANS_PID_3 = 0;
+        hardwareSpec.LATERIAL_TRANS_PID_1 = 5;
+        hardwareSpec.LATERIAL_TRANS_PID_2 = 0.1;
+        hardwareSpec.LATERIAL_TRANS_PID_3 = 0;
         hardwareSpec.leftRightWheelDist = 41;//cm left right dist, from tuning
         hardwareSpec.leftEncodeForwardSign = 1;
         hardwareSpec.rightEncoderForwardSign = -1;
@@ -92,29 +99,45 @@ public class RobotProfile {
         cvParam.minArea = 5;
 
         poses = new HashMap<String, AutoPose>();
+        poses.put("BLUE_DEPOT_START", new AutoPose(0,0,0));
         poses.put("RED_START_DUCK", new AutoPose(0,0,180));
-        poses.put("RED_LEFT_1", new AutoPose(23, 24, 270));
-        poses.put("RED_CAROUSEL", new AutoPose(-20, -2, 210));
-        poses.put("RED_LEFT_2", new AutoPose(-15, -40, 180));
-        poses.put("RED_LEFT_HUB", new AutoPose(6, -40, 180));
-
-        poses.put("RED_START_DEPOT", new AutoPose(0,0,180));
-        poses.put("RED_RIGHT_1", new AutoPose(-10, -10, 135));
-        poses.put("RED_CAROUSEL", new AutoPose(-20, -2, 210));
-        poses.put("RED_RIGHT_2", new AutoPose(-15, -40, 180));
-        poses.put("RED_RIGHT_HUB", new AutoPose(6, -40, 180));
-
-        poses.put("BLUE_START_DUCK", new AutoPose(0, 0, 180));
-        poses.put("BLUE_RIGHT_1", new AutoPose(-10, 10, 225));
-        poses.put("BLUE_CAROUSEL", new AutoPose(-20, 2, 135));
-        poses.put("BLUE_RIGHT_2", new AutoPose(-15, 40, 180));
-        poses.put("BLUE_RIGHT_HUB", new AutoPose(6, 40, 180));
-
-        poses.put("BLUE_START_DEPOT", new AutoPose(0, 0, 180));
-        poses.put("BLUE_LEFT_1", new AutoPose(-10, 10, 225));
-        poses.put("BLUE_CAROUSEL", new AutoPose(-20, 2, 135));
-        poses.put("BLUE_LEFT_2", new AutoPose(-15, 40, 180));
-        poses.put("BLUE_LEFT_HUB", new AutoPose(6, 40, 180));
+        poses.put("BLUE_DEPOT_PREHUB", new AutoPose(0,-3,0));
+        poses.put("BLUE_DEPOT_HUB", new AutoPose(-20,-27,80));
+        poses.put("BLUE_DEPOT_PREWALL", new AutoPose(0,-1.85,0));
+        poses.put("BLUE_DEPOT_PICKUPWALL", new AutoPose(38,-1.85,0));
+        poses.put("BLUE_DEPOT_PARKWALL", new AutoPose(30,-1.85,0));
+        poses.put("BLUE_DEPOT_PRECENTRAL", new AutoPose(0,-23,0));
+        poses.put("BLUE_DEPOT_PARKCENTRAL", new AutoPose(35,-25,0));
+        poses.put("RED_DEPOT_START", new AutoPose(0,0,0));
+        poses.put("RED_DEPOT_PREHUB", new AutoPose(0,3,0));
+        poses.put("RED_DEPOT_HUB", new AutoPose(-20.5,27,290));
+        poses.put("RED_DEPOT_PREWALL", new AutoPose(0,1.85,0));
+        poses.put("RED_DEPOT_PICKUPWALL", new AutoPose(38,1.85,0));
+        poses.put("RED_DEPOT_PARKWALL", new AutoPose(30,1.85,0));
+        poses.put("RED_DEPOT_PRECENTRAL", new AutoPose(0,23,0));
+        poses.put("RED_DEPOT_PARKCENTRAL", new AutoPose(35,25,0));
+        poses.put("RED_DUCK_START", new AutoPose(0,0,180.0));
+        poses.put("RED_DUCK_PREHUB", new AutoPose(0,3,180.0));
+        poses.put("RED_DUCK_HUB", new AutoPose(19,25,70.0));
+        poses.put("RED_DUCK_CAROUSEL", new AutoPose(-19,7,235.0));
+        poses.put("RED_DUCK_AFTERCAROUSEL", new AutoPose(-10.0,19.0,315.0));
+        poses.put("RED_DUCK_PREWALL", new AutoPose(56,1.75,0));
+        poses.put("RED_DUCK_PARKWALL", new AutoPose(75,1,0));
+        poses.put("RED_DUCK_PRECENTRAL", new AutoPose(45,25,0));
+        poses.put("RED_DUCK_PARKCENTRAL", new AutoPose(80,25,0));
+        poses.put("RED_DUCK_PREPARKSTORAGE", new AutoPose(0,2,270.0));
+        poses.put("RED_DUCK_PARKSTORAGE", new AutoPose(0,22,0));
+        poses.put("BLUE_DUCK_START", new AutoPose(0,0,180.0));
+        poses.put("BLUE_DUCK_PREHUB", new AutoPose(0,-3,180.0));
+        poses.put("BLUE_DUCK_HUB", new AutoPose(19,-23.5,290.0));
+        poses.put("BLUE_DUCK_CAROUSEL", new AutoPose(-24,-8,135.0));
+        poses.put("BLUE_DUCK_AFTERCAROUSEL", new AutoPose(-8.0,-19.0,60.0));
+        poses.put("BLUE_DUCK_PREWALL", new AutoPose(56,-1.75,0));
+        poses.put("BLUE_DUCK_PARKWALL", new AutoPose(75,-1.5,0));
+        poses.put("BLUE_DUCK_PRECENTRAL", new AutoPose(45,-25,0));
+        poses.put("BLUE_DUCK_PARKCENTRAL", new AutoPose(80,-25,0));
+        poses.put("BLUE_DUCK_PREPARKSTORAGE", new AutoPose(0,-2,270.0));
+        poses.put("BLUE_DUCK_PARKSTORAGE", new AutoPose(0,-22,0));
 
         movement = new Movement();
         movement.forwardStopDist = 25;
@@ -158,6 +181,13 @@ public class RobotProfile {
     class HardwareSpec {
         double trackWheelDiameter;   //cm diameter
         double trackWheelCPR;
+        double AXEL_TRANS_PID_1;
+        double AXEL_TRANS_PID_2;
+        double AXEL_TRANS_PID_3;
+        double LATERIAL_TRANS_PID_1;
+        double LATERIAL_TRANS_PID_2;
+        double LATERIAL_TRANS_PID_3;
+
         double leftRightWheelDist;
         int leftEncodeForwardSign;
         int rightEncoderForwardSign;

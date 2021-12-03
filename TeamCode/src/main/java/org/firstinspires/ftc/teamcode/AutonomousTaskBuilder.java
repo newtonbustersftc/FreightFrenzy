@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
+//import com.arcrobotics.ftclib.geometry.Vector2d;
 //import org.firstinspires.ftc.teamcode.
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -190,7 +191,7 @@ public class AutonomousTaskBuilder {
             parkPos = robotProfile.getProfilePose(startPosStr + "_PARKCENTRAL");
         }
         else if(parking.contains("STORAGE")){
-            preParkPos = robotProfile.getProfilePose(startPosStr + "PREPARKSTORAGE");
+            preParkPos = robotProfile.getProfilePose(startPosStr + "_PREPARKSTORAGE");
             parkPos = robotProfile.getProfilePose(startPosStr + "_PARKSTORAGE");
         }
 

@@ -16,8 +16,8 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAcceleration
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.robot.Robot;
 
-import org.firstinspires.ftc.teamcode.util.AngleMath;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class AutonomousGenericTest extends LinearOpMode {
 
     long loopCount = 0;
     int countTasks = 0;
-    Pose2d pos;
+
     private TrajectoryVelocityConstraint velConstraint;
     private TrajectoryAccelerationConstraint accelConstraint;
 
@@ -60,6 +60,8 @@ public class AutonomousGenericTest extends LinearOpMode {
         initRobot();
         robotHardware.initRobotVision();
         robotVision = robotHardware.getRobotVision();
+        robotVision.initRearCamera();
+
         //robotHardware.getTrackingWheelLocalizer().setPoseEstimate(new Pose2d(-66, -33, 0));
         //robotHardware.getLocalizer().update();
         //robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START"));
@@ -75,6 +77,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 telemetry.addData("CurrPose", currPose);
                 telemetry.addData("T265 CFD:",  ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence());
                 telemetry.addData("LoopTPS:", (loopCnt * 1000 / (System.currentTimeMillis() - loopStart)));
+                telemetry.addData("RearCameraOpen", robotVision.isRearCameraOpened());
                 telemetry.update();
             }
         }
@@ -93,6 +96,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         long startTime = System.currentTimeMillis();
         int cnt = 100;
         double veloSum = 0;
+        robotVision.startRearCamera();
         Logger.logFile("Main Task Loop started");
 
         while (opModeIsActive()) {
@@ -124,6 +128,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 }
             }
         }
+        robotVision.stopRearCamera();
         try {
             Logger.flushToFile();
         }
@@ -131,36 +136,23 @@ public class AutonomousGenericTest extends LinearOpMode {
         }
     }
 
-    Pose2d getProfilePose(String name) {
-        RobotProfile.AutoPose ap = robotProfile.poses.get(name);
-        return new Pose2d(ap.x, ap.y, Math.toRadians(ap.heading));
-    }
-
     void setupTaskList1() {
 //        DriveConstraints constraints = new DriveConstraints(5.0, 5.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
 //        DriveConstraints moveFast = new DriveConstraints(30.0, 20.0, 0.0, Math.toRadians(360.0), Math.toRadians(360.0), 0.0);
-        velConstraint = getVelocityConstraint(35, 30, TRACK_WIDTH);
-        accelConstraint = getAccelerationConstraint(30);
+        velConstraint = getVelocityConstraint(15, 10, TRACK_WIDTH);
+        accelConstraint = getAccelerationConstraint(10);
         // move to shoot
         Pose2d p0 = new Pose2d(0,0,0);
-        Pose2d p1 = new Pose2d(-20, 0, 0);
+        Pose2d p1 = new Pose2d(20, 0, 0);
         //Pose2d p2 = new Pose2d(10,5,0);
-        Trajectory trj = robotHardware.mecanumDrive.trajectoryBuilder(p0, true)
-                .splineTo(p1.vec(), p1.getHeading()+Math.PI)
+        Trajectory trj = robotHardware.mecanumDrive.trajectoryBuilder(p0)
+                .lineTo(p1.vec(), velConstraint, accelConstraint)
                 //.splineToSplineHeading(p2, p2.getHeading(), constraints)
                 .build();
         SplineMoveTask moveTask1 = new SplineMoveTask(robotHardware.mecanumDrive, trj);
+        taskList.add(new RobotSleep(300));
         taskList.add(moveTask1);
-        taskList.add(new RobotSleep(500));
-        Trajectory trj2 = robotHardware.mecanumDrive.trajectoryBuilder(new Pose2d(p1.getX(), p1.getY(), p1.getHeading()))
-                .splineTo(p0.vec(), p0.getHeading())
-                //.splineToSplineHeading(p2, p2.getHeading(), constraints)
-                .build();
-        SplineMoveTask moveTask2 = new SplineMoveTask(robotHardware.mecanumDrive, trj2);
-        taskList.add(moveTask2);
-        taskList.add(new RobotSleep(500));
-        taskList.add(moveTask1);
-        taskList.add(moveTask2);
+        taskList.add(new RobotSleep(300));
     }
 
     void setupTaskList2() {
