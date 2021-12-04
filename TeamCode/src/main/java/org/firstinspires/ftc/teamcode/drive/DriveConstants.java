@@ -24,8 +24,8 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = 385;  // 540
-    public static final double MAX_RPM = 435;   //312
+    public static final double TICKS_PER_REV = 540; //385
+    public static final double MAX_RPM = 312; //435
 
     /*
      * Set the first flag appropriately. If using the built-in motor velocity PID, update
@@ -34,6 +34,14 @@ public class DriveConstants {
     public static final boolean RUN_USING_ENCODER = false;
     public static PIDFCoefficients MOTOR_VELO_PID;
 
+    public static PIDCoefficients AXEL_TRANS_PID = new PIDCoefficients(5, 0.1, 0);
+    public static PIDCoefficients LATERIAL_TRANS_PID = new PIDCoefficients(5, 0.1, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(5, 0.1, 0.01);
+
+    public static double LATERAL_MULTIPLIER = 1;
+    public static double VX_WEIGHT = 1;
+    public static double VY_WEIGHT = 1;
+    public static double OMEGA_WEIGHT = 1;
     static {
         MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0,
                 getMotorVelocityF());
@@ -50,7 +58,7 @@ public class DriveConstants {
     public static double WHEEL_RADIUS = 3.75/2; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
     public static double TRACK_WIDTH = 10.25; // in
-    public static double WHEEL_BASE = 11.5;
+    public static double WHEEL_BASE = 9.5;
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -58,9 +66,9 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV = 0.01177; //1.0 / rpmToVelocity(MAX_RPM);
+    public static double kV = 0.01448; //1.0 / rpmToVelocity(MAX_RPM);
     public static double kA = 0.00000;
-    public static double kStatic = 0.09681;
+    public static double kStatic = 0.09167;
 
     //test by BL
     public static double MAX_ACCEL = 30;

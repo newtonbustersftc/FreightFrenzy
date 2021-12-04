@@ -41,9 +41,9 @@
     "rightEncoderForwardSign": -1,
     "horizontalEncoderForwardSign": -1,
     "intakeVelocity": 1000,
-    "intakeTime": 3500,
+    "intakeTime": 5000,
     "duckDriveVelocity": 550,
-    "duckAutoVelocity": 250,
+    "duckAutoVelocity": 400,
     "duckSpinTime": 3000,
     "cameraForwardDisplacement": 1.5,
     "cameraVerticalDisplacement": 16.5,
@@ -52,11 +52,12 @@
     "realSenseAngleModifier": 90,
     "liftPositionZero":0,
     "liftPositionBottom":600,
+    "liftPositionIntermediate": 900,
     "liftPositionMiddle":1200,
     "liftPositionTop":1950,
     "liftMotorPower": 1.0,
-    "boxFlapOpen":0.25,
-    "boxFlapClose": 0.6
+    "boxFlapOpen":0.50,
+    "boxFlapClose": 0.78
   },
   "rrFeedForwardParam": {
     "kA": 0.0,
@@ -245,12 +246,12 @@
       "heading": 0.0
     },
     "BLUE_DUCK_PREPARKSTORAGE": {
-      "x": 0,
-      "y": -2,
-      "heading": 270.0
+      "x": -10,
+      "y": -10,
+      "heading": 60.0
     },
     "BLUE_DUCK_PARKSTORAGE": {
-      "x": 0,
+      "x": -20,
       "y": -22,
       "heading": 0.0
     }

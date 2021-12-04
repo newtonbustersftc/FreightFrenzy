@@ -64,19 +64,19 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.AXEL_TRANS_PID;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.LATERIAL_TRANS_PID;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.HEADING_PID;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.LATERAL_MULTIPLIER;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.VX_WEIGHT;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.VY_WEIGHT;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.OMEGA_WEIGHT;
+
 /*
  * Simple mecanum drive hardware implementation for REV hardware.
  */
 @Config
 public class SampleMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients AXEL_TRANS_PID = new PIDCoefficients(5, 0.1, 0);
-    public static PIDCoefficients LATERIAL_TRANS_PID = new PIDCoefficients(5, 0.1, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(5, 0.1, 0.01);
-
-    public static double LATERAL_MULTIPLIER = 1;
-    public static double VX_WEIGHT = 1;
-    public static double VY_WEIGHT = 1;
-    public static double OMEGA_WEIGHT = 1;
 
 //    public enum Mode {
 //        IDLE,

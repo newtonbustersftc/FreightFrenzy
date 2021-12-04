@@ -90,7 +90,7 @@ public class AutonomousGeneric extends LinearOpMode {
         long loopStart = System.currentTimeMillis();
         long loopCnt = 0;
 
-        warmUpT265();
+        //warmUpT265();
 
         while (!isStarted()) {
             robotHardware.getLocalizer().update();
@@ -142,6 +142,9 @@ public class AutonomousGeneric extends LinearOpMode {
             robotHardware.getBulkData2();
             robotHardware.getLocalizer().update();
 
+            if (!((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence().equals("High")){
+                taskList.clear();
+            }
             if (taskList.size() > 0) {
                 taskList.get(0).execute();
 
@@ -168,7 +171,7 @@ public class AutonomousGeneric extends LinearOpMode {
         }
         catch (Exception ex) {
         }
-
+        robotHardware.stopAll();
         robotHardware.setMotorStopBrake(false);
     }
 

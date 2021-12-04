@@ -24,7 +24,7 @@ public class AutoIntakeTask implements RobotControl{
     public void execute() {
         if(currIntakeMode == IntakeMode.WAIT_FOR_BLOCK){
             if((System.currentTimeMillis() - begin) > 500){
-                if(robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE) < 800){
+                if(robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE) < 1200){
                     currIntakeMode = IntakeMode.WAIT_FOR_SPEED;
                 }
             }

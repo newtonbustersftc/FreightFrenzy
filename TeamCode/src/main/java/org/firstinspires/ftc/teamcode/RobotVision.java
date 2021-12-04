@@ -334,7 +334,7 @@ public class RobotVision {
             return AutonomousGoal.NONE;
         }
         Rect r = rects.get(0);
-        if(r.x+ r.width/2 < 150) {
+        if(r.x+ r.width/2 < 250) {
             return AutonomousGoal.LEFT;
         }
         else if (r.x+r.width/2 > 450) {

@@ -24,8 +24,12 @@ public class RobotProfile {
     Movement movement;
 
     public static RobotProfile loadFromFile(File file) throws FileNotFoundException {
+        File file1 = new File("/sdcard/FIRST/profileA.json");
+        if (!file1.exists()) {
+            file1 = new File("/sdcard/FIRST/profileB.json");
+        }
         Gson gson = new Gson();
-        return gson.fromJson(new FileReader(file), RobotProfile.class);
+        return gson.fromJson(new FileReader(file1), RobotProfile.class);
     }
 
     public void populateInitValue() {
@@ -80,6 +84,7 @@ public class RobotProfile {
         hardwareSpec.realSenseAngleModifier = Math.PI/2;
         hardwareSpec.liftPositionZero = 20;
         hardwareSpec.liftPositionBottom = 540;
+        hardwareSpec.liftPositionIntermediate = 900;
         hardwareSpec.liftPositionMiddle = 1200;
         hardwareSpec.liftPositionTop = 1950;
         hardwareSpec.liftMotorPower = 0.3;
@@ -204,6 +209,7 @@ public class RobotProfile {
         double realSenseAngleModifier;
         int liftPositionZero;
         int liftPositionBottom;
+        int liftPositionIntermediate;
         int liftPositionMiddle;
         int liftPositionTop;
         double liftMotorPower;

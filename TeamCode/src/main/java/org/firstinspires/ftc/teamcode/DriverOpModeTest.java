@@ -30,8 +30,9 @@ public class DriverOpModeTest extends OpMode {
     double fieldHeadingOffset;
     boolean dpadLeftDown = false;
     boolean dpadRightDown = false;
-    double shootServoPos = 0.6;
+    double flapServoPos = 0.6;
     boolean yPressed = false;
+    boolean xPressed = false;
     boolean aPressed = false;
     boolean bPressed = false;
     GoalTargetRecognition goalRecog = null;
@@ -51,6 +52,7 @@ public class DriverOpModeTest extends OpMode {
         //robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
         robotHardware.initLeds();   // need to init everytime
+        robotHardware.boxFlapServo.setPosition(flapServoPos);
 
         // This is the transformation between the center of the camera and the center of the robot
         Transform2d cameraToRobot = new Transform2d();
@@ -96,13 +98,16 @@ public class DriverOpModeTest extends OpMode {
             robotHardware.stopDuck();
         }
 
-        if (gamepad1.x) {
-            robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,00,0));
+        if (gamepad1.x && !xPressed) {
+            flapServoPos = flapServoPos - 0.02;
+            robotHardware.boxFlapServo.setPosition(flapServoPos);
         }
-        if (gamepad1.y) {
-            robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,Math.PI/2));
+        xPressed = gamepad1.x;
+        if (gamepad1.y && !yPressed) {
+            flapServoPos = flapServoPos + 0.02;
+            robotHardware.boxFlapServo.setPosition(flapServoPos);
         }
-
+        yPressed = gamepad1.y;
         if(gamepad1.a){
 
         }
@@ -110,6 +115,7 @@ public class DriverOpModeTest extends OpMode {
 //        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
 //        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
         telemetry.addData("Lift:", currLiftPos);
+        telemetry.addData("Flap:", flapServoPos);
    }
 
     @Override
