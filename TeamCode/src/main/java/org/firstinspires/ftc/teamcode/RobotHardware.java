@@ -31,7 +31,7 @@ import java.text.DecimalFormat;
 
 public class RobotHardware {
     public enum LiftPosition {
-        NOT_INIT, ZERO, BOTTOM, MIDDLE, TOP;
+        NOT_INIT, ZERO, BOTTOM, INTERMEDIATE, MIDDLE, TOP;
         private static LiftPosition[] vals = values();
 
         public LiftPosition next() {
@@ -335,6 +335,9 @@ public class RobotHardware {
             case BOTTOM:
                 newPosNum = profile.hardwareSpec.liftPositionBottom;
                 break;
+            case INTERMEDIATE:
+                newPosNum = profile.hardwareSpec.liftPositionIntermediate;
+                break;
             case MIDDLE:
                 newPosNum = profile.hardwareSpec.liftPositionMiddle;
                 break;
@@ -370,6 +373,7 @@ public class RobotHardware {
         Logger.logFile("Resetting Lift Position, bottom sensor: " + liftBottomTouched());
         getBulkData1();
         getBulkData2();
+        closeBoxFlap();
         int currLiftPos = getEncoderCounts(RobotHardware.EncoderType.LIFT);
         if(!liftBottomTouched())
             setLiftMotorPosition(currLiftPos - 3000);
@@ -438,6 +442,7 @@ public class RobotHardware {
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled = false;
         imu.initialize(parameters);
-        BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
+        //If Robot Controller is vertically placed, uncomment the following line
+        // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
     }
 }
