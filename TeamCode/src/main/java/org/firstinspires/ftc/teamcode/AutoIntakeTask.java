@@ -4,6 +4,7 @@ public class AutoIntakeTask implements RobotControl{
 
     RobotHardware robotHardware;
     long begin;
+    long preStop;
     enum IntakeMode { WAIT_FOR_BLOCK, WAIT_FOR_SPEED, STOP}
     AutoIntakeTask.IntakeMode currIntakeMode;
 
@@ -30,12 +31,11 @@ public class AutoIntakeTask implements RobotControl{
             }
         } else if (currIntakeMode == IntakeMode.WAIT_FOR_SPEED){
             if(robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE) > 2000){
-                robotHardware.stopIntake();
                 currIntakeMode = IntakeMode.STOP;
+                preStop = System.currentTimeMillis();
             }
         }
-
-        Logger.logFile("intakeEncoder: " + robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE));
+        //Logger.logFile("intakeEncoder: " + robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE));
     }
 
     @Override
@@ -45,6 +45,6 @@ public class AutoIntakeTask implements RobotControl{
 
     @Override
     public boolean isDone() {
-        return (currIntakeMode == IntakeMode.STOP);
+        return (currIntakeMode == IntakeMode.STOP && (System.currentTimeMillis()-preStop>10));
     }
 }

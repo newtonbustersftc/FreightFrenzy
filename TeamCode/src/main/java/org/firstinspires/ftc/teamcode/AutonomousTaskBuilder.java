@@ -53,14 +53,15 @@ public class AutonomousTaskBuilder {
         this.robotProfile = robotProfile;
 
         switch (goal) {
-            case RIGHT:
-                this.targetLiftLevel = RobotHardware.LiftPosition.TOP;
-                break;
             case MIDDLE:
                 this.targetLiftLevel = RobotHardware.LiftPosition.MIDDLE;
                 break;
-            default:
+            case LEFT:
                 this.targetLiftLevel = RobotHardware.LiftPosition.BOTTOM;
+                break;
+            case RIGHT:
+            default:
+                this.targetLiftLevel = RobotHardware.LiftPosition.TOP;
                 break;
         }
     }
@@ -90,6 +91,7 @@ public class AutonomousTaskBuilder {
         Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
         Pose2d warehousePickupPos = robotProfile.getProfilePose(startPosStr + "_PICKUPWALL");
         Pose2d preParkPos, parkPos;
+        Pose2d prePickPos;
         if (parking.endsWith("WALL")) {
             preParkPos = robotProfile.getProfilePose(startPosStr + "_PREWALL");
             parkPos = robotProfile.getProfilePose(startPosStr + "_PARKWALL");
@@ -102,11 +104,15 @@ public class AutonomousTaskBuilder {
             preParkPos = robotProfile.getProfilePose(startPosStr + "_PREPARKSTORAGE");
             parkPos = robotProfile.getProfilePose(startPosStr + "_PARKSTORAGE");
         }
+        prePickPos = robotProfile.getProfilePose(startPosStr + "_PREWALL");
+
+        // move out of the wall
         Trajectory traj0 =  drive.trajectoryBuilder(startPos)
                 .strafeTo(preHubPos.vec())
                 .build();
         taskList.add(new SplineMoveTask(drive, traj0));
 
+        // move to hub
         ParallelComboTask par1 = new ParallelComboTask();
         Trajectory traj1 = drive.trajectoryBuilder(preHubPos, true)
                 .splineTo(hubPos.vec(), hubPos.getHeading()+Math.PI, fastVelConstraints, accConstraint)
@@ -114,14 +120,14 @@ public class AutonomousTaskBuilder {
         par1.addTask(new SplineMoveTask(drive, traj1));
         par1.addTask(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
         taskList.add(par1);
-
+        // deliver to hub
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
 
         //*
         //Between delivering to hub and parking:
         //Pick up block, drive to hub and deliver.
         Trajectory traj2 = drive.trajectoryBuilder(hubPos)
-                .splineTo(preParkPos.vec(), preParkPos.getHeading(),fastVelConstraints, accConstraint)
+                .splineTo(prePickPos.vec(), prePickPos.getHeading(),fastVelConstraints, accConstraint)
                 .splineTo(warehousePickupPos.vec(), warehousePickupPos.getHeading(), fastVelConstraints, accConstraint)
                 .build();
         ParallelComboTask par2 = new ParallelComboTask();
@@ -131,7 +137,7 @@ public class AutonomousTaskBuilder {
         taskList.add(par2);
 
         Trajectory traj3 = drive.trajectoryBuilder(warehousePickupPos, true)
-                .splineTo(preParkPos.vec(), preParkPos.getHeading()+Math.PI, fastVelConstraints, accConstraint)
+                .splineTo(prePickPos.vec(), prePickPos.getHeading()+Math.PI, fastVelConstraints, accConstraint)
                 .splineTo(hubPos.vec(), hubPos.getHeading()+Math.PI)
                 .build();
         ParallelComboTask par3 = new ParallelComboTask();
@@ -142,7 +148,7 @@ public class AutonomousTaskBuilder {
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
 
         Trajectory traj4 = drive.trajectoryBuilder(hubPos)
-                .splineTo(preParkPos.vec(), preParkPos.getHeading(), fastVelConstraints, accConstraint)
+                .splineTo(prePickPos.vec(), prePickPos.getHeading(), fastVelConstraints, accConstraint)
                 .splineTo(warehousePickupPos.vec(), warehousePickupPos.getHeading(), fastVelConstraints, accConstraint)
                 .build();
         ParallelComboTask par4 = new ParallelComboTask();
@@ -152,7 +158,7 @@ public class AutonomousTaskBuilder {
         taskList.add(par4);
 
         Trajectory traj5 = drive.trajectoryBuilder(warehousePickupPos, true)
-                .splineTo(preParkPos.vec(), preParkPos.getHeading()+Math.PI, fastVelConstraints, accConstraint)
+                .splineTo(prePickPos.vec(), prePickPos.getHeading()+Math.PI, fastVelConstraints, accConstraint)
                 .splineTo(hubPos.vec(), hubPos.getHeading()+Math.PI)
                 .build();
 
@@ -171,7 +177,10 @@ public class AutonomousTaskBuilder {
                 .splineTo(preParkPos.vec(), preParkPos.getHeading(), fastVelConstraints, accConstraint)
                 .splineTo(parkPos.vec(), parkPos.getHeading(), fastVelConstraints, accConstraint)
                 .build();
-        taskList.add(new SplineMoveTask(drive, traj6));
+        ParallelComboTask par6 = new ParallelComboTask();
+        par6.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ZERO));
+        par6.addTask(new SplineMoveTask(drive, traj6));
+        taskList.add(par6);
     }
 
     public void buildDuckTasks(String startPosStr){

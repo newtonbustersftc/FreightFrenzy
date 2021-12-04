@@ -51,7 +51,7 @@
     "cameraHeadingOffset": -2.5,
     "realSenseAngleModifier": 90,
     "liftPositionZero":0,
-    "liftPositionBottom":600,
+    "liftPositionBottom":500,
     "liftPositionIntermediate": 900,
     "liftPositionMiddle":1200,
     "liftPositionTop":1950,
@@ -116,9 +116,9 @@
       "heading": 0
     },
     "RED_DEPOT_HUB": {
-      "x": -20.5,
-      "y": 27,
-      "heading": 290
+      "x": -20,
+      "y": 28.5,
+      "heading": 280
     },
     "RED_DEPOT_PREWALL": {
       "x": 0,
@@ -156,13 +156,13 @@
       "heading": 180.0
     },
     "RED_DUCK_HUB": {
-      "x": 19,
-      "y": 25,
-      "heading": 70.0
+      "x": 18.5,
+      "y": 29.5,
+      "heading": 80.0
     },
     "RED_DUCK_CAROUSEL": {
-      "x": -19,
-      "y": 7,
+      "x": -22.5,
+      "y": 7.5,
       "heading": 235.0
     },
     "RED_DUCK_AFTERCAROUSEL": {
@@ -172,12 +172,12 @@
     },
     "RED_DUCK_PREWALL": {
       "x": 56,
-      "y": 1.75,
+      "y": 2,
       "heading": 0
     },
     "RED_DUCK_PARKWALL": {
       "x": 75,
-      "y": 1,
+      "y": 1.5,
       "heading": 0.0
     },
     "RED_DUCK_PRECENTRAL": {
@@ -211,13 +211,13 @@
       "heading": 180.0
     },
     "BLUE_DUCK_HUB": {
-      "x": 19,
-      "y": -23.5,
+      "x": 16.5,
+      "y": -27,
       "heading": 290.0
     },
     "BLUE_DUCK_CAROUSEL": {
-      "x": -24,
-      "y": -8,
+      "x": -25.5,
+      "y": -9,
       "heading": 135.0
     },
     "BLUE_DUCK_AFTERCAROUSEL": {
@@ -227,12 +227,12 @@
     },
     "BLUE_DUCK_PREWALL": {
       "x": 56,
-      "y": -1.75,
+      "y": -0.75,
       "heading": 0
     },
     "BLUE_DUCK_PARKWALL": {
       "x": 75,
-      "y": -1.5,
+      "y": -0.75,
       "heading": 0.0
     },
     "BLUE_DUCK_PRECENTRAL": {

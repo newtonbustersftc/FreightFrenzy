@@ -93,7 +93,7 @@ public class RobotHardware {
 
         expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub");
         intakeMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("IntakeMotor");
-        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         liftMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("LiftMotor");
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         duckMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("DuckMotor");
@@ -436,6 +436,7 @@ public class RobotHardware {
     }
 
     public void resetImu() {
+        Logger.logFile("Resetting IMU");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.mode = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;

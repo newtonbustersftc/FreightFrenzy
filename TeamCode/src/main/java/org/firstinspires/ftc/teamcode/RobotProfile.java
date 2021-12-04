@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
 public class RobotProfile {
@@ -22,14 +23,23 @@ public class RobotProfile {
     FeedForwardParam rrFeedForwardParam;
     HashMap<String, AutoPose> poses;
     Movement movement;
+    String fileDateStr;
 
-    public static RobotProfile loadFromFile(File file) throws FileNotFoundException {
+    public static RobotProfile loadFromFile(File f) throws FileNotFoundException {
+        return loadFromFile();
+    }
+
+    public static RobotProfile loadFromFile() throws FileNotFoundException {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/DD HH:mm:ss");
+
         File file1 = new File("/sdcard/FIRST/profileA.json");
         if (!file1.exists()) {
             file1 = new File("/sdcard/FIRST/profileB.json");
         }
         Gson gson = new Gson();
-        return gson.fromJson(new FileReader(file1), RobotProfile.class);
+        RobotProfile profile = gson.fromJson(new FileReader(file1), RobotProfile.class);
+        profile.fileDateStr = sdf.format(new java.util.Date(file1.lastModified()));
+        return profile;
     }
 
     public void populateInitValue() {

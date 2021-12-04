@@ -28,15 +28,11 @@ public class AutonomousGeneric extends LinearOpMode {
 
     long loopCount = 0;
     int countTasks = 0;
-    String profileTimeStr;
     private int delay;
 
     public void initRobot() {
         try {
-            File proFile;
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/DD HH:mm:ss");
-            robotProfile = RobotProfile.loadFromFile(proFile = new File("/sdcard/FIRST/profile.json"));
-            profileTimeStr = sdf.format(new java.util.Date(proFile.lastModified()));
+            robotProfile = RobotProfile.loadFromFile();
         }
         catch (Exception e) {
             RobotLog.e("RobotProfile reading exception" + e);
@@ -46,9 +42,9 @@ public class AutonomousGeneric extends LinearOpMode {
 
         RobotFactory.reset();
 
-//        robotHardware = RobotFactory.getRobotHardware(hardwareMap, robotProfile);
-        robotHardware = new RobotHardware();
-        robotHardware.init(hardwareMap, robotProfile);
+        robotHardware = RobotFactory.getRobotHardware(hardwareMap, robotProfile);
+//        robotHardware = new RobotHardware();
+//        robotHardware.init(hardwareMap, robotProfile);
 
 //        robotHardware.setMotorStopBrake(true);
 
@@ -106,6 +102,7 @@ public class AutonomousGeneric extends LinearOpMode {
                 telemetry.addData("CurrPose", currPose);
                 telemetry.addData("T265 CFD:",  ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence());
                 telemetry.addData("LoopTPS:", (loopCnt * 1000 / (System.currentTimeMillis() - loopStart)));
+                telemetry.addData("Profile:", robotProfile.fileDateStr);
                 telemetry.update();
             }
         }
@@ -135,7 +132,7 @@ public class AutonomousGeneric extends LinearOpMode {
         }
 
         // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
+        while (opModeIsActive() && taskList.size()>0) {
             loopCount++;
 
             robotHardware.getBulkData1();
@@ -166,7 +163,7 @@ public class AutonomousGeneric extends LinearOpMode {
         }
         // Regardless, open the clamp to save the servo
         try {
-            Logger.logFile("Autonomous - Final Location:" + navigator.getLocationString());
+            Logger.logFile("Autonomous - Final Location:" + robotHardware.getLocalizer().getPoseEstimate());
             Logger.flushToFile();
         }
         catch (Exception ex) {
@@ -188,7 +185,7 @@ public class AutonomousGeneric extends LinearOpMode {
                 robotHardware.getLocalizer().setPoseEstimate(new Pose2d());
             }
             if (loopCnt%1000==0) {
-                telemetry.addData("Profile:", profileTimeStr);
+                telemetry.addData("Profile:", robotProfile.fileDateStr);
                 telemetry.addLine("A to warm up, B to skip");
                 telemetry.addData("CurrPose", currPose);
                 telemetry.addData("T265 CFD:",  ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence());

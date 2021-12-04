@@ -74,6 +74,8 @@ public class DriverOpMode extends OpMode {
             imuAngleOffset = Math.PI;
         }
         Logger.logFile("DriverOpMode: " + prefs.getString(START_POS_MODES_PREF, "NONE"));
+        Logger.logFile("IMU Offset is " + Math.toDegrees(imuAngleOffset));
+        Logger.logFile("Current IMU Angle " + Math.toDegrees(robotHardware.getImuHeading()));
 
         setupCombos();
     }
@@ -140,6 +142,7 @@ public class DriverOpMode extends OpMode {
         if(gamepad1.b && gamepad1.right_bumper){
             robotHardware.setLiftPosition(RobotHardware.LiftPosition.NOT_INIT);
             currentTask = new ResetLiftPositionDriverOpModeTask(robotHardware);
+            currentTask.prepare();
         }
 
         if (gamepad1.y) {
