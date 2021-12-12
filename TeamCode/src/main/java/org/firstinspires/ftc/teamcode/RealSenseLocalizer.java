@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 public class RealSenseLocalizer implements Localizer {
     private static double INCH_TO_METER = 0.0254;
 
-    private Pose2d t265Offset = new Pose2d(6.25, -1, 0);    // If Robot Center is 0,0,0, where is T265 and angle
+    private Pose2d t265Offset = new Pose2d(5, 1, 0);    // If Robot Center is 0,0,0, where is T265 and angle
     private Pose2d originOffset = new Pose2d(0,0,0);    // When setPostEstimate, remember where the robot center origin
     private static Pose2d postEstimate = new Pose2d();
     private T265Camera.CameraUpdate t265Update;
@@ -37,6 +37,21 @@ public class RealSenseLocalizer implements Localizer {
         sampleN = 0;
     }
 
+
+    public Pose2d translateRobotCenter(Pose2d t265Pose) {
+        double deltaX = -Math.sin(t265Pose.getHeading())*t265Offset.getY() + Math.cos(t265Pose.getHeading())*t265Offset.getX();
+        double deltaY = Math.cos(t265Pose.getHeading())*t265Offset.getY() + Math.sin(t265Pose.getHeading())*t265Offset.getX();
+        return new Pose2d(t265Pose.getX() - deltaX, t265Pose.getY() - deltaY, t265Pose.getHeading());
+    }
+
+    public Pose2d fieldTranslate(Pose2d orig, Pose2d robot) {
+        double newX = (robot.getX() - orig.getX())*Math.cos(orig.getHeading()) -
+                (robot.getY() - orig.getY())*Math.sin(orig.getHeading());
+        double newY = (robot.getX() - orig.getX()) * Math.sin(orig.getHeading()) +
+                (robot.getY() - orig.getY())*Math.cos(orig.getHeading());
+        return new Pose2d(newX, newY, robot.getHeading() - orig.getHeading());
+    }
+
     /**
      * @return
      */
@@ -47,18 +62,18 @@ public class RealSenseLocalizer implements Localizer {
         // Need to convert T265 post to robot pose, and then to again relative to origin pose
         if (t265Update != null) {
             // The way we oriented the sensor, Y is our field X, X is our field Y, Heading is robot heading
-            Pose2d t265Pose = new Pose2d(t265Update.pose.getY()/INCH_TO_METER, t265Update.pose.getX()/INCH_TO_METER, t265Update.pose.getHeading());
+            Pose2d t265Pose = new Pose2d(t265Update.pose.getX()/INCH_TO_METER, t265Update.pose.getY()/INCH_TO_METER, t265Update.pose.getHeading());
             Pose2d centerPose = translateRobotCenter(t265Pose);
             postEstimate = fieldTranslate(originOffset, centerPose); //offsets the pose to be what the pose estimate is;
-//            sampleN++;
-//            if (sampleN%1000==0) {
-//                Logger.logFile("getPoseEstimate - t265Pose:" + t265Pose + " center:" + centerPose + " origin: " + originOffset +
-//                        " estimate:" + postEstimate);
-//            }
+            sampleN++;
+            if (sampleN%100==0) {
+                Logger.logFile("getPoseEstimate - t265Pose:" + t265Pose + " center:" + centerPose + " origin: " + originOffset +
+                        " estimate:" + postEstimate);
+            }
         } else {
             RobotLog.v("NULL Camera Update");
         }
-        return new Pose2d(postEstimate.getX(), -postEstimate.getY(), norm(postEstimate.getHeading()));
+        return postEstimate;
     }
 
     @Override
@@ -73,26 +88,12 @@ public class RealSenseLocalizer implements Localizer {
             RobotLog.e("Failed to setPoseEstimate, no t265Update");
             Logger.logFile("Failed to setPoseEstimate, no t265Update");
         }
-        Pose2d t265Pose = new Pose2d(t265Update.pose.getY()/INCH_TO_METER, t265Update.pose.getX()/INCH_TO_METER, t265Update.pose.getHeading());
+        Pose2d t265Pose = new Pose2d(t265Update.pose.getX()/INCH_TO_METER, t265Update.pose.getY()/INCH_TO_METER, t265Update.pose.getHeading());
         Pose2d origin0 = translateRobotCenter(t265Pose);
         originOffset = new Pose2d(origin0.getX()-(pose2d.getX()*Math.cos(pose2d.getHeading())+pose2d.getY()*Math.sin(pose2d.getHeading())),
                 origin0.getY()-(pose2d.getX()*Math.sin(pose2d.getHeading())-pose2d.getY()*Math.cos(pose2d.getHeading())), origin0.getHeading()-pose2d.getHeading());
         Logger.logFile("setPoseEstimate - :" + pose2d);
         RobotLog.v("setPoseEstimate - t265Pose:" + t265Pose + " origin:" + originOffset);
-    }
-
-    public Pose2d translateRobotCenter(Pose2d t265Pose) {
-        double deltaX = -Math.sin(t265Pose.getHeading())*t265Offset.getY() - Math.cos(t265Pose.getHeading())*t265Offset.getX();
-        double deltaY = -Math.cos(t265Pose.getHeading())*t265Offset.getY() + Math.sin(t265Pose.getHeading())*t265Offset.getX();
-        return new Pose2d(t265Pose.getX() + deltaX, t265Pose.getY() + deltaY, t265Pose.getHeading());
-    }
-
-    public Pose2d fieldTranslate(Pose2d orig, Pose2d robot) {
-        double deltaX = (robot.getX() - orig.getX())*Math.cos(-orig.getHeading()) +
-                (robot.getY() - orig.getY())*Math.sin(-orig.getHeading());
-        double deltaY = (robot.getX() - orig.getX()) * Math.sin(orig.getHeading()) +
-                (robot.getY() - orig.getY())*Math.cos(- orig.getHeading());
-        return new Pose2d(deltaX, deltaY, robot.getHeading() - orig.getHeading());
     }
 
     public String getT265Confidence() {
@@ -120,16 +121,15 @@ public class RealSenseLocalizer implements Localizer {
     @Override
     public Pose2d getPoseVelocity() {
         ChassisSpeeds velocity = t265Update.velocity;
+        double vX = (velocity.vxMetersPerSecond/INCH_TO_METER)*Math.cos(originOffset.getHeading()) -
+                (velocity.vyMetersPerSecond/INCH_TO_METER)*Math.sin(originOffset.getHeading());
+        double vY = (velocity.vxMetersPerSecond/INCH_TO_METER) * Math.sin(originOffset.getHeading()) +
+                (velocity.vyMetersPerSecond/INCH_TO_METER)*Math.cos(originOffset.getHeading());
+        if (sampleN%100==0) {
+            Logger.logFile("getPoseVelocity:" + vX + ", " + vY + ", " + Math.toDegrees(velocity.omegaRadiansPerSecond));
+        }
 
-        double vX = (velocity.vyMetersPerSecond/INCH_TO_METER)*Math.cos(-originOffset.getHeading()) +
-                (velocity.vxMetersPerSecond/INCH_TO_METER)*Math.sin(-originOffset.getHeading());
-        double vY = (velocity.vyMetersPerSecond/INCH_TO_METER) * Math.sin(originOffset.getHeading()) +
-                (velocity.vxMetersPerSecond/INCH_TO_METER)*Math.cos(- originOffset.getHeading());
-//        if (sampleN%1000==0) {
-//            Logger.logFile("getPoseVelocity:" + vX + ", " + vY + ", " + Math.toDegrees(velocity.omegaRadiansPerSecond));
-//        }
-
-        return new Pose2d(vX, -vY, velocity.omegaRadiansPerSecond);
+        return new Pose2d(vX, vY, velocity.omegaRadiansPerSecond);
     }
 
     /**

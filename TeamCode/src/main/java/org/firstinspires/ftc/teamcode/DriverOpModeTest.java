@@ -9,7 +9,6 @@ import com.arcrobotics.ftclib.geometry.Transform2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.spartronics4915.lib.T265Camera;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.GoalTargetRecognition;
@@ -48,7 +47,7 @@ public class DriverOpModeTest extends OpMode {
         Logger.init();
         robotHardware = new RobotHardware();
         robotHardware.init(hardwareMap, robotProfile);
-        robotHardware.initRobotVision();
+        //robotHardware.initRobotVision();
         //robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
         robotHardware.initLeds();   // need to init everytime
@@ -70,6 +69,7 @@ public class DriverOpModeTest extends OpMode {
     public void loop() {
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
+        robotHardware.getT265Camera().getLastReceivedCameraUpdate();
         robotHardware.getLocalizer().update();
         currPose = robotHardware.getLocalizer().getPoseEstimate();
 
@@ -108,14 +108,17 @@ public class DriverOpModeTest extends OpMode {
             robotHardware.boxFlapServo.setPosition(flapServoPos);
         }
         yPressed = gamepad1.y;
-        if(gamepad1.a){
-
+        if(gamepad1.a && !aPressed){
+            (robotHardware.getLocalizer()).setPoseEstimate(new Pose2d());
         }
+        aPressed = gamepad1.a;
 
-//        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
-//        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
-        telemetry.addData("Lift:", currLiftPos);
-        telemetry.addData("Flap:", flapServoPos);
+        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
+        //telemetry.addData("TPose:", ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Pose());
+        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
+        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
+//        telemetry.addData("Lift:", currLiftPos);
+//        telemetry.addData("Flap:", flapServoPos);
    }
 
     @Override
