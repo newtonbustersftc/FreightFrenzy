@@ -19,7 +19,6 @@ import java.util.ArrayList;
 public class AutonomousGeneric extends LinearOpMode {
 
     RobotHardware robotHardware;
-    RobotNavigator navigator;
     RobotProfile robotProfile;
     DriverOptions driverOptions;
 //    RobotVision robotVision;
