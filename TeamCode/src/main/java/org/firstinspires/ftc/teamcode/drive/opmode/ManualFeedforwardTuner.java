@@ -13,8 +13,12 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.teamcode.Logger;
+import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.RobotProfile;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
+import java.io.File;
 import java.util.Objects;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
@@ -70,7 +74,19 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        drive = new SampleMecanumDrive(hardwareMap);
+        SampleMecanumDrive drive;
+        RobotProfile robotProfile = null;
+        try{
+            robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
+        } catch (Exception e) {
+        }
+
+        Logger.init();
+        RobotHardware robotHardware = new RobotHardware();
+        robotHardware.init(hardwareMap, robotProfile);
+        drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
+        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+
 
         mode = Mode.TUNING_MODE;
 

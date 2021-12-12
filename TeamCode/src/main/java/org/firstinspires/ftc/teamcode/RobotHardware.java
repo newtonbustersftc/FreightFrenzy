@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Pose2dKt;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Transform2d;
@@ -11,16 +14,20 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.spartronics4915.lib.T265Camera;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.util.AxesSigns;
+import org.firstinspires.ftc.teamcode.util.BNO055IMUUtil;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 import org.openftc.revextensions2.ExpansionHubServo;
 import org.openftc.revextensions2.RevBulkData;
-import java.text.DecimalFormat;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.opMode;
+import com.spartronics4915.lib.T265Camera;
+import java.text.DecimalFormat;
 
 public class RobotHardware {
     public enum LiftPosition {
@@ -112,13 +119,13 @@ public class RobotHardware {
 //        DriveConstants.kStatic = profile.rrFeedForwardParam.kStatic;
 //        SampleMecanumDrive.HEADING_PID = new PIDCoefficients(profile.rrHeadingPID.p,profile.rrHeadingPID.i,profile.rrHeadingPID.d);
 //        SampleMecanumDrive.TRANSLATIONAL_PID = new PIDCoefficients(profile.rrTranslationPID.p,profile.rrTranslationPID.i,profile.rrTranslationPID.d);
+        mecanumDrive = new SampleMecanumDrive(hardwareMap, profile);
         if (t265 == null) {
             t265 = new T265Camera(new Transform2d(new Translation2d(0, 0), new Rotation2d(0)), 0.8, hardwareMap.appContext);
         }
         if (!t265.isStarted()) {
             t265.start();
         }
-        mecanumDrive = new SampleMecanumDrive(hardwareMap);
         realSenseLocalizer = new RealSenseLocalizer(this, true, profile);
         mecanumDrive.setLocalizer(realSenseLocalizer);
         robotVision = new RobotVision();
@@ -323,6 +330,7 @@ public class RobotHardware {
         int newPosNum = 0;
         switch (pos) {
             case ZERO:
+                closeBoxFlap();
                 newPosNum = profile.hardwareSpec.liftPositionZero;
                 break;
             case BOTTOM:
@@ -389,9 +397,9 @@ public class RobotHardware {
         liftMotor.setPower(0);
         intakeMotor.setPower(0);
         duckMotor.setPower(0);
-//        if (t265.isStarted()) {
-//            t265.stop();
-//        }
+        if (t265.isStarted()) {
+            t265.stop();
+        }
     }
 
     public enum EncoderType {LIFT, INTAKE}
@@ -437,6 +445,8 @@ public class RobotHardware {
         parameters.loggingEnabled = false;
         imu.initialize(parameters);
         //If Robot Controller is vertically placed, uncomment the following line
-        // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
+        if (profile.hardwareSpec.revHubVertical) {
+            BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
+        }
     }
 }

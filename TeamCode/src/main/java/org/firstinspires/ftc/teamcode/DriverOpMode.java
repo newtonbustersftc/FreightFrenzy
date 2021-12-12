@@ -211,30 +211,41 @@ public class DriverOpMode extends OpMode {
      */
     private void handleIntake() {
         if (gamepad1.right_trigger > 0 && !rightTriggerPressed) {
-            currentTask = intakeAndLift;
-            currentTask.prepare();
+//            currentTask = intakeAndLift;
+//            currentTask.prepare();
+            robotHardware.startIntake();
         }
         rightTriggerPressed = (gamepad1.right_trigger>0);
 
-        if (gamepad1.a) {
-            if (currentTask == intakeAndLift) {
-                currentTask = null;
-            }
+        if (!aPressed && gamepad1.a) {
+//            if (currentTask == intakeAndLift) {
+//                currentTask = null;
+//            }
             robotHardware.reverseIntake();
+            aPressed = true;
         }
-        else if (currentTask != intakeAndLift) {
+        if (!gamepad1.a && aPressed){
             robotHardware.stopIntake();
+            aPressed = false;
         }
+
+//        else if (currentTask != intakeAndLift) {
+//            robotHardware.stopIntake();
+//        }
     }
 
     /**
      * Define combo task for driver op mode
      */
     void setupCombos() {
-        intakeAndLift = new SequentialComboTask();
-        intakeAndLift.addTask(new AutoIntakeTask(robotHardware));
-        intakeAndLift.addTask(new RobotSleep(500));
-        intakeAndLift.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.MIDDLE));
+        //commented out because when we intake in lift it works for the shared
+        //hub but when we do alliance we need to go over the ramps
+        //and if the lift is up and the block is in the box while
+        //we go over the ramp the block just falls out
+//        intakeAndLift = new SequentialComboTask();
+//        intakeAndLift.addTask(new AutoIntakeTask(robotHardware));
+//        intakeAndLift.addTask(new RobotSleep(500));
+//        intakeAndLift.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.MIDDLE));
 
         deliverTask = new SequentialComboTask();
         deliverTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));

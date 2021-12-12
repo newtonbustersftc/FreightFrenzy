@@ -69,7 +69,6 @@ public class DriverOpModeTest extends OpMode {
     public void loop() {
         robotHardware.getBulkData1();
         robotHardware.getBulkData2();
-        robotHardware.getT265Camera().getLastReceivedCameraUpdate();
         robotHardware.getLocalizer().update();
         currPose = robotHardware.getLocalizer().getPoseEstimate();
 
@@ -114,11 +113,9 @@ public class DriverOpModeTest extends OpMode {
         aPressed = gamepad1.a;
 
         telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
-        //telemetry.addData("TPose:", ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Pose());
         telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
-        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
-//        telemetry.addData("Lift:", currLiftPos);
-//        telemetry.addData("Flap:", flapServoPos);
+        telemetry.addData("Lift:", currLiftPos);
+        telemetry.addData("Flap:", flapServoPos);
    }
 
     @Override

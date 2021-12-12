@@ -7,12 +7,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Logger;
-import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.firstinspires.ftc.teamcode.RobotProfile;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-
-import java.io.File;
 
 /**
  * This is a simple teleop routine for testing localization. Drive the robot around like a normal
@@ -32,20 +27,11 @@ public class LocalizationTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        SampleMecanumDrive drive;
-        RobotProfile robotProfile = null;
-        try{
-            robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
-        } catch (Exception e) {
-        }
-
-        Logger.init();
-        RobotHardware robotHardware = new RobotHardware();
-        robotHardware.init(hardwareMap, robotProfile);
-        drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        drive.setPoseEstimate(new Pose2d(0,0,0));
 
         waitForStart();
-        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+        drive.setPoseEstimate(new Pose2d(0,0,0));
 
         while (!isStopRequested()) {
             Pose2d baseVel = new Pose2d(
@@ -74,9 +60,11 @@ public class LocalizationTest extends LinearOpMode {
             drive.update();
 
             Pose2d poseEstimate = drive.getPoseEstimate();
+            Pose2d velo = drive.getPoseVelocity();
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", Math.toDegrees(poseEstimate.getHeading()));
+            telemetry.addData("velo", velo);
             telemetry.update();
         }
     }
