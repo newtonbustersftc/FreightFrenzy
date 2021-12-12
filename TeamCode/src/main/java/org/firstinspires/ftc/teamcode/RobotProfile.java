@@ -15,12 +15,11 @@ public class RobotProfile {
 
     PIDParam headingPID;
     PIDParam distancePID;
-    PIDParam shootPID;
-    PIDParam rrHeadingPID;
-    PIDParam rrTranslationPID;
+    public PIDParam rrHeadingPID;
+    public PIDParam rrTranslationPID;
     CVParam cvParam;
-    HardwareSpec hardwareSpec;
-    FeedForwardParam rrFeedForwardParam;
+    public HardwareSpec hardwareSpec;
+    public RoadRunnerParam rrParam;
     HashMap<String, AutoPose> poses;
     Movement movement;
     String fileDateStr;
@@ -51,11 +50,6 @@ public class RobotProfile {
         distancePID.p = 0.5;
         distancePID.i = 0.01;
         distancePID.d = 0.0;
-        shootPID = new PIDParam();
-        shootPID.p = 24; //original: 10
-        shootPID.i = 0.3;   //original: 0.3
-        shootPID.d = 0.0;
-        shootPID.f = 14;  //original: 14
         rrHeadingPID = new PIDParam();
         rrHeadingPID.p = 8;
         rrHeadingPID.i = 0.05;
@@ -64,20 +58,12 @@ public class RobotProfile {
         rrTranslationPID.p = 10;
         rrTranslationPID.i = 0.1;
         rrTranslationPID.d = 0;
-        rrFeedForwardParam = new FeedForwardParam();
-        rrFeedForwardParam.kA = 0.00001;
-        rrFeedForwardParam.kV = 0.01578;
-        rrFeedForwardParam.kStatic = 0.06141;
-
+        rrParam = new RoadRunnerParam();
+        rrParam.kA = 0.00001;
+        rrParam.kV = 0.01578;
+        rrParam.lateralMultiplier = 1;
+        rrParam.trackWidth = 10.25;
         hardwareSpec = new HardwareSpec();
-        hardwareSpec.trackWheelDiameter = 3.8;   //cm diameter
-        hardwareSpec.trackWheelCPR = 4000;
-        hardwareSpec.AXEL_TRANS_PID_1 = 5;
-        hardwareSpec.AXEL_TRANS_PID_2 = 0.1;
-        hardwareSpec.AXEL_TRANS_PID_3 = 0;
-        hardwareSpec.LATERIAL_TRANS_PID_1 = 5;
-        hardwareSpec.LATERIAL_TRANS_PID_2 = 0.1;
-        hardwareSpec.LATERIAL_TRANS_PID_3 = 0;
         hardwareSpec.leftRightWheelDist = 41;//cm left right dist, from tuning
         hardwareSpec.leftEncodeForwardSign = 1;
         hardwareSpec.rightEncoderForwardSign = -1;
@@ -117,7 +103,7 @@ public class RobotProfile {
         poses.put("BLUE_DEPOT_START", new AutoPose(0,0,0));
         poses.put("RED_START_DUCK", new AutoPose(0,0,180));
         poses.put("BLUE_DEPOT_PREHUB", new AutoPose(0,-3,0));
-        poses.put("BLUE_DEPOT_HUB", new AutoPose(-20,-27,80));
+        poses.put("BLUE_DEPOT_HUB", new AutoPose(-20,-26,80));
         poses.put("BLUE_DEPOT_PREWALL", new AutoPose(0,-1.85,0));
         poses.put("BLUE_DEPOT_PICKUPWALL", new AutoPose(38,-1.85,0));
         poses.put("BLUE_DEPOT_PARKWALL", new AutoPose(30,-1.85,0));
@@ -174,11 +160,11 @@ public class RobotProfile {
         out.close();
     }
 
-    class PIDParam {
-        double p;
-        double i;
-        double d;
-        double f;
+    public class PIDParam {
+        public double p;
+        public double i;
+        public double d;
+        public double f;
     }
 
     class CVParam {
@@ -193,15 +179,8 @@ public class RobotProfile {
         int minArea;
     }
 
-    class HardwareSpec {
-        double trackWheelDiameter;   //cm diameter
-        double trackWheelCPR;
-        double AXEL_TRANS_PID_1;
-        double AXEL_TRANS_PID_2;
-        double AXEL_TRANS_PID_3;
-        double LATERIAL_TRANS_PID_1;
-        double LATERIAL_TRANS_PID_2;
-        double LATERIAL_TRANS_PID_3;
+    public class HardwareSpec {
+        public boolean revHubVertical;
 
         double leftRightWheelDist;
         int leftEncodeForwardSign;
@@ -228,10 +207,15 @@ public class RobotProfile {
         int dropToHubTime;
     }
 
-    class FeedForwardParam {
-        double kA;
-        double kV;
-        double kStatic;
+    public class RoadRunnerParam {
+        public double kA;
+        public double kV;
+        public double kStatic;
+        public double trackWidth;
+        public double wheelBase;
+        public double lateralMultiplier;
+        public double maxVel;
+        public double maxAcc;
     }
 
     class AutoPose {

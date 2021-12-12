@@ -13,8 +13,12 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityCons
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.Logger;
+import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.RobotProfile;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
+import java.io.File;
 import java.util.Arrays;
 
 @Config
@@ -27,7 +31,19 @@ public class BackAndForth extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        SampleMecanumDrive drive;
+        RobotProfile robotProfile = null;
+        try{
+            robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
+        } catch (Exception e) {
+        }
+
+        Logger.init();
+        RobotHardware robotHardware = new RobotHardware();
+        robotHardware.init(hardwareMap, robotProfile);
+        drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
+        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+
 
         Trajectory trajectoryForward = drive.trajectoryBuilder(new Pose2d())
                 .forward(DISTANCE)

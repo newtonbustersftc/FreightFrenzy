@@ -119,7 +119,7 @@ public class RobotHardware {
 //        DriveConstants.kStatic = profile.rrFeedForwardParam.kStatic;
 //        SampleMecanumDrive.HEADING_PID = new PIDCoefficients(profile.rrHeadingPID.p,profile.rrHeadingPID.i,profile.rrHeadingPID.d);
 //        SampleMecanumDrive.TRANSLATIONAL_PID = new PIDCoefficients(profile.rrTranslationPID.p,profile.rrTranslationPID.i,profile.rrTranslationPID.d);
-        mecanumDrive = new SampleMecanumDrive(hardwareMap);
+        mecanumDrive = new SampleMecanumDrive(hardwareMap, profile);
         if (t265 == null) {
             t265 = new T265Camera(new Transform2d(new Translation2d(0, 0), new Rotation2d(0)), 0.8, hardwareMap.appContext);
         }
@@ -330,6 +330,7 @@ public class RobotHardware {
         int newPosNum = 0;
         switch (pos) {
             case ZERO:
+                closeBoxFlap();
                 newPosNum = profile.hardwareSpec.liftPositionZero;
                 break;
             case BOTTOM:
@@ -444,6 +445,8 @@ public class RobotHardware {
         parameters.loggingEnabled = false;
         imu.initialize(parameters);
         //If Robot Controller is vertically placed, uncomment the following line
-        // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
+        if (profile.hardwareSpec.revHubVertical) {
+            BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
+        }
     }
 }

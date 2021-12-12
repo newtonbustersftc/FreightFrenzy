@@ -112,8 +112,8 @@ public class DriverOpModeTest extends OpMode {
 
         }
 
-//        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
-//        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
+        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
+        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
         telemetry.addData("Lift:", currLiftPos);
         telemetry.addData("Flap:", flapServoPos);
    }
