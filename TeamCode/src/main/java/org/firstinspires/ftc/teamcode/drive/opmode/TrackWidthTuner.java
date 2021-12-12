@@ -10,8 +10,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.MovingStatistics;
 
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
+import org.firstinspires.ftc.teamcode.Logger;
+import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.RobotProfile;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+
+import java.io.File;
 
 /*
  * This routine determines the effective track width. The procedure works by executing a point turn
@@ -32,8 +37,19 @@ public class TrackWidthTuner extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        SampleMecanumDrive drive;
+        RobotProfile robotProfile = null;
+        try{
+            robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
+        } catch (Exception e) {
+        }
 
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        Logger.init();
+        RobotHardware robotHardware = new RobotHardware();
+        robotHardware.init(hardwareMap, robotProfile);
+        drive = (SampleMecanumDrive)robotHardware.getMecanumDrive();
+        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+
         // TODO: if you haven't already, set the localizer to something that doesn't depend on
         // drive encoders for computing the heading
 

@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.teamcode.Logger;
 import org.firstinspires.ftc.teamcode.RealSenseLocalizer;
+import org.firstinspires.ftc.teamcode.RobotProfile;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -109,26 +110,25 @@ public class SampleMecanumDrive extends MecanumDrive {
     private VoltageSensor batteryVoltageSensor;
     private TrajectorySequenceRunner trajectorySequenceRunner;
 
-    public SampleMecanumDrive(HardwareMap hardwareMap) {
+    public SampleMecanumDrive(HardwareMap hardwareMap, RobotProfile profile) {
 //        super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
-        super(kV, kA, kStatic, TRACK_WIDTH, WHEEL_BASE, LATERAL_MULTIPLIER);
+        super(profile.rrParam.kV, profile.rrParam.kA, profile.rrParam.kStatic, profile.rrParam.trackWidth,
+                profile.rrParam.wheelBase, profile.rrParam.lateralMultiplier);
 
         dashboard = FtcDashboard.getInstance();
         dashboard.setTelemetryTransmissionInterval(25);
 
-//        mode = Mode.IDLE;
-
-//        follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
-//                new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
-        turnController = new PIDFController(HEADING_PID);
+        turnController = new PIDFController(new PIDCoefficients(profile.rrHeadingPID.p, profile.rrHeadingPID.i, profile.rrHeadingPID.d));
         turnController.setInputBounds(0, 2 * Math.PI);
 
-        velConstraint = getVelocityConstraint(MAX_VEL, MAX_ANG_VEL, TRACK_WIDTH);
-        accelConstraint = getAccelerationConstraint(MAX_ACCEL);
-//        constraints = new MecanumConstraints(BASE_CONSTRAINTS, TRACK_WIDTH);
-        follower = new HolonomicPIDVAFollower(AXEL_TRANS_PID, LATERIAL_TRANS_PID, HEADING_PID,
-                new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
+        velConstraint = getVelocityConstraint(profile.rrParam.maxVel, MAX_ANG_VEL, profile.rrParam.trackWidth);
+        accelConstraint = getAccelerationConstraint(profile.rrParam.maxAcc);
+
+        PIDCoefficients transPid = new PIDCoefficients(profile.rrTranslationPID.p, profile.rrTranslationPID.i, profile.rrTranslationPID.d);
+        follower = new HolonomicPIDVAFollower(transPid, transPid, new PIDCoefficients(profile.rrHeadingPID.p,
+                    profile.rrHeadingPID.i, profile.rrHeadingPID.d),
+                    new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
         LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
 
         poseHistory = new ArrayList<>();
@@ -145,8 +145,9 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
         // upward (normal to the floor) using a command like the following:
-        BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
-
+        if (profile.hardwareSpec.revHubVertical) {
+            BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
+        }
         leftFront = hardwareMap.get(DcMotorEx.class, "FLMotor");
         leftRear = hardwareMap.get(DcMotorEx.class, "RLMotor");
         rightRear = hardwareMap.get(DcMotorEx.class, "RRMotor");
