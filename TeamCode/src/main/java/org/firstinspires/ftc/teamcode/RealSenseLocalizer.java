@@ -26,6 +26,7 @@ public class RealSenseLocalizer implements Localizer {
     private RobotHardware robotHardware;
     private RobotProfile robotProfile;
     public static T265Camera slamra;
+    public long lastNonHigh = 0;
     int sampleN;
 
     public RealSenseLocalizer(RobotHardware robotHardware, boolean resetPos, RobotProfile robotProfile) {
@@ -45,9 +46,9 @@ public class RealSenseLocalizer implements Localizer {
     }
 
     public Pose2d fieldTranslate(Pose2d orig, Pose2d robot) {
-        double newX = (robot.getX() - orig.getX())*Math.cos(orig.getHeading()) -
+        double newX = (robot.getX() - orig.getX())*Math.cos(orig.getHeading()) +
                 (robot.getY() - orig.getY())*Math.sin(orig.getHeading());
-        double newY = (robot.getX() - orig.getX()) * Math.sin(orig.getHeading()) +
+        double newY = -(robot.getX() - orig.getX()) * Math.sin(orig.getHeading()) +
                 (robot.getY() - orig.getY())*Math.cos(orig.getHeading());
         return new Pose2d(newX, newY, robot.getHeading() - orig.getHeading());
     }
@@ -109,6 +110,20 @@ public class RealSenseLocalizer implements Localizer {
         Thread.yield();
         Thread.yield();
         t265Update = slamra.getLastReceivedCameraUpdate();
+        if (t265Update.confidence!= T265Camera.PoseConfidence.High) {
+            if (System.currentTimeMillis()-lastNonHigh>10) {
+                Logger.logFile("Non high t265 read " + t265Update.confidence);
+                lastNonHigh = System.currentTimeMillis();
+            }
+            Thread.yield();
+            t265Update = slamra.getLastReceivedCameraUpdate();
+            if (t265Update.confidence != T265Camera.PoseConfidence.High) {
+                if (System.currentTimeMillis()-lastNonHigh>10) {
+                    Logger.logFile("Non high t265 read again " + t265Update.confidence);
+                    lastNonHigh = System.currentTimeMillis();
+                }
+            }
+        }
     }
 
     /**

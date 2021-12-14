@@ -34,7 +34,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 @Config
 @Autonomous(group = "drive")
 public class StraightTest extends LinearOpMode {
-    public static double DISTANCE = 10; // in
+    public static double DISTANCE = 30; // in
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -69,7 +69,7 @@ public class StraightTest extends LinearOpMode {
         }
 
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
-        TrajectoryVelocityConstraint velConstraint = getVelocityConstraint(10, 180, TRACK_WIDTH);
+        TrajectoryVelocityConstraint velConstraint = getVelocityConstraint(20, 180, TRACK_WIDTH);
         TrajectoryAccelerationConstraint accelConstraint = getAccelerationConstraint(10);
         TrajectorySequence trajectory = drive.trajectorySequenceBuilder(new Pose2d())
                 .forward(DISTANCE, velConstraint, accelConstraint)
