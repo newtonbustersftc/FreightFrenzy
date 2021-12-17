@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.GoalTargetRecognition;
+import org.firstinspires.ftc.teamcode.util.HubVisionMathModel;
 
 import java.io.File;
 import java.util.Locale;
@@ -47,9 +48,17 @@ public class DriverOpModeTest extends OpMode {
         Logger.init();
         robotHardware = new RobotHardware();
         robotHardware.init(hardwareMap, robotProfile);
-        //robotHardware.initRobotVision();
-        //robotVision = robotHardware.getRobotVision();
+        robotHardware.initRobotVision();
+        robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
+        robotVision.initRearCamera();
+        try {
+            Thread.sleep(100);
+        }
+        catch (Exception e) {
+        }
+
+        robotVision.startRearCamera();
         robotHardware.initLeds();   // need to init everytime
         robotHardware.boxFlapServo.setPosition(flapServoPos);
 
@@ -111,17 +120,23 @@ public class DriverOpModeTest extends OpMode {
             (robotHardware.getLocalizer()).setPoseEstimate(new Pose2d());
         }
         aPressed = gamepad1.a;
-
+        HubVisionMathModel.Result r = robotVision.getLastHubResult();
         telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
         telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
         telemetry.addData("Lift:", currLiftPos);
         telemetry.addData("Flap:", flapServoPos);
+        if (r!=null) {
+            telemetry.addData("Hub", r);
+            telemetry.addData("Err:", r.getAngleCorrection());
+        }
+        telemetry.addData("VidTPS", robotVision.getHubVicTps());
    }
 
     @Override
     public void stop() {
         // open the clamp to relief the grabber servo
         try {
+            robotVision.stopRearCamera();
             robotHardware.stopAll();
             Logger.logFile("DriverOpMode Test stop() called");
             Logger.flushToFile();

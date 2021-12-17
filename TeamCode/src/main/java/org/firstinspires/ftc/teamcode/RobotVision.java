@@ -24,6 +24,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.util.GoalTargetRecognition;
+import org.firstinspires.ftc.teamcode.util.HubVisionMathModel;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -124,8 +125,9 @@ public class RobotVision {
         Logger.logFile("RobotVision init()");
         this.hardwareMap = hardwareMap;
         this.robotProfile = robotProfile;
-        webcamName = hardwareMap.get(WebcamName.class, "Webcam");
-        initVuforia();
+        //TODO - enable the following
+        //webcamName = hardwareMap.get(WebcamName.class, "Webcam");
+        //initVuforia();
         MASK_LOWER_BOUND_H = robotProfile.cvParam.maskLowerH;
         MASK_LOWER_BOUND_S = robotProfile.cvParam.maskLowerS;
         MASK_LOWER_BOUND_V = robotProfile.cvParam.maskLowerV;
@@ -529,16 +531,21 @@ public class RobotVision {
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, rx, ry, rz)));
     }
 
+    int nHubPic = 0;
+    long lastTime = 0;
+    double lastTps = 0;
     public void initRearCamera() {
+        lastHubResult = null;
         rearCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam2"));
         rearCamera.setMillisecondsPermissionTimeout(2500);
+        lastTime = System.currentTimeMillis();
         rearCamera.openCameraDeviceAsync(
             new OpenCvCamera.AsyncCameraOpenListener() {
                 @Override
                 public void onOpened() {
                     RobotLog.i("RearCamera opened");
                     Logger.logFile("RearCamera opened");
-                    rearCamera.setPipeline(new SavePicturePipeline());
+                    rearCamera.setPipeline(new HubAutodriveVision());
                 }
 
                 @Override
@@ -548,6 +555,121 @@ public class RobotVision {
                 }
             }
         );
+    }
+
+    HubVisionMathModel.Result lastHubResult;
+
+    HubVisionMathModel.Result getLastHubResult() {
+        return lastHubResult;
+    }
+
+    /* TODO Move the following to profile */
+    static class HubVisionParameters {
+        public static int CROP_TOP = 5;
+        public static int CROP_BOTTOM = 160;
+        public static Scalar MASK_LOW = new Scalar(230, 30, 20);
+        public static Scalar MASK_HIGH = new Scalar(10, 255, 255);
+    }
+
+    class HubAutodriveVision extends OpenCvPipeline {
+        Mat hsvMat = new Mat();
+        Mat maskMat = new Mat();
+        Mat dilatedMat = new Mat();
+        Mat dilatedMat2 = new Mat();
+        Mat blurredMat = new Mat();
+        Mat lines = new Mat();
+        Mat maskMat1 = new Mat();
+        Mat maskMat2 = new Mat();
+        Mat edgesMat = new Mat();
+
+        public HubAutodriveVision() {
+        }
+
+        protected void finalized() {
+            hsvMat.release();
+            maskMat.release();
+            dilatedMat.release();
+            dilatedMat2.release();
+            edgesMat.release();
+            lines.release();
+        }
+
+        @Override
+        public Mat processFrame(Mat input) {
+
+            HubVisionMathModel model = new HubVisionMathModel();
+
+            // 0. Crop the middle part
+            Mat workMat = input.submat(new Rect(0, HubVisionParameters.CROP_TOP, input.width(), HubVisionParameters.CROP_BOTTOM));
+            // 1. Convert input to HSV
+            Imgproc.cvtColor(workMat, hsvMat, Imgproc.COLOR_RGB2HSV_FULL);
+
+            // 2. Create MASK
+            if (HubVisionParameters.MASK_LOW.val[0]>HubVisionParameters.MASK_HIGH.val[0]) {
+                // RED situation
+                Core.inRange(hsvMat, HubVisionParameters.MASK_LOW,
+                        new Scalar(255, HubVisionParameters.MASK_HIGH.val[1],HubVisionParameters.MASK_HIGH.val[2]), maskMat1);
+                Core.inRange(hsvMat, new Scalar(0, HubVisionParameters.MASK_LOW.val[1], HubVisionParameters.MASK_LOW.val[2]),
+                        HubVisionParameters.MASK_HIGH, maskMat2);
+                Core.add(maskMat1, maskMat2, maskMat);
+                maskMat1.release();
+                maskMat2.release();
+            }
+            else {
+                // Non RED situation
+                Core.inRange(hsvMat, HubVisionParameters.MASK_LOW, HubVisionParameters.MASK_HIGH, maskMat);
+            }
+            // 3. Dilate to fill the gaps
+            Imgproc.dilate(maskMat, dilatedMat, new Mat());
+            // 4. Blur the image
+            Imgproc.GaussianBlur(maskMat, blurredMat, new org.opencv.core.Size(3, 3), 3);
+            // 5. Canny edge detection
+            Imgproc.Canny(blurredMat, edgesMat, 100, 70 * 3, 7, false);
+            // 6. Dilate again before finding lines
+            Imgproc.dilate(edgesMat, dilatedMat2, new Mat(), new Point(-1, -1), 1); // 1
+            // 7. Finding the lines
+            int lineGap = 15;
+            Imgproc.HoughLinesP(dilatedMat2, lines, 3, Math.PI / 1000, 2, 45, lineGap);
+            System.out.println("Got lines: " + lines.rows());
+            for (int i = 0; i < lines.rows(); i++) {
+                double[] val = lines.get(i, 0);
+//                Point tmpStartP = new Point(val[0], val[1] + HubVisionParameters.CROP_TOP);
+//                Point tmpEndP = new Point(val[2], val[3] + HubVisionParameters.CROP_TOP);
+                model.addLine((int)val[0], (int)val[1], (int)val[2], (int)val[3]);
+//                if (Math.abs(val[0]-val[2])<10) {
+//                    Imgproc.line(clone, tmpStartP, tmpEndP, DRAW_COLOR2, 1);
+//                    System.out.println("   " + val[0] + "," + val[1] + " -> " + val[2] + "," + val[3]);
+//                }
+//                else {
+//                    Imgproc.line(clone, tmpStartP, tmpEndP, DRAW_COLOR3, 1);
+//                    System.out.println("xxx" + val[0] + "," + val[1] + " -> " + val[2] + "," + val[3]);
+//                }
+            }
+            if (model.getResult().result== HubVisionMathModel.RecognitionResult.BOTH) {
+                lastHubResult = model.getResult();
+            }
+            nHubPic++;
+            if (nHubPic%10==0) {
+                long t = System.currentTimeMillis();
+                lastTps = 10.0 / (t - lastTime);
+                lastTime = t;
+                //savePicture(input);
+            }
+            workMat.release();
+            return input;
+        }
+
+        public Mat savePicture(Mat input) {
+            String timestamp = new SimpleDateFormat("MMdd-HHmmssSSS", Locale.US).format(new Date());
+            Mat mbgr = new Mat();
+            Imgproc.cvtColor(input, mbgr, Imgproc.COLOR_RGB2BGR, 3);
+            Imgcodecs.imwrite("/sdcard/FIRST/REAR-" + timestamp + ".jpg", mbgr);
+            mbgr.release();
+            return input;
+        }
+    }
+    public double getHubVicTps() {
+        return lastTps;
     }
 
     class SavePicturePipeline extends OpenCvPipeline {

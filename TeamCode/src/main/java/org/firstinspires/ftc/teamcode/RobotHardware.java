@@ -274,10 +274,15 @@ public class RobotHardware {
     }
 
     public void setMotorPower(double flPower, double frPower, double rlPower, double rrPower) {
-        flMotor.setPower(flPower);
-        frMotor.setPower(frPower);
-        rlMotor.setPower(rlPower);
-        rrMotor.setPower(rrPower);
+        try {
+            flMotor.setPower(flPower);
+            frMotor.setPower(frPower);
+            rlMotor.setPower(rlPower);
+            rrMotor.setPower(rrPower);
+        }
+        catch (Exception ex) {
+            // nothing to handle
+        }
     }
 
     public void setMotorStopBrake(boolean brake) {
