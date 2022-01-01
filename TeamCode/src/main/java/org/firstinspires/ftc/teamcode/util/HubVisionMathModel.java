@@ -2,20 +2,21 @@ package org.firstinspires.ftc.teamcode.util;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
+import org.opencv.core.Rect;
 
 public class HubVisionMathModel {
     // When in drop off position
-    public static int FINAL_WIDTH = 36; // pixels on image of the pole
-    public static int FINAL_CENTER = 97;   // pixels from left
+    public static int FINAL_WIDTH = 58; // pixels on image of the pole
+    public static int FINAL_CENTER = 80;   // pixels from left
     public static double FINAL_DIST = 11.0; // inch camera to pole
     // When it's 20 inches away from the drop off
-    public static int DIST_WIDTH = 18;     // pixels on the image of the pole
+    public static int DIST_WIDTH = 20;     // pixels on the image of the pole
     public static int DIST_CENTER= 170;     // pixels from left
     public static int DIST_INCH = 30;       // inches camera to pole
     public static int MIN_LINE_GAP = 5;
     public static int MAX_LINE_CANDIDATES = 4;
     public static int CENTER_Y = 70;
-    public static double errorFactor = 1;
+    public static double errorFactor = 0.1;
 
     public enum RecognitionResult { NONE, BOTH, SINGLE }
 
@@ -37,7 +38,7 @@ public class HubVisionMathModel {
                 return result.toString() + " " + cnt;
             }
             else {
-                return "BOTH, WIDTH: " + width + " X:" + centerX;
+                return "HubRec W: " + width + " X:" + centerX + " Ac:" + getAngleCorrection();
             }
         }
 
@@ -67,6 +68,16 @@ public class HubVisionMathModel {
     public HubVisionMathModel() {
         cnt = 0;
         centerLine = new Line(new Vector2D(0, CENTER_Y), new Vector2D(320, CENTER_Y),0);
+        candidates[0] = new LineCandidate();
+        candidates[1] = new LineCandidate();
+    }
+
+    public void addRect(Rect rect) {
+        cnt = 2;
+        candidates[0].x = rect.x;
+        candidates[1].x = rect.x + rect.width;
+        candidates[0].angle = Math.PI/2;
+        candidates[1].angle = Math.PI/2;
     }
 
     public void addLine(int x0, int y0, int x1, int y1) {

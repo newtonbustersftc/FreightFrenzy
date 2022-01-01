@@ -405,6 +405,10 @@ public class RobotVision {
         mbgr.release();
     }
 
+    public void saveNextImage() {
+        saveImage = true;
+    }
+
     public static int MASK_LOWER_BOUND_H = 20;
     public static int MASK_LOWER_BOUND_S = 150;
     public static int MASK_LOWER_BOUND_V = 100;
@@ -545,7 +549,7 @@ public class RobotVision {
                 public void onOpened() {
                     RobotLog.i("RearCamera opened");
                     Logger.logFile("RearCamera opened");
-                    rearCamera.setPipeline(new HubAutodriveVision());
+                    rearCamera.setPipeline(new HubAutodriveVision2());
                 }
 
                 @Override
@@ -566,9 +570,89 @@ public class RobotVision {
     /* TODO Move the following to profile */
     static class HubVisionParameters {
         public static int CROP_TOP = 5;
-        public static int CROP_BOTTOM = 160;
-        public static Scalar MASK_LOW = new Scalar(230, 30, 20);
+        public static int CROP_BOTTOM = 90;
+        public static Scalar MASK_LOW = new Scalar(230, 50, 20);
         public static Scalar MASK_HIGH = new Scalar(10, 255, 255);
+        public static int MIN_AREA = 600;
+        public static int MIN_HEIGHT=50;
+    }
+
+    class HubAutodriveVision2 extends OpenCvPipeline {
+        Mat hsvMat = new Mat();
+        Mat maskMat = new Mat();
+        Mat dilatedMat = new Mat();
+        Mat hierarchey = new Mat();
+
+        public HubAutodriveVision2() {
+        }
+
+        protected void finalized() {
+            hsvMat.release();
+            maskMat.release();
+            dilatedMat.release();
+            hierarchey.release();
+        }
+
+        @Override
+        public Mat processFrame(Mat input) {
+
+            HubVisionMathModel model = new HubVisionMathModel();
+
+            // 0. Crop the middle part
+            Mat workMat = input.submat(new Rect(0, HubVisionParameters.CROP_TOP, input.width(), HubVisionParameters.CROP_BOTTOM));
+            // 1. Convert input to HSV
+            Imgproc.cvtColor(workMat, hsvMat, Imgproc.COLOR_RGB2HSV_FULL);
+
+            // 2. Create MASK
+            if (HubVisionParameters.MASK_LOW.val[0] > HubVisionParameters.MASK_HIGH.val[0]) {
+                // RED situation
+                Mat maskMat1 = new Mat();
+                Mat maskMat2 = new Mat();
+                Core.inRange(hsvMat, HubVisionParameters.MASK_LOW,
+                        new Scalar(255, HubVisionParameters.MASK_HIGH.val[1], HubVisionParameters.MASK_HIGH.val[2]), maskMat1);
+                Core.inRange(hsvMat, new Scalar(0, HubVisionParameters.MASK_LOW.val[1], HubVisionParameters.MASK_LOW.val[2]),
+                        HubVisionParameters.MASK_HIGH, maskMat2);
+                Core.add(maskMat1, maskMat2, maskMat);
+                maskMat1.release();
+                maskMat2.release();
+            } else {
+                // Non RED situation
+                Core.inRange(hsvMat, HubVisionParameters.MASK_LOW, HubVisionParameters.MASK_HIGH, maskMat);
+            }
+            Imgproc.dilate(maskMat, dilatedMat, new Mat());
+            List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+            Imgproc.findContours(dilatedMat, contours, hierarchey, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+            Iterator<MatOfPoint> each = contours.iterator();
+            int ndx = 0;
+            while (each.hasNext()) {
+                MatOfPoint wrapper = each.next();
+                double area = Imgproc.contourArea(wrapper);
+                if (area > HubVisionParameters.MIN_AREA) {
+                    Rect rec = Imgproc.boundingRect(wrapper);
+                    if (rec.height>HubVisionParameters.MIN_HEIGHT) {
+                        model.addRect(rec);
+                    }
+                    if (saveImage) {    // update drawing only when saving the picture
+                        Imgproc.rectangle(input, rec, DRAW_COLOR_RED, 2);
+                    }
+                }
+                Log.i("Area", "Ndx:" + ndx + " Area:" + area);
+                ndx++;
+            }
+            lastHubResult = model.getResult();
+            nHubPic++;
+            if (nHubPic%10==0) {
+                long t = System.currentTimeMillis();
+                lastTps = 10.0 / (t - lastTime);
+                lastTime = t;
+            }
+            if (saveImage) {
+                SavePicturePipeline sp = new SavePicturePipeline();
+                sp.processFrame(input);
+                saveImage = false;
+            }
+            return input;
+        }
     }
 
     class HubAutodriveVision extends OpenCvPipeline {
@@ -673,16 +757,15 @@ public class RobotVision {
     }
 
     class SavePicturePipeline extends OpenCvPipeline {
-        int n=0;
         @Override
         public Mat processFrame(Mat input) {
-            n++;
-            if (n%5==0) {
+            if (saveImage) {
                 String timestamp = new SimpleDateFormat("MMdd-HHmmssSSS", Locale.US).format(new Date());
                 Mat mbgr = new Mat();
                 Imgproc.cvtColor(input, mbgr, Imgproc.COLOR_RGB2BGR, 3);
                 Imgcodecs.imwrite("/sdcard/FIRST/REAR-" + timestamp + ".jpg", mbgr);
                 mbgr.release();
+                saveImage = false;
             }
             return input;
         }

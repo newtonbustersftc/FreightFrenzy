@@ -35,6 +35,7 @@ public class DriverOpModeTest extends OpMode {
     boolean xPressed = false;
     boolean aPressed = false;
     boolean bPressed = false;
+    RobotControl currentTask = null;
     GoalTargetRecognition goalRecog = null;
 
     @Override
@@ -89,48 +90,28 @@ public class DriverOpModeTest extends OpMode {
         } else if (gamepad1.right_trigger > 0) {
             fieldMode = false;  //good luck driving
         }
-        // test controls
-        int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
-        if (gamepad1.dpad_up) {
-            robotHardware.setLiftMotorPosition(currLiftPos+20);
+        // testHardware();
+        testHubVision();
 
-        }
-        if (gamepad1.dpad_down) {
-            robotHardware.setLiftMotorPosition(currLiftPos-20);
-        }
-        if (gamepad1.dpad_right) {
-            robotHardware.duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robotHardware.duckMotor.setVelocity(500);
+        if (currentTask != null) {
+            robotHardware.setLed1(true);
+            if (gamepad1.left_bumper && gamepad1.right_bumper) {
+                currentTask.cleanUp();
+                currentTask = null;
+            }
+            else {
+                currentTask.execute();
+                if (currentTask.isDone()) {
+                    currentTask.cleanUp();
+                    Logger.logFile("TaskComplete: " + currentTask);
+                    currentTask = null;
+                }
+            }
         }
         else {
-            robotHardware.stopDuck();
+            robotHardware.setLed1(false);
         }
-
-        if (gamepad1.x && !xPressed) {
-            flapServoPos = flapServoPos - 0.02;
-            robotHardware.boxFlapServo.setPosition(flapServoPos);
-        }
-        xPressed = gamepad1.x;
-        if (gamepad1.y && !yPressed) {
-            flapServoPos = flapServoPos + 0.02;
-            robotHardware.boxFlapServo.setPosition(flapServoPos);
-        }
-        yPressed = gamepad1.y;
-        if(gamepad1.a && !aPressed){
-            (robotHardware.getLocalizer()).setPoseEstimate(new Pose2d());
-        }
-        aPressed = gamepad1.a;
-        HubVisionMathModel.Result r = robotVision.getLastHubResult();
-        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
-        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
-        telemetry.addData("Lift:", currLiftPos);
-        telemetry.addData("Flap:", flapServoPos);
-        if (r!=null) {
-            telemetry.addData("Hub", r);
-            telemetry.addData("Err:", r.getAngleCorrection());
-        }
-        telemetry.addData("VidTPS", robotVision.getHubVicTps());
-   }
+    }
 
     @Override
     public void stop() {
@@ -143,35 +124,97 @@ public class DriverOpModeTest extends OpMode {
         } catch (Exception e) {
             Log.e("DriverOpMode", Log.getStackTraceString(e));
         }
-    }
-   private void handleMovement() {
-       double turn = gamepad1.right_stick_x/4;
-       double power = Math.hypot(gamepad1.left_stick_x, gamepad1.left_stick_y);
-       double padAngle = Math.atan2(gamepad1.left_stick_y, -gamepad1.left_stick_x) + Math.PI/2;
 
-       double movAngle;
-       if (fieldMode) {
-           movAngle = padAngle+((isRedTeam)?Math.PI/2:-Math.PI/2) - currPose.getHeading();
-       }
-       else {
-           movAngle = padAngle;
-       }
-       if (gamepad1.left_bumper) {
-           power = power/3;
-           turn = turn/3;
-       }
-       robotHardware.mecanumDrive2(power, movAngle, turn);
-       telemetry.addData("Stick: ", Math.toDegrees(padAngle));
-       telemetry.addData("Move: ", Math.toDegrees(movAngle));
-       telemetry.addData("Power:", power);
-       telemetry.addData("Mode: ", (fieldMode)?"Field":"Robot");
+    }
+
+    private void handleMovement() {
+        double turn = gamepad1.right_stick_x/4;
+        double power = Math.hypot(gamepad1.left_stick_x, gamepad1.left_stick_y);
+        double padAngle = Math.atan2(gamepad1.left_stick_y, -gamepad1.left_stick_x) + Math.PI/2;
+
+        double movAngle;
+        if (fieldMode) {
+            movAngle = padAngle+((isRedTeam)?Math.PI/2:-Math.PI/2) - currPose.getHeading();
+        }
+        else {
+            movAngle = padAngle;
+        }
+        if (gamepad1.left_bumper) {
+            power = power/3;
+            turn = turn/3;
+        }
+        robotHardware.mecanumDrive2(power, movAngle, turn);
+//       telemetry.addData("Stick: ", Math.toDegrees(padAngle));
+//       telemetry.addData("Move: ", Math.toDegrees(movAngle));
+//       telemetry.addData("Power:", power);
+        telemetry.addData("Move",  "a:" + Math.toDegrees(padAngle));
+        telemetry.addData("Stick", "x:" + gamepad1.left_stick_x + " y:" + gamepad1.left_stick_y);
+        telemetry.addData("Mode: ", (fieldMode)?"Field":"Robot");
 
        // toggle field mode on/off.
        // Driver 1: left trigger - enable; right trigger - disable
-       if (gamepad1.left_trigger > 0) {
-           fieldMode = true;
-       } else if (gamepad1.right_trigger > 0) {
-           fieldMode = false;  //good luck driving
-       }
+        if (gamepad1.left_trigger > 0) {
+            fieldMode = true;
+        } else if (gamepad1.right_trigger > 0) {
+            fieldMode = false;  //good luck driving
+        }
+        telemetry.addData("Pose:", robotHardware.getLocalizer().getPoseEstimate());
+    }
+
+    private void testHardware() {
+        // test lift
+        int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
+        if (gamepad1.dpad_up) {
+            robotHardware.setLiftMotorPosition(currLiftPos+20);
+
+        }
+        if (gamepad1.dpad_down) {
+            robotHardware.setLiftMotorPosition(currLiftPos-20);
+        }
+        // test duck motor
+        if (gamepad1.dpad_right) {
+            robotHardware.duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robotHardware.duckMotor.setVelocity(500);
+        }
+        else {
+            robotHardware.stopDuck();
+        }
+        // test flapServo
+        if (gamepad1.x && !xPressed) {
+            flapServoPos = flapServoPos - 0.02;
+            robotHardware.boxFlapServo.setPosition(flapServoPos);
+        }
+        xPressed = gamepad1.x;
+        if (gamepad1.y && !yPressed) {
+            flapServoPos = flapServoPos + 0.02;
+            robotHardware.boxFlapServo.setPosition(flapServoPos);
+        }
+        yPressed = gamepad1.y;
+        // test localizer reset
+        if(gamepad1.a && !aPressed){
+            (robotHardware.getLocalizer()).setPoseEstimate(new Pose2d());
+        }
+        aPressed = gamepad1.a;
+        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
+        telemetry.addData("Lift:", currLiftPos);
+        telemetry.addData("Flap:", flapServoPos);
+    }
+
+    public void testHubVision() {
+        robotVision.getLastHubResult();
+        HubVisionMathModel.Result r = robotVision.getLastHubResult();
+        if (r!=null) {
+            telemetry.addData("Hub", r);
+            telemetry.addData("Err:", r.getAngleCorrection());
+        }
+        if (gamepad1.x && !xPressed) {
+            robotVision.saveNextImage();
+        }
+        xPressed = gamepad1.x;
+        telemetry.addData("VidTPS", robotVision.getHubVicTps());
+        if (gamepad1.y && !yPressed) {
+            currentTask = new AutoHubApproachTask(robotHardware, robotProfile);
+            currentTask.prepare();
+        }
     }
 }
