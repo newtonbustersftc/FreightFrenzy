@@ -31,7 +31,7 @@ public class PIDMecanumMoveTask implements RobotControl {
     transient double lastToTargetDist;
     transient double minPower = 0.2;
 
-    public PIDMecanumMoveTask(RobotHardware robot, RobotProfile profile){
+    public PIDMecanumMoveTask(RobotHardware robot, RobotProfile profile) {
         this.robot = robot;
         this.profile = profile;
         this.navigator = robot.getLocalizer();
@@ -40,7 +40,7 @@ public class PIDMecanumMoveTask implements RobotControl {
         completed = false;
         power = 0.5;    // default
         prevDist = new double[40];  // previous 10 distance
-        for(int i=0; i<prevDist.length; i++) {
+        for (int i = 0; i < prevDist.length; i++) {
             prevDist[i] = -9999;
         }
         prevNdx = 0;
@@ -55,7 +55,7 @@ public class PIDMecanumMoveTask implements RobotControl {
         this.power = power;
     }
 
-    public void setMinPower(double minPower){
+    public void setMinPower(double minPower) {
         this.minPower = minPower;
     }
 
@@ -65,20 +65,20 @@ public class PIDMecanumMoveTask implements RobotControl {
         Logger.logFile("Path Task:" + startPos + " TO " + endPos);
     }
 
-    public void setRelativePath(double offsetX, double offsetY){
+    public void setRelativePath(double offsetX, double offsetY) {
         this.offsetX = offsetX;
         this.offsetY = offsetY;
         startPos = null;
         endPos = null;
     }
 
-    void setupPID(){
+    void setupPID() {
         pidPosition = new PIDController(profile.distancePID.p, profile.distancePID.i, profile.distancePID.d);
         pidHeading = new PIDController(profile.headingPID.p, profile.headingPID.i, profile.headingPID.d);
         pidPosition.reset();
         pidPosition.setSetpoint(0);
         pidPosition.setInputRange(-5, 5);       // off by 5 cm max
-        pidPosition.setOutputRange(0, Math.PI/20);  // this is the desired angle to move
+        pidPosition.setOutputRange(0, Math.PI / 20);  // this is the desired angle to move
         pidPosition.enable();
         pidHeading.reset();
         pidHeading.setInputRange(-Math.PI / 30, Math.PI / 30);  // of by 6 degrees max
@@ -90,7 +90,7 @@ public class PIDMecanumMoveTask implements RobotControl {
     public double getPosError() {
         Pose2d currentPose = navigator.getPoseEstimate();
         double currAngle = -Math.atan2(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX());
-        double error = Math.hypot(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX()) * Math.sin(targetAngle-currAngle);
+        double error = Math.hypot(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX()) * Math.sin(targetAngle - currAngle);
         return error;
     }
 
@@ -98,10 +98,9 @@ public class PIDMecanumMoveTask implements RobotControl {
         Pose2d currentPose = navigator.getPoseEstimate();
         double headingErr = currentPose.getHeading() - endPos.getHeading();
         if (headingErr > Math.PI) {
-            headingErr = headingErr - Math.PI*2;
-        }
-        else if (headingErr < -Math.PI) {
-            headingErr = headingErr + Math.PI*2;
+            headingErr = headingErr - Math.PI * 2;
+        } else if (headingErr < -Math.PI) {
+            headingErr = headingErr + Math.PI * 2;
         }
         return headingErr;
     }
@@ -112,26 +111,26 @@ public class PIDMecanumMoveTask implements RobotControl {
      * 2. Overshoot (target dist go further from previous measure)
      * 3. Travel distance greater than planned distance
      * 4. No movement for last 40 measures
+     *
      * @return
      */
-    public boolean isDone(){
+    public boolean isDone() {
         Pose2d currentPose = navigator.getPoseEstimate();
-        double toTargetDist = Math.hypot(endPos.getY()-currentPose.getY(), endPos.getX()-currentPose.getX());
+        double toTargetDist = Math.hypot(endPos.getY() - currentPose.getY(), endPos.getX() - currentPose.getX());
         if (toTargetDist < 0.5) {
             return true;
         }
-        if ((toTargetDist>lastToTargetDist+0.5) && (lastToTargetDist<5)) {
+        if ((toTargetDist > lastToTargetDist + 0.5) && (lastToTargetDist < 5)) {
             Logger.logFile("Overshoot - toTarget:" + toTargetDist + " prev:" + lastToTargetDist);
             return true;
-        }
-        else {
+        } else {
             lastToTargetDist = toTargetDist;
         }
         double targetTravelDistance = Math.hypot(endPos.getY() - startPos.getY(), endPos.getX() - startPos.getX());
         double currentTravelDistance = Math.hypot(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX());
 //        Logger.logFile("currentDistance: " + currentDistance + ", targetDistance: " + targetDistance);
         boolean noMovement = false;
-        if (Math.abs(currentTravelDistance-prevDist[prevNdx])<1) {
+        if (Math.abs(currentTravelDistance - prevDist[prevNdx]) < 1) {
             Logger.logFile("MoveBlocked - " + currentTravelDistance + " : " + prevDist[prevNdx]);
             noMovement = true;
         }
@@ -142,10 +141,10 @@ public class PIDMecanumMoveTask implements RobotControl {
         return (currentTravelDistance > targetTravelDistance) || noMovement;
     }
 
-    public void prepare(){
+    public void prepare() {
         Pose2d currentPose = navigator.getPoseEstimate();
-        if(startPos == null && endPos == null){
-            startPos = new Pose2d(currentPose.getX(),currentPose.getY(),currentPose.getHeading());
+        if (startPos == null && endPos == null) {
+            startPos = new Pose2d(currentPose.getX(), currentPose.getY(), currentPose.getHeading());
             endPos = new Pose2d(offsetX + currentPose.getX(), offsetY + currentPose.getY(), currentPose.getHeading());
         }
         lastToTargetDist = 10000;
@@ -162,16 +161,17 @@ public class PIDMecanumMoveTask implements RobotControl {
         double currentDistance = Math.hypot(currentPose.getY() - startPos.getY(), currentPose.getX() - startPos.getX());
         double pwr = power;
         if (targetDistance - currentDistance <= 15) {
-             pwr = minPower + (targetDistance - currentDistance) / 15 * (power - minPower);
+            pwr = minPower + (targetDistance - currentDistance) / 15 * (power - minPower);
         }
         robot.mecanumDrive2(pwr, targetAngle - posCorrection - endPos.getHeading(), -headCorrection);
         loopCount++;
-        if (loopCount % 10==0) {
+        if (loopCount % 10 == 0) {
             Logger.logFile("Pose:" + currentPose + " pwr:" + pwr + " postCorr:" + posCorrection + " headCorr:" + headCorrection);
         }
     }
-    public void cleanUp(){
-        robot.setMotorPower(0,0,0,0);
+
+    public void cleanUp() {
+        robot.setMotorPower(0, 0, 0, 0);
     }
 }
 

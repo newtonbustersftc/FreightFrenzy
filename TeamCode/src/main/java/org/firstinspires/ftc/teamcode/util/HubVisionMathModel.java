@@ -2,21 +2,22 @@ package org.firstinspires.ftc.teamcode.util;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
+import org.firstinspires.ftc.teamcode.RobotProfile;
 import org.opencv.core.Rect;
+import org.firstinspires.ftc.teamcode.RobotProfile;
 
 public class HubVisionMathModel {
     // When in drop off position
-    public static int FINAL_WIDTH = 58; // pixels on image of the pole
-    public static int FINAL_CENTER = 80;   // pixels from left
-    public static double FINAL_DIST = 11.0; // inch camera to pole
+
+    RobotProfile profile;
+
+    public HubVisionMathModel(RobotProfile profile){
+        this.profile = profile;
+    }
     // When it's 20 inches away from the drop off
-    public static int DIST_WIDTH = 20;     // pixels on the image of the pole
-    public static int DIST_CENTER= 170;     // pixels from left
-    public static int DIST_INCH = 30;       // inches camera to pole
-    public static int MIN_LINE_GAP = 5;
-    public static int MAX_LINE_CANDIDATES = 4;
-    public static int CENTER_Y = 70;
-    public static double errorFactor = 0.1;
+    // pixels on the image of the pole
+    // pixels from left
+    // inches camera to pole
 
     public enum RecognitionResult { NONE, BOTH, SINGLE }
 
@@ -49,8 +50,8 @@ public class HubVisionMathModel {
         public double getAngleCorrection() {
             double dist = calculateDistance();
             // at this distance, where is the correct X on picture?
-            double targetX = dist * (DIST_CENTER - FINAL_CENTER) / (DIST_INCH - FINAL_DIST) + FINAL_CENTER;
-            return errorFactor * (lastResult.centerX - targetX) / dist;
+            double targetX = dist * (profile.hvParam.DIST_CENTER - profile.hvParam.FINAL_CENTER) / (profile.hvParam.DIST_INCH - profile.hvParam.FINAL_DIST) + profile.hvParam.FINAL_CENTER;
+            return profile.hvParam.errorFactor * (lastResult.centerX - targetX) / dist;
         }
     }
 
@@ -62,12 +63,12 @@ public class HubVisionMathModel {
 
     Result lastResult = new Result();
 
-    LineCandidate[] candidates = new LineCandidate[MAX_LINE_CANDIDATES];
+    LineCandidate[] candidates = new LineCandidate[profile.hvParam.MAX_LINE_CANDIDATES];
     int cnt = 0;
     Line centerLine;
     public HubVisionMathModel() {
         cnt = 0;
-        centerLine = new Line(new Vector2D(0, CENTER_Y), new Vector2D(320, CENTER_Y),0);
+        centerLine = new Line(new Vector2D(0, profile.hvParam.CENTER_Y), new Vector2D(320, profile.hvParam.CENTER_Y),0);
         candidates[0] = new LineCandidate();
         candidates[1] = new LineCandidate();
     }
@@ -91,8 +92,8 @@ public class HubVisionMathModel {
         lc.length = Math.hypot(y1-y0, x1-x0);
         // add these lines to the array
         int ndx = 0;
-        while (ndx<cnt && ndx<MAX_LINE_CANDIDATES) {
-            if (Math.abs(candidates[ndx].x-lc.x)<=MIN_LINE_GAP) {
+        while (ndx<cnt && ndx<profile.hvParam.MAX_LINE_CANDIDATES) {
+            if (Math.abs(candidates[ndx].x-lc.x)<=profile.hvParam.MIN_LINE_GAP) {
                 // we found our candidate
                 double newLength = lc.length+candidates[ndx].length;
                 candidates[ndx].x = candidates[ndx].x * candidates[ndx].length/newLength + lc.x * lc.length/newLength;
@@ -102,7 +103,7 @@ public class HubVisionMathModel {
             }
             ndx++;
         }
-        if (ndx<MAX_LINE_CANDIDATES) {
+        if (ndx<profile.hvParam.MAX_LINE_CANDIDATES) {
             candidates[ndx] = lc;
             cnt++;
         }
@@ -132,7 +133,7 @@ public class HubVisionMathModel {
      * @return distance in inches
      */
     public double calculateDistance() {
-        double avg = (FINAL_DIST*FINAL_WIDTH + DIST_INCH*DIST_WIDTH)/2;
+        double avg = (profile.hvParam.FINAL_DIST*profile.hvParam.FINAL_WIDTH + profile.hvParam.DIST_INCH*profile.hvParam.DIST_WIDTH)/2;
         return avg / lastResult.width;
     }
 }

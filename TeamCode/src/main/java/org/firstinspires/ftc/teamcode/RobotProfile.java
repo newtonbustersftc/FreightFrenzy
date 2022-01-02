@@ -4,6 +4,8 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.opencv.core.Scalar;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -19,6 +21,7 @@ public class RobotProfile {
     public PIDParam rrTranslationPID;
     CVParam cvParam;
     public HardwareSpec hardwareSpec;
+    public HubVisionParameters hvParam;
     public RoadRunnerParam rrParam;
     HashMap<String, AutoPose> poses;
     Movement movement;
@@ -98,6 +101,23 @@ public class RobotProfile {
         cvParam.maskUpperS = 255;
         cvParam.maskUpperV = 255;
         cvParam.minArea = 5;
+
+        hvParam.CROP_TOP = 5;
+        hvParam.CROP_BOTTOM = 90;
+        hvParam.MASK_LOW = new Scalar(230, 50, 20);
+        hvParam.MASK_HIGH = new Scalar(10, 255, 255);
+        hvParam.FINAL_WIDTH = 58;
+        hvParam.FINAL_CENTER = 80;
+        hvParam.FINAL_DIST = 11.0;
+        hvParam.DIST_WIDTH = 20;
+        hvParam.DIST_CENTER = 170;
+        hvParam.DIST_INCH = 30;
+        hvParam.MIN_LINE_GAP = 5;
+        hvParam.MAX_LINE_CANDIDATES = 4;
+        hvParam.CENTER_Y = 70;
+        hvParam.errorFactor = 0.1;
+        hvParam.MIN_AREA = 600;
+        hvParam.MIN_HEIGHT = 50;
 
         poses = new HashMap<String, AutoPose>();
         poses.put("BLUE_DEPOT_START", new AutoPose(0,0,0));
@@ -216,6 +236,26 @@ public class RobotProfile {
         public double lateralMultiplier;
         public double maxVel;
         public double maxAcc;
+    }
+
+    public class HubVisionParameters {
+        public int CROP_TOP;
+        public int CROP_BOTTOM;
+        public Scalar MASK_LOW;
+        public Scalar MASK_HIGH;
+        public int FINAL_WIDTH;  // pixels on image of the pole
+        public int FINAL_CENTER;    // pixels from left
+        public double FINAL_DIST;  // inch camera to pole
+        // When it's 20 inches away from the drop off
+        public int DIST_WIDTH;     // pixels on the image of the pole
+        public int DIST_CENTER;  // pixels from left
+        public int DIST_INCH;     // inches camera to pole
+        public int MIN_LINE_GAP;
+        public int MAX_LINE_CANDIDATES;
+        public int CENTER_Y;
+        public int MIN_AREA;
+        public int MIN_HEIGHT;
+        public double errorFactor;
     }
 
     class AutoPose {

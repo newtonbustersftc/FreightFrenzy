@@ -48,19 +48,18 @@ public class DriverOpMode extends OpMode {
         catch (Exception e) {
             System.out.println(e.getStackTrace());
         }
-
         fieldMode = true; //robot starts in field orientation
 
         Logger.init();
         //Obtain the RobotHardware object from factory
         robotHardware = RobotFactory.getRobotHardware(hardwareMap, robotProfile);
-        //robotHardware.initRobotVision();
+        robotHardware.initRobotVision();
         //robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
         //robotHardware.initLeds();   // need to init everytime
        // robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         //ensure lift is reset at the beginning and the end
-
+        robotHardware.getRobotVision().initRearCamera();
         // Based on the Autonomous mode starting position, define the heading offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
         if (prefs.getString(START_POS_MODES_PREF, "NONE").startsWith("RED")) {
@@ -144,6 +143,7 @@ public class DriverOpMode extends OpMode {
             currentTask = new ResetLiftPositionDriverOpModeTask(robotHardware);
             currentTask.prepare();
         }
+
 
         if (gamepad1.y) {
             //robotHardware.openBoxFlap();

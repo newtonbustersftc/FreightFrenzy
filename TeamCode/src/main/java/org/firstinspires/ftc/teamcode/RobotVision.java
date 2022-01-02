@@ -567,16 +567,6 @@ public class RobotVision {
         return lastHubResult;
     }
 
-    /* TODO Move the following to profile */
-    static class HubVisionParameters {
-        public static int CROP_TOP = 5;
-        public static int CROP_BOTTOM = 90;
-        public static Scalar MASK_LOW = new Scalar(230, 50, 20);
-        public static Scalar MASK_HIGH = new Scalar(10, 255, 255);
-        public static int MIN_AREA = 600;
-        public static int MIN_HEIGHT=50;
-    }
-
     class HubAutodriveVision2 extends OpenCvPipeline {
         Mat hsvMat = new Mat();
         Mat maskMat = new Mat();
@@ -599,25 +589,25 @@ public class RobotVision {
             HubVisionMathModel model = new HubVisionMathModel();
 
             // 0. Crop the middle part
-            Mat workMat = input.submat(new Rect(0, HubVisionParameters.CROP_TOP, input.width(), HubVisionParameters.CROP_BOTTOM));
+            Mat workMat = input.submat(new Rect(0, robotProfile.hvParam.CROP_TOP, input.width(), robotProfile.hvParam.CROP_BOTTOM));
             // 1. Convert input to HSV
             Imgproc.cvtColor(workMat, hsvMat, Imgproc.COLOR_RGB2HSV_FULL);
 
             // 2. Create MASK
-            if (HubVisionParameters.MASK_LOW.val[0] > HubVisionParameters.MASK_HIGH.val[0]) {
+            if (robotProfile.hvParam.MASK_LOW.val[0] > robotProfile.hvParam.MASK_HIGH.val[0]) {
                 // RED situation
                 Mat maskMat1 = new Mat();
                 Mat maskMat2 = new Mat();
-                Core.inRange(hsvMat, HubVisionParameters.MASK_LOW,
-                        new Scalar(255, HubVisionParameters.MASK_HIGH.val[1], HubVisionParameters.MASK_HIGH.val[2]), maskMat1);
-                Core.inRange(hsvMat, new Scalar(0, HubVisionParameters.MASK_LOW.val[1], HubVisionParameters.MASK_LOW.val[2]),
-                        HubVisionParameters.MASK_HIGH, maskMat2);
+                Core.inRange(hsvMat, robotProfile.hvParam.MASK_LOW,
+                        new Scalar(255, robotProfile.hvParam.MASK_HIGH.val[1], robotProfile.hvParam.MASK_HIGH.val[2]), maskMat1);
+                Core.inRange(hsvMat, new Scalar(0, robotProfile.hvParam.MASK_LOW.val[1], robotProfile.hvParam.MASK_LOW.val[2]),
+                        robotProfile.hvParam.MASK_HIGH, maskMat2);
                 Core.add(maskMat1, maskMat2, maskMat);
                 maskMat1.release();
                 maskMat2.release();
             } else {
                 // Non RED situation
-                Core.inRange(hsvMat, HubVisionParameters.MASK_LOW, HubVisionParameters.MASK_HIGH, maskMat);
+                Core.inRange(hsvMat, robotProfile.hvParam.MASK_LOW, robotProfile.hvParam.MASK_HIGH, maskMat);
             }
             Imgproc.dilate(maskMat, dilatedMat, new Mat());
             List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
@@ -627,9 +617,9 @@ public class RobotVision {
             while (each.hasNext()) {
                 MatOfPoint wrapper = each.next();
                 double area = Imgproc.contourArea(wrapper);
-                if (area > HubVisionParameters.MIN_AREA) {
+                if (area > robotProfile.hvParam.MIN_AREA) {
                     Rect rec = Imgproc.boundingRect(wrapper);
-                    if (rec.height>HubVisionParameters.MIN_HEIGHT) {
+                    if (rec.height> robotProfile.hvParam.MIN_HEIGHT) {
                         model.addRect(rec);
                     }
                     if (saveImage) {    // update drawing only when saving the picture
@@ -684,24 +674,24 @@ public class RobotVision {
             HubVisionMathModel model = new HubVisionMathModel();
 
             // 0. Crop the middle part
-            Mat workMat = input.submat(new Rect(0, HubVisionParameters.CROP_TOP, input.width(), HubVisionParameters.CROP_BOTTOM));
+            Mat workMat = input.submat(new Rect(0, robotProfile.hvParam.CROP_TOP, input.width(), robotProfile.hvParam.CROP_BOTTOM));
             // 1. Convert input to HSV
             Imgproc.cvtColor(workMat, hsvMat, Imgproc.COLOR_RGB2HSV_FULL);
 
             // 2. Create MASK
-            if (HubVisionParameters.MASK_LOW.val[0]>HubVisionParameters.MASK_HIGH.val[0]) {
+            if (robotProfile.hvParam.MASK_LOW.val[0]>robotProfile.hvParam.MASK_HIGH.val[0]) {
                 // RED situation
-                Core.inRange(hsvMat, HubVisionParameters.MASK_LOW,
-                        new Scalar(255, HubVisionParameters.MASK_HIGH.val[1],HubVisionParameters.MASK_HIGH.val[2]), maskMat1);
-                Core.inRange(hsvMat, new Scalar(0, HubVisionParameters.MASK_LOW.val[1], HubVisionParameters.MASK_LOW.val[2]),
-                        HubVisionParameters.MASK_HIGH, maskMat2);
+                Core.inRange(hsvMat, robotProfile.hvParam.MASK_LOW,
+                        new Scalar(255, robotProfile.hvParam.MASK_HIGH.val[1],robotProfile.hvParam.MASK_HIGH.val[2]), maskMat1);
+                Core.inRange(hsvMat, new Scalar(0, robotProfile.hvParam.MASK_LOW.val[1], robotProfile.hvParam.MASK_LOW.val[2]),
+                        robotProfile.hvParam.MASK_HIGH, maskMat2);
                 Core.add(maskMat1, maskMat2, maskMat);
                 maskMat1.release();
                 maskMat2.release();
             }
             else {
                 // Non RED situation
-                Core.inRange(hsvMat, HubVisionParameters.MASK_LOW, HubVisionParameters.MASK_HIGH, maskMat);
+                Core.inRange(hsvMat, robotProfile.hvParam.MASK_LOW, robotProfile.hvParam.MASK_HIGH, maskMat);
             }
             // 3. Dilate to fill the gaps
             Imgproc.dilate(maskMat, dilatedMat, new Mat());
@@ -717,8 +707,8 @@ public class RobotVision {
             System.out.println("Got lines: " + lines.rows());
             for (int i = 0; i < lines.rows(); i++) {
                 double[] val = lines.get(i, 0);
-//                Point tmpStartP = new Point(val[0], val[1] + HubVisionParameters.CROP_TOP);
-//                Point tmpEndP = new Point(val[2], val[3] + HubVisionParameters.CROP_TOP);
+//                Point tmpStartP = new Point(val[0], val[1] + robotProfile.hvParam.CROP_TOP);
+//                Point tmpEndP = new Point(val[2], val[3] + robotProfile.hvParam.CROP_TOP);
                 model.addLine((int)val[0], (int)val[1], (int)val[2], (int)val[3]);
 //                if (Math.abs(val[0]-val[2])<10) {
 //                    Imgproc.line(clone, tmpStartP, tmpEndP, DRAW_COLOR2, 1);
