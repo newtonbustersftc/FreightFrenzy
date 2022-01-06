@@ -69,6 +69,54 @@
     "maxVel": 30,
     "maxAcc": 30
   },
+  "hvParam": {
+    "cropTop": 5,
+    "cropBottom": 90,
+    "maskLowRed": {
+      "val": [
+        230.0,
+        150.0,
+        50.0,
+        0.0
+      ]
+    },
+    "maskHighRed": {
+      "val": [
+        10.0,
+        255.0,
+        255.0,
+        0.0
+      ]
+    },
+    "maskLowBlue": {
+      "val": [
+        150.0,
+        50.0,
+        20.0,
+        0.0
+      ]
+    },
+    "maskHighBlue": {
+      "val": [
+        180.0,
+        255.0,
+        255.0,
+        0.0
+      ]
+    },
+    "finalWidth": 53,
+    "finalCenter": 80,
+    "finalDist": 11.0,
+    "awayWidth": 20,
+    "awayCenter": 170,
+    "awayDist": 30,
+    "minLineGap": 5,
+    "maxLineCandidates": 4,
+    "centerY": 70,
+    "minArea": 600,
+    "minHeight": 50,
+    "errorFactor": 0.1
+  },
   "poses": {
     "BLUE_DEPOT_START": {
       "x": 0,
@@ -157,23 +205,18 @@
     },
     "RED_DUCK_PREHUB": {
       "x": 0,
-      "y": 3,
+      "y": 6,
       "heading": 180.0
     },
     "RED_DUCK_HUB": {
-      "x": 19,
-      "y": 25,
-      "heading": 70.0
+      "x": 11.25,
+      "y": 26.25,
+      "heading": 55
     },
     "RED_DUCK_CAROUSEL": {
-      "x": -19,
-      "y": 7,
-      "heading": 235.0
-    },
-    "RED_DUCK_AFTERCAROUSEL": {
-      "x": -10.0,
-      "y": 19.0,
-      "heading": 315.0
+      "x": -21.5,
+      "y": 4.75,
+      "heading": 225
     },
     "RED_DUCK_PREWALL": {
       "x": 56,
@@ -196,14 +239,14 @@
       "heading": 0.0
     },
     "RED_DUCK_PREPARKSTORAGE": {
-      "x": 0,
-      "y": 2,
-      "heading": 270.0
+      "x": 11.5,
+      "y": 23,
+      "heading": 55
     },
     "RED_DUCK_PARKSTORAGE": {
-      "x": 0,
-      "y": 22,
-      "heading": 0.0
+      "x": -23,
+      "y": 28,
+      "heading": 180.0
     },
     "BLUE_DUCK_START": {
       "x": 0,

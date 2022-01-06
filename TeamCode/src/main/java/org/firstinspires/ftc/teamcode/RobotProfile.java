@@ -102,22 +102,25 @@ public class RobotProfile {
         cvParam.maskUpperV = 255;
         cvParam.minArea = 5;
 
-        hvParam.CROP_TOP = 5;
-        hvParam.CROP_BOTTOM = 90;
-        hvParam.MASK_LOW = new Scalar(230, 50, 20);
-        hvParam.MASK_HIGH = new Scalar(10, 255, 255);
-        hvParam.FINAL_WIDTH = 58;
-        hvParam.FINAL_CENTER = 80;
-        hvParam.FINAL_DIST = 11.0;
-        hvParam.DIST_WIDTH = 20;
-        hvParam.DIST_CENTER = 170;
-        hvParam.DIST_INCH = 30;
-        hvParam.MIN_LINE_GAP = 5;
-        hvParam.MAX_LINE_CANDIDATES = 4;
-        hvParam.CENTER_Y = 70;
+        hvParam = new HubVisionParameters();
+        hvParam.cropTop = 5;
+        hvParam.cropBottom = 90;
+        hvParam.maskLowRed = new Scalar(230, 50, 20);
+        hvParam.maskHighRed = new Scalar(10, 255, 255);
+        hvParam.maskLowBlue = new Scalar(150, 50, 20);
+        hvParam.maskHighBlue = new Scalar(180, 255, 255);
+        hvParam.finalWidth = 58;
+        hvParam.finalCenter = 80;
+        hvParam.finalDist = 11.0;
+        hvParam.awayWidth = 20;
+        hvParam.awayCenter = 170;
+        hvParam.awayDist = 30;
+        hvParam.minLineGap = 5;
+        hvParam.maxLineCandidates = 4;
+        hvParam.centerY = 70;
         hvParam.errorFactor = 0.1;
-        hvParam.MIN_AREA = 600;
-        hvParam.MIN_HEIGHT = 50;
+        hvParam.minArea = 600;
+        hvParam.minHeight = 50;
 
         poses = new HashMap<String, AutoPose>();
         poses.put("BLUE_DEPOT_START", new AutoPose(0,0,0));
@@ -239,22 +242,24 @@ public class RobotProfile {
     }
 
     public class HubVisionParameters {
-        public int CROP_TOP;
-        public int CROP_BOTTOM;
-        public Scalar MASK_LOW;
-        public Scalar MASK_HIGH;
-        public int FINAL_WIDTH;  // pixels on image of the pole
-        public int FINAL_CENTER;    // pixels from left
-        public double FINAL_DIST;  // inch camera to pole
+        public int cropTop;
+        public int cropBottom;
+        public Scalar maskLowRed;
+        public Scalar maskHighRed;
+        public Scalar maskLowBlue;
+        public Scalar maskHighBlue;
+        public int finalWidth;  // pixels on image of the pole
+        public int finalCenter;    // pixels from left
+        public double finalDist;  // inch camera to pole
         // When it's 20 inches away from the drop off
-        public int DIST_WIDTH;     // pixels on the image of the pole
-        public int DIST_CENTER;  // pixels from left
-        public int DIST_INCH;     // inches camera to pole
-        public int MIN_LINE_GAP;
-        public int MAX_LINE_CANDIDATES;
-        public int CENTER_Y;
-        public int MIN_AREA;
-        public int MIN_HEIGHT;
+        public int awayWidth;     // pixels on the image of the pole
+        public int awayCenter;  // pixels from left
+        public int awayDist;     // inches camera to pole
+        public int minLineGap;
+        public int maxLineCandidates;
+        public int centerY;
+        public int minArea;
+        public int minHeight;
         public double errorFactor;
     }
 

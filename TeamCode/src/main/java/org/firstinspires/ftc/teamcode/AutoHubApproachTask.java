@@ -58,7 +58,7 @@ public class AutoHubApproachTask implements RobotControl {
             return true;
         }
 
-        if (r.width> profile.hvParam.FINAL_WIDTH-5) {
+        if (r.width> profile.hvParam.finalWidth -5) {
             return true;
         }
         return false;
@@ -71,7 +71,7 @@ public class AutoHubApproachTask implements RobotControl {
     public void execute() {
         HubVisionMathModel.Result r = robotVision.getLastHubResult();
         if (r!=null) {
-            double pwr = (power - minPower) * (profile.hvParam.FINAL_WIDTH - r.width) / profile.hvParam.FINAL_WIDTH + minPower;
+            double pwr = (power - minPower) * (profile.hvParam.finalWidth - r.width) / profile.hvParam.finalWidth + minPower;
             Logger.logFile("AutoHub " + r + " pwr:" + pwr);
             robot.mecanumDrive2(pwr, Math.PI, r.getAngleCorrection());
         }
