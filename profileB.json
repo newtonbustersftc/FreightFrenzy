@@ -203,20 +203,30 @@
       "y": 0,
       "heading": 180.0
     },
-    "RED_DUCK_PREHUB": {
+    "RED_DUCK_PRECAROUSEL": {
       "x": 0,
       "y": 6,
       "heading": 180.0
-    },
-    "RED_DUCK_HUB": {
-      "x": 11.25,
-      "y": 26.25,
-      "heading": 55
     },
     "RED_DUCK_CAROUSEL": {
       "x": -21.5,
       "y": 4.75,
       "heading": 225
+    },
+    "RED_DUCK_AFTER_CAROUSEL": {
+      "x": -18,
+      "y": 3,
+      "heading": 0
+    },
+    "RED_DUCK_PREHUB": {
+      "x": -18,
+      "y": 30,
+      "heading": 90
+    },
+    "RED_DUCK_HUB": {
+      "x": -3,
+      "y": 40,
+      "heading": 0
     },
     "RED_DUCK_PREWALL": {
       "x": 56,
@@ -239,12 +249,12 @@
       "heading": 0.0
     },
     "RED_DUCK_PREPARKSTORAGE": {
-      "x": 11.5,
-      "y": 23,
-      "heading": 55
+      "x": -25,
+      "y": 40,
+      "heading": 180
     },
     "RED_DUCK_PARKSTORAGE": {
-      "x": -23,
+      "x": -25,
       "y": 28,
       "heading": 180.0
     },
@@ -253,25 +263,30 @@
       "y": 0,
       "heading": 180.0
     },
-    "BLUE_DUCK_PREHUB": {
+    "BLUE_DUCK_PRECAROUSEL": {
       "x": 0,
-      "y": -3,
+      "y": -6,
       "heading": 180.0
     },
-    "BLUE_DUCK_HUB": {
-      "x": 19,
-      "y": -23.5,
-      "heading": 290.0
-    },
     "BLUE_DUCK_CAROUSEL": {
-      "x": -24,
-      "y": -8,
+      "x": -21.5,
+      "y": -4.75,
       "heading": 135.0
     },
     "BLUE_DUCK_AFTERCAROUSEL": {
-      "x": -8.0,
-      "y": -19.0,
-      "heading": 60.0
+      "x": -18.0,
+      "y": -3,
+      "heading": 0
+    },
+    "BLUE_DUCK_PREHUB": {
+      "x": -18,
+      "y": -30,
+      "heading": 270.0
+    },
+    "BLUE_DUCK_HUB": {
+      "x": -3,
+      "y": -40,
+      "heading": 0.0
     },
     "BLUE_DUCK_PREWALL": {
       "x": 56,
@@ -294,14 +309,14 @@
       "heading": 0.0
     },
     "BLUE_DUCK_PREPARKSTORAGE": {
-      "x": -10,
-      "y": -10,
-      "heading": 60.0
+      "x": -25,
+      "y": -40,
+      "heading": 0.0
     },
     "BLUE_DUCK_PARKSTORAGE": {
-      "x": -20,
-      "y": -22,
-      "heading": 0.0
+      "x": -25,
+      "y": -28,
+      "heading": 180.0
     }
   }
 }

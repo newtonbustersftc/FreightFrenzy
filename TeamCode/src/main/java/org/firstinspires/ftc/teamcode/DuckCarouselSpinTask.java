@@ -28,7 +28,7 @@ public class DuckCarouselSpinTask implements RobotControl {
 
     @Override
     public boolean isDone() {
-        if((System.currentTimeMillis() - begin) > 3000){
+        if((System.currentTimeMillis() - begin) > 2500){
             return true;
         }
         return false;

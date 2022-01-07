@@ -539,7 +539,7 @@ public class RobotVision {
     int nHubPic = 0;
     long lastTime = 0;
     double lastTps = 0;
-    public void initRearCamera() {
+    public void initRearCamera(boolean isRed) {
         lastHubResult = null;
         rearCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam2"));
         rearCamera.setMillisecondsPermissionTimeout(2500);
@@ -550,7 +550,7 @@ public class RobotVision {
                 public void onOpened() {
                     RobotLog.i("RearCamera opened");
                     Logger.logFile("RearCamera opened");
-                    rearCamera.setPipeline(new HubAutodriveVision2(false));
+                    rearCamera.setPipeline(new HubAutodriveVision2(isRed));
                 }
 
                 @Override

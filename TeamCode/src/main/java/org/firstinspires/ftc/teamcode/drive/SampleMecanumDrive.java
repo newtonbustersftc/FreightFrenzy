@@ -205,6 +205,14 @@ public class SampleMecanumDrive extends MecanumDrive {
         );
     }
 
+    public TrajectorySequenceBuilder trajectorySequenceBuilder(Pose2d startPose, TrajectoryVelocityConstraint velConstraint) {
+        return new TrajectorySequenceBuilder(
+                startPose,
+                velConstraint, accelConstraint,
+                MAX_ANG_VEL, MAX_ANG_ACCEL
+        );
+    }
+
 
     public void turnAsync(double angle) {
 //        double heading = getPoseEstimate().getHeading();
@@ -272,6 +280,7 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     public void update() {
         updatePoseEstimate();
+
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (signal != null) setDriveSignal(signal);
     }
