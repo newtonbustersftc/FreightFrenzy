@@ -3,8 +3,10 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 /**
  * SplineMoveTask
@@ -15,11 +17,18 @@ public class SplineMoveTask implements RobotControl {
 
     SampleMecanumDrive drive;
     Trajectory trajectory;
+    TrajectorySequence trajectorySequence;
     Pose2d targetPose;
+    TrajectoryVelocityConstraint velocityConstraint;
 
     public SplineMoveTask(SampleMecanumDrive drive, Trajectory trajectory){
         this.drive = drive;
         this.trajectory = trajectory;
+        targetPose = null;
+    }
+    public SplineMoveTask(SampleMecanumDrive drive, TrajectorySequence trajectory){
+        this.drive = drive;
+        this.trajectorySequence = trajectory;
         targetPose = null;
     }
 
@@ -29,7 +38,10 @@ public class SplineMoveTask implements RobotControl {
     }
 
     public String toString() {
-        return "SplineMove " + trajectory.start() + " -> " + trajectory.end();
+        if(trajectorySequence == null)
+            return "SplineMove " + trajectory.start() + " -> " + trajectory.end() ;
+        else
+            return "SplineMove " + trajectorySequence.start() + " -> " + trajectorySequence.end() ;
     }
 
     public boolean isDone(){
@@ -41,10 +53,18 @@ public class SplineMoveTask implements RobotControl {
             Pose2d currPose = drive.getPoseEstimate();
             double ang = Math.atan2(targetPose.getX() - currPose.getX(), targetPose.getY() - currPose.getY());
             boolean forward = Math.abs(currPose.getHeading() - ang) < Math.PI / 2;
-            trajectory = drive.trajectoryBuilder(currPose, !forward)
-                            .splineToSplineHeading(targetPose, targetPose.getHeading()).build();
+            if (trajectorySequence == null) {
+                trajectory = drive.trajectoryBuilder(currPose, !forward)
+                        .splineToSplineHeading(targetPose, targetPose.getHeading()).build();
+            }else{
+                trajectorySequence = drive.trajectorySequenceBuilder(currPose)
+                        .splineToSplineHeading(targetPose, targetPose.getHeading()).build();
+            }
         }
-        drive.followTrajectoryAsync(trajectory);
+        if(trajectorySequence == null)
+            drive.followTrajectoryAsync(trajectory);
+        else
+            drive.followTrajectorySequenceAsync(trajectorySequence);
     }
 
     public void execute() {

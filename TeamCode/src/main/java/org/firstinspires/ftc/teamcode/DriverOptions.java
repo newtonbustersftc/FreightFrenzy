@@ -4,8 +4,8 @@ package org.firstinspires.ftc.teamcode;
         private int delay;
         private String startingPositionModes;
         private String parking;
+        private int delay_parking;
         private String deliveryRoutes;
-        private boolean doCarousel;
         private int alliance;
 
         public String getStartingPositionModes() {
@@ -44,11 +44,16 @@ package org.firstinspires.ftc.teamcode;
             this.delay = delay;
         }
 
-        public void setDoCarousel(boolean doCarousel){ this.doCarousel = doCarousel; }
-
-        public boolean isDoCarousel(){ return doCarousel;}
-
         public int getAlliance(){
            return alliance;
         }
+
+        public int getDelay_parking() {
+            return delay_parking;
+        }
+
+        public void setDelay_parking(int delay_parking) {
+            this.delay_parking = delay_parking;
+        }
+
     }
