@@ -55,10 +55,12 @@ public class AutoHubApproachTask implements RobotControl {
     public boolean isDone(){
         HubVisionMathModel.Result r = robotVision.getLastHubResult();
         if (r==null) {
+            robotVision.saveNextImage();
             return true;
         }
 
         if (r.width> profile.hvParam.finalWidth -5) {
+            robotVision.saveNextImage();
             return true;
         }
         return false;
