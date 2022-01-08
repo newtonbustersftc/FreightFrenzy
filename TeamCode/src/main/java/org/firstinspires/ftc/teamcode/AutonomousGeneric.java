@@ -60,14 +60,22 @@ public class AutonomousGeneric extends LinearOpMode {
             String delayString = prefs.getString("delay", "0").replace(" sec", "");
             driverOptions.setDelay(Integer.parseInt(delayString));
             Logger.logFile("delay: " + driverOptions.getDelay());
+            String freightDeliveryCount = prefs.getString("freightDeliveryCount", "0").replace(" sec", "");
+            driverOptions.setFreightDeliveryCount(Integer.parseInt(freightDeliveryCount));
+            Logger.logFile("delay: " + driverOptions.getFreightDeliveryCount());
+
 
             driverOptions.setStartingPositionModes(prefs.getString("starting position", ""));
             driverOptions.setParking(prefs.getString("parking", ""));
             driverOptions.setDeliveryRoutes(prefs.getString("delivery routes", ""));
-
+            String delay_parking = prefs.getString("delay parking", "0").replace( " sec", "");
+            driverOptions.setDelayParking(Integer.parseInt(delay_parking));
+            driverOptions.setParkingOnly(prefs.getString("park only", ""));
             Logger.logFile("starting position: " + driverOptions.getStartingPositionModes());
             Logger.logFile("parking: " + driverOptions.getParking());
+            Logger.logFile("parking_delay: " + driverOptions.getDelayParking());
             Logger.logFile("delivery route: " + driverOptions.getDeliveryRoutes());
+            Logger.logFile("park only: " + driverOptions.getParkingOnly());
         }
         catch (Exception e) {
             RobotLog.e("SharedPref exception " + e);
@@ -81,6 +89,8 @@ public class AutonomousGeneric extends LinearOpMode {
         initRobot();
         robotHardware.setMotorStopBrake(false); // so we can adjust the robot00
         robotHardware.initRobotVision();
+        robotHardware.getRobotVision().initRearCamera(driverOptions.getStartingPositionModes().contains("RED"));  //boolean isRed
+
         robotHardware.resetLiftPositionAutonomous();
         long loopStart = System.currentTimeMillis();
         long loopCnt = 0;
@@ -98,10 +108,12 @@ public class AutonomousGeneric extends LinearOpMode {
             if (loopCnt%10000==0) {
                 RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(false);
                 telemetry.addData("goal",goal);
-                telemetry.addData("CurrPose", currPose);
+//                telemetry.addData("CurrPose", currPose);
                 telemetry.addData("T265 CFD:",  ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence());
                 telemetry.addData("LoopTPS:", (loopCnt * 1000 / (System.currentTimeMillis() - loopStart)));
                 telemetry.addData("Profile:", robotProfile.fileDateStr);
+                telemetry.addData("Starting Position:", driverOptions.getStartingPositionModes());
+                telemetry.addData("Parking:", driverOptions.getParking());
                 telemetry.update();
             }
         }
@@ -129,6 +141,8 @@ public class AutonomousGeneric extends LinearOpMode {
         if (taskList.size() > 0) {
             taskList.get(0).prepare();
         }
+
+        robotHardware.robotVision.startRearCamera();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive() && taskList.size()>0) {
@@ -167,6 +181,8 @@ public class AutonomousGeneric extends LinearOpMode {
         }
         catch (Exception ex) {
         }
+
+        robotHardware.getRobotVision().stopRearCamera();
         robotHardware.stopAll();
         robotHardware.setMotorStopBrake(false);
     }
