@@ -7,6 +7,7 @@ public class DriverOptions {
     private int delayParking;
     private String deliveryRoutes;
     private int alliance;
+    private String parkingOnly;
     private int freightDeliveryCount;
 
     public String getParkingOnly() {
@@ -17,7 +18,7 @@ public class DriverOptions {
         this.parkingOnly = parkingOnly;
     }
 
-    private String parkingOnly;
+    public int getFreightDeliveryCount() { return freightDeliveryCount; }
 
     public void setFreightDeliveryCount(int freightDeliveryCount) {
         this.freightDeliveryCount = freightDeliveryCount;
@@ -70,7 +71,5 @@ public class DriverOptions {
     public void setDelayParking(int delayParking) {
         this.delayParking = delayParking;
     }
-
-        public int getFreightDeliveryCount() { return freightDeliveryCount; }
 
 }

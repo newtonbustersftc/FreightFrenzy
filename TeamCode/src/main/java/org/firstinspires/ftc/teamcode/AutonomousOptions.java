@@ -25,6 +25,7 @@ public class AutonomousOptions extends OpMode {
     public static final String DELAY_PARKING_PREF = "delay parking";
     public static final String DELIVERY_ROUTES_PREF = "delivery routes";
     public static final String PARK_ONLY_PREF = "park only";
+    public static final String FREIGHT_DELIVERY_COUNT_PREF = "freight delivery count";
 
     // ADD preference values here
     public static final String[] START_POS_MODES = {"BLUE_DUCK", "BLUE_DEPOT", "RED_DUCK", "RED_DEPOT"};
@@ -34,9 +35,10 @@ public class AutonomousOptions extends OpMode {
     public static final String[] DELIVERY_ROUTES = {"RED_ROUTE_WALL", "BLUE_ROUTE_WALL", "RED_ROUTE_CENTRAL", "BLUE_ROUTE_CENTRAL"};
     public static final String[] PARK_ONLY = {"PARK_ONLY", "NONE"};
     private static final String NONE = "none";
+    public static final String[] FREIGHT_DELIVERY_COUNT = {"0","1","2","3","4"};
 
     public static Map<String, String[]> prefMap = new HashMap<>();
-    private static String[] prefKeys = {START_POS_MODES_PREF, DELAY_PREF, PARKING_PREF, DELAY_PARKING_PREF, DELIVERY_ROUTES_PREF, PARK_ONLY_PREF};
+    private static String[] prefKeys = {START_POS_MODES_PREF, DELAY_PREF, PARKING_PREF, DELAY_PARKING_PREF, DELIVERY_ROUTES_PREF, PARK_ONLY_PREF,FREIGHT_DELIVERY_COUNT_PREF};
     private static int keyIdx = 0;
 
     //private static String[] prefKeys = prefMap.keySet().toArray(new String[prefMap.keySet().size()]);
@@ -49,6 +51,7 @@ public class AutonomousOptions extends OpMode {
         prefMap.put(DELAY_PARKING_PREF, DELAYS_PARKING);
         prefMap.put(DELIVERY_ROUTES_PREF, DELIVERY_ROUTES);
         prefMap.put(PARK_ONLY_PREF, PARK_ONLY);
+        prefMap.put(FREIGHT_DELIVERY_COUNT_PREF,FREIGHT_DELIVERY_COUNT);
     }
 
 //    static {
@@ -138,7 +141,7 @@ public class AutonomousOptions extends OpMode {
         if (gamepad1.dpad_up && !isUpPressed) {
             int nextKeyIdx = keyIdx - 1;
 
-            if (nextKeyIdx <= 0 && gamepad1.dpad_up) {
+            if (nextKeyIdx < 0 && gamepad1.dpad_up) {
                 keyIdx = prefKeys.length - 1;
             } else {
                 keyIdx = nextKeyIdx;
@@ -172,7 +175,7 @@ public class AutonomousOptions extends OpMode {
         if (gamepad1.dpad_left && !isLeftPressed) {
             selectionIdx--;  //value[] idx
 
-            if (selectionIdx <= 0 && gamepad1.dpad_left) {
+            if (selectionIdx < 0 && gamepad1.dpad_left) {
                 selectionIdx = array.length-1;
             }
 
