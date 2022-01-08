@@ -4,9 +4,15 @@ package org.firstinspires.ftc.teamcode;
         private int delay;
         private String startingPositionModes;
         private String parking;
-        private int delay_parking;
+        private int delayParking;
         private String deliveryRoutes;
         private int alliance;
+
+        public void setFreightDeliveryCount(int freightDeliveryCount) {
+            this.freightDeliveryCount = freightDeliveryCount;
+        }
+
+        private int freightDeliveryCount;
 
         public String getStartingPositionModes() {
             return startingPositionModes;
@@ -48,12 +54,14 @@ package org.firstinspires.ftc.teamcode;
            return alliance;
         }
 
-        public int getDelay_parking() {
-            return delay_parking;
+        public int getDelayParking() {
+            return delayParking;
         }
 
-        public void setDelay_parking(int delay_parking) {
-            this.delay_parking = delay_parking;
+        public void setDelayParking(int delayParking) {
+            this.delayParking = delayParking;
         }
+
+        public int getFreightDeliveryCount() { return freightDeliveryCount; }
 
     }

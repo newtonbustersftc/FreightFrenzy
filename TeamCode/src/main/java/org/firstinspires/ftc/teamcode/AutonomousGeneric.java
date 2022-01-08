@@ -64,6 +64,9 @@ public class AutonomousGeneric extends LinearOpMode {
             driverOptions.setStartingPositionModes(prefs.getString("starting position", ""));
             driverOptions.setParking(prefs.getString("parking", ""));
             driverOptions.setDeliveryRoutes(prefs.getString("delivery routes", ""));
+            String freightDeliveryCount = prefs.getString("freightDeliveryCount", "0").replace(" sec", "");
+            driverOptions.setFreightDeliveryCount(Integer.parseInt(freightDeliveryCount));
+            Logger.logFile("delay: " + driverOptions.getFreightDeliveryCount());
 
             Logger.logFile("starting position: " + driverOptions.getStartingPositionModes());
             Logger.logFile("parking: " + driverOptions.getParking());
@@ -98,10 +101,12 @@ public class AutonomousGeneric extends LinearOpMode {
             if (loopCnt%10000==0) {
                 RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(false);
                 telemetry.addData("goal",goal);
-                telemetry.addData("CurrPose", currPose);
+//                telemetry.addData("CurrPose", currPose);
                 telemetry.addData("T265 CFD:",  ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence());
                 telemetry.addData("LoopTPS:", (loopCnt * 1000 / (System.currentTimeMillis() - loopStart)));
                 telemetry.addData("Profile:", robotProfile.fileDateStr);
+                telemetry.addData("Starting Position:", driverOptions.getStartingPositionModes());
+                telemetry.addData("Parking:", driverOptions.getParking());
                 telemetry.update();
             }
         }
