@@ -590,6 +590,7 @@ public class RobotVision {
 
         @Override
         public Mat processFrame(Mat input) {
+            model = new HubVisionMathModel(robotProfile);
             // 0. Crop the middle part
             Mat workMat = input.submat(new Rect(0, robotProfile.hvParam.cropTop, input.width(), robotProfile.hvParam.cropBottom));
             // 1. Convert input to HSV
