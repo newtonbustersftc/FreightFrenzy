@@ -9,6 +9,17 @@ public class DriverOptions {
     private int alliance;
     private String parkingOnly;
     private int freightDeliveryCount;
+    private boolean isDuckParkingCCW;
+
+    public boolean isDuckParkingCCW() {
+        return isDuckParkingCCW;
+    }
+
+    public void setDuckParking(boolean duckParkingCCW) {
+        this.isDuckParkingCCW = duckParkingCCW;
+    }
+
+
 
     public String getParkingOnly() {
         return parkingOnly;

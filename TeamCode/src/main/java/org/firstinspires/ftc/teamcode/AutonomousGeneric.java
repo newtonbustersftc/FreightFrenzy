@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.ftccommon.SoundPlayer;
@@ -64,18 +65,25 @@ public class AutonomousGeneric extends LinearOpMode {
             driverOptions.setFreightDeliveryCount(Integer.parseInt(freightDeliveryCount));
             Logger.logFile("delay: " + driverOptions.getFreightDeliveryCount());
 
-
             driverOptions.setStartingPositionModes(prefs.getString("starting position", ""));
             driverOptions.setParking(prefs.getString("parking", ""));
             driverOptions.setDeliveryRoutes(prefs.getString("delivery routes", ""));
             String delay_parking = prefs.getString("delay parking", "0").replace( " sec", "");
             driverOptions.setDelayParking(Integer.parseInt(delay_parking));
             driverOptions.setParkingOnly(prefs.getString("park only", ""));
+            String duckParking = prefs.getString("duck parking", "");
+            if(driverOptions.getStartingPositionModes().contains("RED")){
+                driverOptions.setDuckParking(duckParking.equals("CCW") ? true : false);
+            }else if(driverOptions.getStartingPositionModes().contains("BLUE")) {
+                driverOptions.setDuckParking(duckParking.equals("CW") ? true : false);
+            }
+
             Logger.logFile("starting position: " + driverOptions.getStartingPositionModes());
             Logger.logFile("parking: " + driverOptions.getParking());
             Logger.logFile("parking_delay: " + driverOptions.getDelayParking());
             Logger.logFile("delivery route: " + driverOptions.getDeliveryRoutes());
             Logger.logFile("park only: " + driverOptions.getParkingOnly());
+            Logger.logFile("Is duck parking counter clockwise: " + driverOptions.isDuckParkingCCW());
         }
         catch (Exception e) {
             RobotLog.e("SharedPref exception " + e);

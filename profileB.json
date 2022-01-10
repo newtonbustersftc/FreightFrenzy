@@ -57,7 +57,9 @@
     "liftPositionTop":1950,
     "liftMotorPower": 1.0,
     "boxFlapOpen":0.25,
-    "boxFlapClose": 0.6
+    "boxFlapClose": 0.6,
+    "rearCameraMinPower": 0.15,
+    "cameraHubDistance": 8
   },
   "rrParam": {
     "kA": 0.0,
@@ -233,15 +235,25 @@
       "y": 44,
       "heading": 180.0
     },
-    "RED_DUCK_PRE_PARK_0": {
+    "RED_DUCK_PRE_PARK_CW_0": {
       "x": -3,
       "y": 52,
       "heading": 90
     },
-    "RED_DUCK_PRE_PARK_1": {
+    "RED_DUCK_PRE_PARK_CW_1": {
       "x": 50,
       "y": 60,
       "heading": 0
+    },
+    "RED_DUCK_PRE_PARK_CCW_0": {
+      "x": -20,
+      "y": 25,
+      "heading": 270.0
+    },
+    "RED_DUCK_PRE_PARK_CCW_1": {
+      "x": -15,
+      "y": 12,
+      "heading": 0.0
     },
     "RED_DUCK_PREWALL": {
       "x": 50,
@@ -308,15 +320,25 @@
       "y": -44,
       "heading": 180.0
     },
-    "BLUE_DUCK_PRE_PARK_0": {
+    "BLUE_DUCK_PRE_PARK_CW_0": {
       "x": -3,
       "y": -52,
       "heading": 270
     },
-    "BLUE_DUCK_PRE_PARK_1": {
+    "BLUE_DUCK_PRE_PARK_CW_1": {
       "x": 50,
       "y": -60,
       "heading": 0
+    },
+    "BLUE_DUCK_PRE_PARK_CCW_0": {
+      "x": -20,
+      "y": -25,
+      "heading": 90.0
+    },
+    "BLUE_DUCK_PRE_PARK_CCW_1": {
+      "x": -15,
+      "y": -12,
+      "heading": 0.0
     },
     "BLUE_DUCK_PREWALL": {
       "x": 50,

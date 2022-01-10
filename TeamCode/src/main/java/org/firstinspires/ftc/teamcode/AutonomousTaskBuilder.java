@@ -1,17 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.Lifecycle;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
-//import com.arcrobotics.ftclib.geometry.Vector2d;
-//import org.firstinspires.ftc.teamcode.
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.AngleMath;
 
 import java.util.ArrayList;
@@ -199,7 +193,9 @@ public class AutonomousTaskBuilder {
         taskList.add(par6);
     }
 
-    public void buildDuckTasks(String startPosStr){
+    public void buildDuckTasks(String startPosStr) {
+        Pose2d preParkPos_0 = null, preParkPos_1 = null;
+
         TrajectoryVelocityConstraint velConstraints = SampleMecanumDrive.getVelocityConstraint(15, 15, 10.25);
         TrajectoryVelocityConstraint fastVelConstraints = SampleMecanumDrive.getVelocityConstraint(25, 25, 10.25);
         TrajectoryVelocityConstraint slowVelConstraints = SampleMecanumDrive.getVelocityConstraint(11, 11, 10.25);
@@ -213,20 +209,23 @@ public class AutonomousTaskBuilder {
         Pose2d preHubPos2 = robotProfile.getProfilePose(startPosStr + "_PREHUB_2");
         Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_HUB");
         Pose2d afterHubEstimatePos = robotProfile.getProfilePose(startPosStr + "_AFTER_HUB_ESTIMATE");
-        Pose2d preParkPos_0 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_0");
-        Pose2d preParkPos_1 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_1");
+        boolean isDuckParkingCCW = driverOptions.isDuckParkingCCW();
 
-        if (parking.endsWith("WALL")) {
-            preParkPos = robotProfile.getProfilePose(startPosStr + "_PREWALL");
-            parkPos = robotProfile.getProfilePose(startPosStr + "_PARKWALL");
-        }
-        else if(parking.endsWith("CENTRAL")) {
-            preParkPos = robotProfile.getProfilePose(startPosStr + "_PRE_CENTRAL");
-            parkPos = robotProfile.getProfilePose(startPosStr + "_PARK_CENTRAL");
-        }
-        else if(parking.contains("STORAGE")){
+        if(parking.contains("STORAGE")){
             preParkPos = robotProfile.getProfilePose(startPosStr + "_PREPARKSTORAGE");
             parkPos = robotProfile.getProfilePose(startPosStr + "_PARKSTORAGE");
+        }else{   //choice of park Wall or Central
+            if(!isDuckParkingCCW){
+                preParkPos_0 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_CW_0");
+                preParkPos_1 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_CW_1");
+            }else {
+                preParkPos_0 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_CCW_0");
+                preParkPos_1 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_CCW_1");
+            }
+            preParkPos = parking.contains("WALL") ? robotProfile.getProfilePose(startPosStr + "_PREWALL")
+                                                  : robotProfile.getProfilePose(startPosStr + "_PRE_CENTRAL");
+            parkPos = parking.contains("WALL") ? parkPos = robotProfile.getProfilePose(startPosStr + "_PARKWALL")
+                                               : robotProfile.getProfilePose(startPosStr + "_PARK_CENTRAL");
         }
 
         Trajectory traj0 = drive.trajectoryBuilder(startPos)
@@ -268,20 +267,22 @@ public class AutonomousTaskBuilder {
             taskList.add(new SplineMoveTask(drive, traj4));
         } else {   //wall or central parking
             Trajectory traj3 = drive.trajectoryBuilder(afterHubEstimatePos)
-                                .splineTo(preParkPos_0.vec(),preParkPos_0.getHeading())
-                                .splineTo(preParkPos_1.vec(), preParkPos_1.getHeading())
-                                .build();
+                    .splineTo(preParkPos_0.vec(), preParkPos_0.getHeading())
+                    .splineTo(preParkPos_1.vec(), preParkPos_1.getHeading())
+                    .build();
             taskList.add(new SplineMoveTask(drive, traj3));
 
+            if (isDuckParkingCCW && delay_parking>0){
+                taskList.add(new RobotSleep(delay_parking * 1000));
+            }
+
             Trajectory traj4 = drive.trajectoryBuilder(preParkPos_1)
-                                .strafeTo(preParkPos.vec())
-                                .build();
+                    .strafeTo(preParkPos.vec())
+                    .build();
             taskList.add(new SplineMoveTask(drive, traj4));
-
-
             Trajectory traj5 = drive.trajectoryBuilder(preParkPos)
-                                .splineTo(parkPos.vec(), parkPos.getHeading(), fastVelConstraints, accConstraint)
-                                .build();
+                    .splineTo(parkPos.vec(), parkPos.getHeading(), fastVelConstraints, accConstraint)
+                    .build();
             taskList.add(new SplineMoveTask(drive, traj5));
         }
     }

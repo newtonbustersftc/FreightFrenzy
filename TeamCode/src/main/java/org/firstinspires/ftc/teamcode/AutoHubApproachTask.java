@@ -16,7 +16,8 @@ public class AutoHubApproachTask implements RobotControl {
     transient double pathDistance = 0;
     transient double targetAngle;
     transient double lastToTargetDist;
-    transient double minPower = 0.2;
+    transient double minPower;
+    transient double cameraHubDistance;
 
     public AutoHubApproachTask(RobotHardware robot, RobotProfile profile){
         this.robot = robot;
@@ -30,6 +31,8 @@ public class AutoHubApproachTask implements RobotControl {
         }
         prevNdx = 0;
         loopCount = 0;
+        minPower = profile.hardwareSpec.rearCameraMinPower;
+        cameraHubDistance = profile.hardwareSpec.cameraHubDistance;
     }
 
     public String toString() {
@@ -59,7 +62,7 @@ public class AutoHubApproachTask implements RobotControl {
             return true;
         }
 
-        if (r.width> profile.hvParam.finalWidth -5) {
+        if (r.width> profile.hvParam.finalWidth - cameraHubDistance) {
             robot.setMotorPower(0,0,0,0);
             robotVision.saveNextImage();
             return true;
