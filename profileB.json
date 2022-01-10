@@ -209,24 +209,34 @@
       "heading": 180.0
     },
     "RED_DUCK_CAROUSEL": {
-      "x": -22.5,
+      "x": -21.5,
       "y": 5.5,
-      "heading": 225
+      "heading": 220
     },
-    "RED_DUCK_PREHUB": {
-      "x": -18,
-      "y": 28,
-      "heading": 90
+    "RED_DUCK_PREHUB_1": {
+      "x": -15,
+      "y": 12,
+      "heading": 90.0
+    },
+    "RED_DUCK_PREHUB_2": {
+      "x": -20,
+      "y": 25,
+      "heading": 90.0
     },
     "RED_DUCK_HUB": {
       "x": 0,
       "y": 44,
       "heading": 0
     },
+    "RED_DUCK_AFTER_HUB_ESTIMATE": {
+      "x": 8,
+      "y": 44,
+      "heading": 180.0
+    },
     "RED_DUCK_PRE_PARK_0": {
-      "x": 20,
-      "y": 60,
-      "heading": 0
+      "x": -3,
+      "y": 52,
+      "heading": 90
     },
     "RED_DUCK_PRE_PARK_1": {
       "x": 50,
@@ -244,7 +254,7 @@
       "heading": 0.0
     },
     "RED_DUCK_PRE_CENTRAL": {
-      "x": 45,
+      "x": 50,
       "y": 25,
       "heading": 0
     },
@@ -278,20 +288,30 @@
       "y": -9,
       "heading": 165.0
     },
-    "BLUE_DUCK_PREHUB": {
-      "x": -18,
-      "y": -28,
-      "heading": 90.0
+    "BLUE_DUCK_PREHUB_1": {
+      "x": -15,
+      "y": -12,
+      "heading": 270.0
+    },
+    "BLUE_DUCK_PREHUB_2": {
+      "x": -20,
+      "y": -25,
+      "heading": 270.0
     },
     "BLUE_DUCK_HUB": {
-      "x": 0,
+      "x": -6,
       "y": -44,
       "heading": 0.0
     },
+    "BLUE_DUCK_AFTER_HUB_ESTIMATE": {
+      "x": 8,
+      "y": -44,
+      "heading": 180.0
+    },
     "BLUE_DUCK_PRE_PARK_0": {
-      "x": 20,
-      "y": -60,
-      "heading": 0
+      "x": -3,
+      "y": -52,
+      "heading": 270
     },
     "BLUE_DUCK_PRE_PARK_1": {
       "x": 50,

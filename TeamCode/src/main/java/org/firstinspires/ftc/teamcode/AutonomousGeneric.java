@@ -141,7 +141,7 @@ public class AutonomousGeneric extends LinearOpMode {
         if (taskList.size() > 0) {
             taskList.get(0).prepare();
         }
-
+        robotHardware.setMotorStopBrake(true);
         robotHardware.robotVision.startRearCamera();
 
         // run until the end of the match (driver presses STOP)

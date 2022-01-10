@@ -60,6 +60,7 @@ public class AutoHubApproachTask implements RobotControl {
         }
 
         if (r.width> profile.hvParam.finalWidth -5) {
+            robot.setMotorPower(0,0,0,0);
             robotVision.saveNextImage();
             return true;
         }
