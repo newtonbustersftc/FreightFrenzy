@@ -10,6 +10,7 @@ import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Transform2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -48,7 +49,8 @@ public class RobotHardware {
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
     ExpansionHubMotor liftMotor, duckMotor, intakeMotor;
     DigitalChannel led1, led2;
-    ExpansionHubServo boxFlapServo;
+    ExpansionHubServo boxFlapServo, boxLidServo;
+    ColorSensor colorSensor;
     DigitalChannel liftBottom;
     ExpansionHubEx expansionHub1, expansionHub2;
     RevBulkData bulkData1, bulkData2;
@@ -109,7 +111,15 @@ public class RobotHardware {
         liftBottom.setMode(DigitalChannel.Mode.INPUT);
 
         boxFlapServo = (ExpansionHubServo)hardwareMap.servo.get("BoxFlap");
-
+        try {
+            boxLidServo = (ExpansionHubServo)hardwareMap.servo.get("BoxLid");
+            colorSensor = hardwareMap.get(ColorSensor.class, "ColorSensor");
+            Logger.logFile("Got BoxLid and ColorSensor");
+        }
+        catch (Exception ex) {
+            boxLidServo = null;
+            colorSensor = null;
+        }
         Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
         getBulkData1();
         getBulkData2();
@@ -129,6 +139,8 @@ public class RobotHardware {
         realSenseLocalizer = new RealSenseLocalizer(this, true, profile);
         mecanumDrive.setLocalizer(realSenseLocalizer);
         robotVision = new RobotVision();
+        closeBoxFlap();
+        closeLid();
 
         currLiftPos = LiftPosition.NOT_INIT;
     }
@@ -357,7 +369,7 @@ public class RobotHardware {
 
     public void liftUp() {
         currLiftPos = currLiftPos.next();
-        if(currLiftPos ==LiftPosition.ZERO) {
+        if(currLiftPos==LiftPosition.ZERO) {
             currLiftPos = currLiftPos.next(); //goes up to Bottom
         }
         setLiftPosition(currLiftPos);
@@ -380,6 +392,7 @@ public class RobotHardware {
         getBulkData1();
         getBulkData2();
         closeBoxFlap();
+        closeLid();
         int currLiftPos = getEncoderCounts(RobotHardware.EncoderType.LIFT);
         if(!liftBottomTouched())
             setLiftMotorPosition(currLiftPos - 3000);
@@ -424,8 +437,17 @@ public class RobotHardware {
         }
     }
 
-    public void closeBoxFlap(){
+    public void
+    closeBoxFlap(){
         boxFlapServo.setPosition(profile.hardwareSpec.boxFlapClose);
+    }
+
+    public void closeLid() {
+        boxLidServo.setPosition(profile.hardwareSpec.lidClose);
+    }
+
+    public void openLid() {
+        boxLidServo.setPosition(profile.hardwareSpec.lidOpen);
     }
 
     public LiftPosition getCurrLiftPos() {
@@ -454,4 +476,10 @@ public class RobotHardware {
             BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
         }
     }
+
+    int getColorSensorAlpha() {
+        return colorSensor.alpha();
+    }
+
+
 }

@@ -89,9 +89,12 @@ public class RobotProfile {
         hardwareSpec.liftMotorPower = 0.3;
         hardwareSpec.boxFlapOpen = 0.25;
         hardwareSpec.boxFlapClose = 0.35;
+        hardwareSpec.lidOpen = 0.34;
+        hardwareSpec.lidClose = 0.45;
         hardwareSpec.dropToHubTime = 2000;
         hardwareSpec.rearCameraMinPower = 0.15;
         hardwareSpec.cameraHubDistance = 8;
+        hardwareSpec.emptyBoxAlpha = 150;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -229,9 +232,12 @@ public class RobotProfile {
         double liftMotorPower;
         double boxFlapOpen;
         double boxFlapClose;
+        double lidOpen;
+        double lidClose;
         int dropToHubTime;
         double rearCameraMinPower;
         double cameraHubDistance;
+        int emptyBoxAlpha;
     }
 
     public class RoadRunnerParam {

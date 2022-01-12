@@ -57,7 +57,7 @@ public class AutoHubApproachTask implements RobotControl {
      */
     public boolean isDone(){
         HubVisionMathModel.Result r = robotVision.getLastHubResult();
-        if (r==null) {
+        if (r==null || r.result== HubVisionMathModel.RecognitionResult.NONE) {
             robotVision.saveNextImage();
             return true;
         }
@@ -76,7 +76,7 @@ public class AutoHubApproachTask implements RobotControl {
 
     public void execute() {
         HubVisionMathModel.Result r = robotVision.getLastHubResult();
-        if (r!=null) {
+        if (r!=null && r.result!= HubVisionMathModel.RecognitionResult.NONE) {
             double pwr = (power - minPower) * (profile.hvParam.finalWidth - r.width) / profile.hvParam.finalWidth + minPower;
             Logger.logFile("AutoHub " + r + " pwr:" + pwr);
             robot.mecanumDrive2(pwr, Math.PI, r.getAngleCorrection());

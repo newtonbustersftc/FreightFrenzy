@@ -369,6 +369,76 @@
       "x": -24,
       "y": -28,
       "heading": 180.0
+    },
+    "RED_AUTO_HUB_DELIVERY_START": {
+      "x": 0,
+      "y": 0,
+      "heading": 270
+    },
+    "RED_WAREHOUSE_PICKUP": {
+      "x": 0,
+      "y": -20,
+      "heading": 270
+    },
+    "RED_CENTRAL_PRE_HUB_0": {
+      "x": 0,
+      "y": -5,
+      "heading": 270
+    },
+    "RED_CENTRAL_PRE_HUB_1": {
+      "x": -20,
+      "y": -14,
+      "heading": 180
+    },
+    "RED_CENTRAL_HUB": {
+      "x": -60,
+      "y": 5,
+      "heading": 180
+    },
+    "BLUE_AUTO_HUB_DELIVERY_START": {
+      "x": 0,
+      "y": 0,
+      "heading": 90
+    },
+    "BLUE_WAREHOUSE_PICKUP": {
+      "x": 0,
+      "y": 25,
+      "heading": 90
+    },
+    "BLUE_CENTRAL_PRE_HUB_0": {
+      "x": -24,
+      "y": 5,
+      "heading": 0
+    },
+    "BLUE_CENTRAL_PRE_HUB_1": {
+      "x": -56,
+      "y": 5,
+      "heading": 0
+    },
+    "BLUE_CENTRAL_HUB": {
+      "x": -56,
+      "y": -8,
+      "heading": 0
+    },
+    "BLUE_SHARE_START":{
+      "x": 0,
+      "y": 0,
+      "heading": 90
+    },
+    "BLUE_SHARE_PRE_HUB_0":{
+      "x": 0,
+      "y": -20,
+      "heading": 90
+    },
+    "BLUE_SHARE_PRE_HUB_1":{
+      "x": 0,
+      "y": -35,
+      "heading": 90
+    },
+    "BLUE_SHARE_HUB":{
+      "x": 8,
+      "y": -42,
+      "heading": 45
     }
   }
 }

@@ -28,9 +28,12 @@ public class DriverOpModeTest extends OpMode {
 
     Pose2d currPose;
     double fieldHeadingOffset;
-    boolean dpadLeftDown = false;
-    boolean dpadRightDown = false;
-    double flapServoPos = 0.6;
+    boolean upPressed = false;
+    boolean downPressed = false;
+    double flapServoPos = 0.3;
+    double lidServoPos = 0.45;
+    boolean rightPressed = false;
+    boolean leftPressed = false;
     boolean yPressed = false;
     boolean xPressed = false;
     boolean aPressed = false;
@@ -43,6 +46,8 @@ public class DriverOpModeTest extends OpMode {
         try{
             robotProfile = RobotProfile.loadFromFile(new File("/sdcard/FIRST/profile.json"));
         } catch (Exception e) {
+            Logger.logFile("Exception " + e);
+            e.printStackTrace();
         }
 
         fieldMode = true;
@@ -52,7 +57,7 @@ public class DriverOpModeTest extends OpMode {
         robotHardware.initRobotVision();
         robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
-        robotVision.initRearCamera();
+        robotVision.initRearCamera(false);  //boolean isRed
         try {
             Thread.sleep(100);
         }
@@ -73,6 +78,7 @@ public class DriverOpModeTest extends OpMode {
         Logger.logFile("StartPos:" + startPosStr);
         isRedTeam = startPosStr.toUpperCase(Locale.ROOT).startsWith("RED");
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
+        robotHardware.resetLiftPositionAutonomous();
     }
 
     @Override
@@ -90,7 +96,7 @@ public class DriverOpModeTest extends OpMode {
         } else if (gamepad1.right_trigger > 0) {
             fieldMode = false;  //good luck driving
         }
-        // testHardware();
+        //testHardware();
         testHubVision();
 
         if (currentTask != null) {
@@ -164,21 +170,24 @@ public class DriverOpModeTest extends OpMode {
     private void testHardware() {
         // test lift
         int currLiftPos = robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT);
-        if (gamepad1.dpad_up) {
+        if (gamepad1.dpad_up && !upPressed) {
             robotHardware.setLiftMotorPosition(currLiftPos+20);
-
         }
-        if (gamepad1.dpad_down) {
+        upPressed = gamepad1.dpad_up;
+        if (gamepad1.dpad_down && !downPressed) {
             robotHardware.setLiftMotorPosition(currLiftPos-20);
         }
-        // test duck motor
-        if (gamepad1.dpad_right) {
-            robotHardware.duckMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robotHardware.duckMotor.setVelocity(500);
+        downPressed = gamepad1.dpad_down;
+        if (gamepad1.dpad_left && !leftPressed) {
+            lidServoPos = lidServoPos - 0.02;
+            robotHardware.boxLidServo.setPosition(lidServoPos);
         }
-        else {
-            robotHardware.stopDuck();
+        leftPressed = gamepad1.dpad_left;
+        if (gamepad1.dpad_right && !rightPressed) {
+            lidServoPos = lidServoPos + 0.02;
+            robotHardware.boxLidServo.setPosition(lidServoPos);
         }
+        rightPressed = gamepad1.dpad_right;
         // test flapServo
         if (gamepad1.x && !xPressed) {
             flapServoPos = flapServoPos - 0.02;
@@ -191,13 +200,10 @@ public class DriverOpModeTest extends OpMode {
         }
         yPressed = gamepad1.y;
         // test localizer reset
-        if(gamepad1.a && !aPressed){
-            (robotHardware.getLocalizer()).setPoseEstimate(new Pose2d());
-        }
-        aPressed = gamepad1.a;
-        telemetry.addData("Velo:", robotHardware.getLocalizer().getPoseVelocity());
+        telemetry.addData("Alpha:", robotHardware.getColorSensorAlpha());
         telemetry.addData("Lift:", currLiftPos);
         telemetry.addData("Flap:", flapServoPos);
+        telemetry.addData("Lid:", lidServoPos);
     }
 
     public void testHubVision() {

@@ -59,7 +59,6 @@ public class DriverOpMode extends OpMode {
         //robotHardware.initLeds();   // need to init everytime
        // robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
         //ensure lift is reset at the beginning and the end
-        robotHardware.getRobotVision().initRearCamera();
         // Based on the Autonomous mode starting position, define the heading offset for field mode
         SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
         if (prefs.getString(START_POS_MODES_PREF, "NONE").startsWith("RED")) {
@@ -75,6 +74,8 @@ public class DriverOpMode extends OpMode {
         Logger.logFile("DriverOpMode: " + prefs.getString(START_POS_MODES_PREF, "NONE"));
         Logger.logFile("IMU Offset is " + Math.toDegrees(imuAngleOffset));
         Logger.logFile("Current IMU Angle " + Math.toDegrees(robotHardware.getImuHeading()));
+
+        robotHardware.getRobotVision().initRearCamera(isRedTeam);
 
         setupCombos();
     }
