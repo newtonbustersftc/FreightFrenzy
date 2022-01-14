@@ -13,6 +13,7 @@ public class DeliverToHubTask implements RobotControl {
     @Override
     public void prepare() {
         robotHardware.openBoxFlap();
+        Logger.logFile("box open");
         startTime = System.currentTimeMillis();
     }
 

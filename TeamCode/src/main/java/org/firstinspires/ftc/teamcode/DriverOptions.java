@@ -5,17 +5,36 @@ public class DriverOptions {
     private String startingPositionModes;
     private String parking;
     private int delayParking;
-    private String deliveryRoutes;
     private int alliance;
     private String parkingOnly;
     private int freightDeliveryCount;
     private boolean isDuckParkingCCW;
 
+    public boolean isSetDeliver_to_hub_using_opencv() {
+        return setDeliver_to_hub_using_opencv;
+    }
+
+    public void setSetDeliver_to_hub_using_opencv(boolean setDeliver_to_hub_using_opencv) {
+        this.setDeliver_to_hub_using_opencv = setDeliver_to_hub_using_opencv;
+    }
+
+    private boolean setDeliver_to_hub_using_opencv;
+
+    public boolean isDeliver_to_hub_using_opencv() {
+        return deliver_to_hub_using_opencv;
+    }
+
+    public void setDeliver_to_hub_using_opencv(boolean deliver_to_hub_using_opencv) {
+        this.deliver_to_hub_using_opencv = deliver_to_hub_using_opencv;
+    }
+
+    private boolean deliver_to_hub_using_opencv;
+
     public boolean isDuckParkingCCW() {
         return isDuckParkingCCW;
     }
 
-    public void setDuckParking(boolean duckParkingCCW) {
+    public void setDuckParkingDirection(boolean duckParkingCCW) {
         this.isDuckParkingCCW = duckParkingCCW;
     }
 
@@ -53,14 +72,6 @@ public class DriverOptions {
 
     public void setParking(String parking) {
         this.parking = parking;
-    }
-
-    public String getDeliveryRoutes() {
-        return deliveryRoutes;
-    }
-
-    public void setDeliveryRoutes(String deliveryRoutes) {
-        this.deliveryRoutes = deliveryRoutes;
     }
 
     public int getDelay() {

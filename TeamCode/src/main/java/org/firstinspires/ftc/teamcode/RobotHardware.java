@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Log;
 
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Pose2dKt;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Transform2d;
@@ -32,7 +29,7 @@ import java.text.DecimalFormat;
 
 public class RobotHardware {
     public enum LiftPosition {
-        NOT_INIT, ZERO, BOTTOM, INTERMEDIATE, MIDDLE, TOP;
+        NOT_INIT, ZERO, ONE, BOTTOM, MIDDLE, TOP;
         private static LiftPosition[] vals = values();
 
         public LiftPosition next() {
@@ -138,7 +135,7 @@ public class RobotHardware {
         }
         realSenseLocalizer = new RealSenseLocalizer(this, true, profile);
         mecanumDrive.setLocalizer(realSenseLocalizer);
-        robotVision = new RobotVision();
+        robotVision = new RobotVision(this, profile);
         closeBoxFlap();
         closeLid();
 
@@ -149,11 +146,14 @@ public class RobotHardware {
         return t265;
     }
 
+    public HardwareMap getHardwareMap() {
+        return hardwareMap;
+    }
     /**
      * We need this because Vuforia end of OpMode run because losing camera context
      */
     public void initRobotVision() {
-        robotVision.init(hardwareMap, this, profile);
+        robotVision.init();
     }
 
     public RobotVision getRobotVision() {
@@ -186,6 +186,10 @@ public class RobotHardware {
     public int getEncoderCounts(EncoderType encoder) {
         if(encoder == EncoderType.LIFT) {
             return liftMotor.getCurrentPosition();
+        }else if(encoder == EncoderType.LEFT_WHEEL){
+            return rlMotor.getCurrentPosition();
+        }else if(encoder == EncoderType.RIGHT_WHEEL){
+            return rrMotor.getCurrentPosition();
         }
         return 0;
     }
@@ -305,15 +309,35 @@ public class RobotHardware {
     }
 
     public void startIntake() {
+        if (getEncoderCounts(EncoderType.LIFT)>profile.hardwareSpec.liftPositionOne+20) {
+            Logger.logFile("lift count > "+profile.hardwareSpec.liftPositionOne+20);
+            return; // will not start intake unless it is already at ONE
+        }
+        setLiftPosition(LiftPosition.ZERO);
+        openLid();
         intakeMotor.setPower(1);
     }
 
     public void reverseIntake() {
-        intakeMotor.setPower(-1);
+        intakeMotor.setPower(-0.7);
+        closeLid();
+        if (gotFreight()) {
+            setLiftPosition(LiftPosition.BOTTOM);
+        }
+        else {
+            setLiftPosition(LiftPosition.ONE);
+        }
     }
 
     public void stopIntake() {
-        intakeMotor.setPower(0);
+        intakeMotor.setPower(-0.2);
+        closeLid();
+        if (gotFreight()) {
+            setLiftPosition(LiftPosition.BOTTOM);
+        }
+        else {
+            setLiftPosition(LiftPosition.ONE);
+        }
     }
 
     public void startDuckAuto(int alliance) {
@@ -340,21 +364,30 @@ public class RobotHardware {
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
+    public void setLiftMotorPosition(int pos, double power) {
+        liftMotor.setPower(power);
+        liftMotor.setTargetPosition(pos);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
     public void setLiftPosition(LiftPosition pos) {
 //        Logger.logFile("Setting lift position to: " + pos);
         currLiftPos = pos;
         liftMotor.setPower(profile.hardwareSpec.liftMotorPower);
         int newPosNum = 0;
+        closeBoxFlap();
+        if (pos!=LiftPosition.ZERO) {
+            closeLid();
+        }
         switch (pos) {
             case ZERO:
-                closeBoxFlap();
                 newPosNum = profile.hardwareSpec.liftPositionZero;
+                break;
+            case ONE:
+                newPosNum = profile.hardwareSpec.liftPositionOne;
                 break;
             case BOTTOM:
                 newPosNum = profile.hardwareSpec.liftPositionBottom;
-                break;
-            case INTERMEDIATE:
-                newPosNum = profile.hardwareSpec.liftPositionIntermediate;
                 break;
             case MIDDLE:
                 newPosNum = profile.hardwareSpec.liftPositionMiddle;
@@ -370,13 +403,18 @@ public class RobotHardware {
     public void liftUp() {
         currLiftPos = currLiftPos.next();
         if(currLiftPos==LiftPosition.ZERO) {
+            closeLid();
             currLiftPos = currLiftPos.next(); //goes up to Bottom
         }
         setLiftPosition(currLiftPos);
     }
 
+    // No manual move to position Zero unless triggers intake task
     public void liftDown() {
-        setLiftPosition(currLiftPos.prev());
+        if (currLiftPos!=LiftPosition.ONE) {
+            currLiftPos = currLiftPos.prev();
+            setLiftPosition(currLiftPos);
+        }
     }
 
     public boolean isLiftMoving() {
@@ -395,12 +433,11 @@ public class RobotHardware {
         closeLid();
         int currLiftPos = getEncoderCounts(RobotHardware.EncoderType.LIFT);
         if(!liftBottomTouched())
-            setLiftMotorPosition(currLiftPos - 3000);
-        liftMotor.setPower(0.2);
+            setLiftMotorPosition(currLiftPos - 3000, 0.1);
         while (!liftBottomTouched()) {
         }
         resetLiftEncoderCount();
-        setLiftPosition(RobotHardware.LiftPosition.ZERO);
+        setLiftPosition(RobotHardware.LiftPosition.ONE);
     }
 
     /**
@@ -420,7 +457,7 @@ public class RobotHardware {
         }
     }
 
-    public enum EncoderType {LIFT, INTAKE}
+    public enum EncoderType {LIFT, INTAKE, LEFT_WHEEL, RIGHT_WHEEL}
 
     public void setLed1(boolean on) {
         led1.setState(!on);
@@ -432,9 +469,11 @@ public class RobotHardware {
 
     public void openBoxFlap(){
         if (currLiftPos!=LiftPosition.ZERO) {
-            boxFlapServo.setPosition(0.3);
-            //boxFlapServo.setPosition(profile.hardwareSpec.boxFlapOpen);
+            //boxFlapServo.setPosition(0.3);
+            Logger.logFile("lift position:"+currLiftPos);
+            boxFlapServo.setPosition(profile.hardwareSpec.boxFlapOpen);
         }
+        Logger.logFile("lift position:"+currLiftPos);
     }
 
     public void
@@ -443,11 +482,13 @@ public class RobotHardware {
     }
 
     public void closeLid() {
-        boxLidServo.setPosition(profile.hardwareSpec.lidClose);
+        if(boxLidServo != null)
+            boxLidServo.setPosition(profile.hardwareSpec.lidClose);
     }
 
     public void openLid() {
-        boxLidServo.setPosition(profile.hardwareSpec.lidOpen);
+        if(boxLidServo!=null)
+            boxLidServo.setPosition(profile.hardwareSpec.lidOpen);
     }
 
     public LiftPosition getCurrLiftPos() {
@@ -477,9 +518,20 @@ public class RobotHardware {
         }
     }
 
-    int getColorSensorAlpha() {
-        return colorSensor.alpha();
+    public boolean gotFreight() {
+        return getColorSensorAlpha()>profile.hardwareSpec.emptyBoxAlpha;
     }
 
+    int getColorSensorAlpha() {
+        if (colorSensor!=null) {
+            return colorSensor.alpha();
+        }
+        else {
+            return 0;
+        }
+    }
 
+    RobotProfile getRobotProfile() {
+        return profile;
+    }
 }

@@ -49,15 +49,18 @@ public class DriverOpModeTest extends OpMode {
             Logger.logFile("Exception " + e);
             e.printStackTrace();
         }
+        SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
+        String startPosStr = prefs.getString("starting position", "none");
+        Logger.logFile("StartPos:" + startPosStr);
+        isRedTeam = startPosStr.toUpperCase(Locale.ROOT).startsWith("RED");
 
         fieldMode = true;
         Logger.init();
         robotHardware = new RobotHardware();
         robotHardware.init(hardwareMap, robotProfile);
-        robotHardware.initRobotVision();
         robotVision = robotHardware.getRobotVision();
         //robotVision.activateNavigationTarget();
-        robotVision.initRearCamera(false);  //boolean isRed
+        robotVision.initRearCamera(isRedTeam);  //boolean isRed
         try {
             Thread.sleep(100);
         }
@@ -73,12 +76,9 @@ public class DriverOpModeTest extends OpMode {
 // Increase this value to trust encoder odometry less when fusing encoder measurements with VSLAM
         double encoderMeasurementCovariance = 0.8;
 // Set to the starting pose of the robot
-        SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
-        String startPosStr = prefs.getString("starting position", "none");
-        Logger.logFile("StartPos:" + startPosStr);
-        isRedTeam = startPosStr.toUpperCase(Locale.ROOT).startsWith("RED");
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
-        robotHardware.resetLiftPositionAutonomous();
+        currentTask = new ResetLiftPositionDriverOpModeTask(robotHardware);
+        currentTask.prepare();
     }
 
     @Override
@@ -96,7 +96,7 @@ public class DriverOpModeTest extends OpMode {
         } else if (gamepad1.right_trigger > 0) {
             fieldMode = false;  //good luck driving
         }
-        //testHardware();
+        testHardware();
         testHubVision();
 
         if (currentTask != null) {
@@ -213,14 +213,15 @@ public class DriverOpModeTest extends OpMode {
             telemetry.addData("Hub", r);
             telemetry.addData("Err:", r.getAngleCorrection());
         }
-        if (gamepad1.x && !xPressed) {
+        if (gamepad1.a && !aPressed) {
             robotVision.saveNextImage();
         }
-        xPressed = gamepad1.x;
+        aPressed = gamepad1.a;
         telemetry.addData("VidTPS", robotVision.getHubVicTps());
-        if (gamepad1.y && !yPressed) {
+        if (gamepad1.b && !bPressed) {
             currentTask = new AutoHubApproachTask(robotHardware, robotProfile);
             currentTask.prepare();
         }
+        bPressed = gamepad1.b;
     }
 }

@@ -82,6 +82,7 @@ public class RobotProfile {
         hardwareSpec.cameraHeadingOffset = -2.5f;
         hardwareSpec.realSenseAngleModifier = Math.PI/2;
         hardwareSpec.liftPositionZero = 20;
+        hardwareSpec.liftPositionOne = 150;
         hardwareSpec.liftPositionBottom = 540;
         hardwareSpec.liftPositionIntermediate = 900;
         hardwareSpec.liftPositionMiddle = 1200;
@@ -225,6 +226,7 @@ public class RobotProfile {
         double cameraHeadingOffset;
         double realSenseAngleModifier;
         int liftPositionZero;
+        int liftPositionOne;
         int liftPositionBottom;
         int liftPositionIntermediate;
         int liftPositionMiddle;

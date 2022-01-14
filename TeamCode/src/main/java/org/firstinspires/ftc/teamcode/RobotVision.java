@@ -118,13 +118,21 @@ public class RobotVision {
     CVPipeline pipeline = new CVPipeline();
     int imgcnt = 0;
 
-    public void init(HardwareMap hardwareMap, RobotHardware robotHardware, RobotProfile robotProfile){
-        Logger.logFile("RobotVision init()");
-        this.hardwareMap = hardwareMap;
+    public RobotVision(RobotHardware robotHardware, RobotProfile robotProfile) {
+        this.robotHardware = robotHardware;
         this.robotProfile = robotProfile;
+        this.hardwareMap = robotHardware.getHardwareMap();
+    }
+
+    public void init() {
+        init(true);
+    }
+
+    public void init(boolean vuforia){
+        Logger.logFile("RobotVision init()");
         //TODO - enable the following
-        //webcamName = hardwareMap.get(WebcamName.class, "Webcam");
-        //initVuforia();
+        webcamName = hardwareMap.get(WebcamName.class, "Webcam");
+        initVuforia();
         MASK_LOWER_BOUND_H = robotProfile.cvParam.maskLowerH;
         MASK_LOWER_BOUND_S = robotProfile.cvParam.maskLowerS;
         MASK_LOWER_BOUND_V = robotProfile.cvParam.maskLowerV;
@@ -327,11 +335,9 @@ public class RobotVision {
 
     public AutonomousGoal getAutonomousRecognition(boolean keepImg){
         this.saveImage = keepImg;
-        if(vuforia==null){
-            return AutonomousGoal.RIGHT;
-        }else{
-            handleRingImage();
-        }
+
+        handleRingImage();
+
         ArrayList<Rect> rects = pipeline.getRingRecList();
         if(rects.size() == 0) {
             return AutonomousGoal.NONE;

@@ -1,41 +1,60 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.robot.Robot;
+
 public class AutoIntakeTask implements RobotControl{
-
+    enum Mode {
+        INTAKE, REVERSE
+    }
+    Mode mode;
     RobotHardware robotHardware;
-    long begin;
-    long preStop;
-    enum IntakeMode { WAIT_FOR_BLOCK, WAIT_FOR_SPEED, STOP}
-    AutoIntakeTask.IntakeMode currIntakeMode;
+    RobotProfile robotProfile;
+    long startTime, cleanUpTime;
+    long timeOut;
+    Gamepad gamepad;
 
-    public AutoIntakeTask(RobotHardware hardware){
+
+    public AutoIntakeTask(RobotHardware hardware, RobotProfile robotProfile, long timeOut){
         this.robotHardware = hardware;
+        this.robotProfile = robotProfile;
+        this.timeOut = timeOut;
+        Logger.logFile("in AutoIntakeTask");
+    }
+
+    public AutoIntakeTask(RobotHardware hardware, RobotProfile robotProfile, Gamepad gamepad) {
+        this.robotHardware = hardware;
+        this.robotProfile = hardware.getRobotProfile();
+        this.timeOut = 0;
+        this.gamepad = gamepad;
     }
 
     @Override
     public void prepare() {
-        begin = System.currentTimeMillis();
-        robotHardware.startIntake();
-        currIntakeMode = IntakeMode.WAIT_FOR_BLOCK;
+        startTime = System.currentTimeMillis();
+        mode = Mode.INTAKE;
+        // first move the lift down
+        robotHardware.setLiftPosition(RobotHardware.LiftPosition.ZERO);
+        Logger.logFile("in AUtoIntake prepare, lift position: "+robotHardware.getCurrLiftPos());
     }
-    //.5 mils after start if speed < 800 then block has been intaked
-    //after speed go back to 2000 then stop intake
 
     @Override
     public void execute() {
-        if(currIntakeMode == IntakeMode.WAIT_FOR_BLOCK){
-            if((System.currentTimeMillis() - begin) > 500){
-                if(robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE) < 1200){
-                    currIntakeMode = IntakeMode.WAIT_FOR_SPEED;
-                }
+        if (mode==Mode.INTAKE) {
+            if (robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT) < robotProfile.hardwareSpec.liftPositionOne) {
+                Logger.logFile("Starting intake.");
+                robotHardware.startIntake();
             }
-        } else if (currIntakeMode == IntakeMode.WAIT_FOR_SPEED){
-            if(robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE) > 2000){
-                currIntakeMode = IntakeMode.STOP;
-                preStop = System.currentTimeMillis();
+            boolean freight;
+            if ((freight=robotHardware.gotFreight()) ||
+                    (timeOut > 0 && System.currentTimeMillis() - startTime > timeOut) ||
+                    (timeOut == 0 && gamepad.right_trigger == 0)) {
+                Logger.logFile("Reverse intake - freigt: " + freight);
+                mode = Mode.REVERSE;
+                robotHardware.reverseIntake();
+                cleanUpTime = System.currentTimeMillis();
             }
         }
-        //Logger.logFile("intakeEncoder: " + robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE));
     }
 
     @Override
@@ -45,6 +64,11 @@ public class AutoIntakeTask implements RobotControl{
 
     @Override
     public boolean isDone() {
-        return (currIntakeMode == IntakeMode.STOP && (System.currentTimeMillis()-preStop>10));
+        if (mode==Mode.REVERSE) {
+            return System.currentTimeMillis() - cleanUpTime > 500;
+        }
+        else {
+            return false;
+        }
     }
 }
