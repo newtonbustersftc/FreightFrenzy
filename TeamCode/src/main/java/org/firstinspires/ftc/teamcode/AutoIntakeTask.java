@@ -13,6 +13,8 @@ public class AutoIntakeTask implements RobotControl{
     long startTime, cleanUpTime;
     long timeOut;
     Gamepad gamepad;
+    RobotHardware.Freight freight;
+    RobotHardware.LiftPosition endLiftPos = RobotHardware.LiftPosition.ONE;
 
 
     public AutoIntakeTask(RobotHardware hardware, RobotProfile robotProfile, long timeOut){
@@ -45,21 +47,42 @@ public class AutoIntakeTask implements RobotControl{
                 Logger.logFile("Starting intake.");
                 robotHardware.startIntake();
             }
-            boolean freight;
-            if ((freight=robotHardware.gotFreight()) ||
+            freight = robotHardware.gotFreight();
+            if ((RobotHardware.Freight.NONE!=freight) ||
                     (timeOut > 0 && System.currentTimeMillis() - startTime > timeOut) ||
                     (timeOut == 0 && gamepad.right_trigger == 0)) {
                 Logger.logFile("Reverse intake - freigt: " + freight);
+                setEndLiftPos();
                 mode = Mode.REVERSE;
-                robotHardware.reverseIntake();
+                robotHardware.reverseIntake(endLiftPos);
                 cleanUpTime = System.currentTimeMillis();
             }
+        }
+        else {
+            RobotHardware.Freight f = robotHardware.gotFreight();
+            if (f!=freight) {
+                freight = f;
+                setEndLiftPos();
+                robotHardware.setLiftPosition(endLiftPos);
+            }
+        }
+    }
+
+    void setEndLiftPos() {
+        if (freight==RobotHardware.Freight.BALL) {
+            endLiftPos = RobotHardware.LiftPosition.TOP;
+        }
+        else if (freight==RobotHardware.Freight.CUBE) {
+            endLiftPos = RobotHardware.LiftPosition.BOTTOM;
+        }
+        else {
+            endLiftPos = RobotHardware.LiftPosition.ONE;
         }
     }
 
     @Override
     public void cleanUp() {
-        robotHardware.stopIntake();
+        robotHardware.stopIntake(endLiftPos);
     }
 
     @Override

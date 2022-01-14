@@ -63,6 +63,7 @@
     "lidOpen": 0.28,
     "lidClose": 0.43,
     "emptyBoxAlpha": 150,
+    "ballBoxAlpha": 500,
     "cameraHubDistance": 10,
     "rearCameraMinPower": 0.2
   },

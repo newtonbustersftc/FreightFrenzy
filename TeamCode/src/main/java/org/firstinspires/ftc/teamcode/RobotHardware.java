@@ -42,6 +42,10 @@ public class RobotHardware {
     }
     LiftPosition currLiftPos;
 
+    public enum Freight {
+        NONE, CUBE, BALL
+    }
+
     HardwareMap hardwareMap;
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
     ExpansionHubMotor liftMotor, duckMotor, intakeMotor;
@@ -319,25 +323,23 @@ public class RobotHardware {
     }
 
     public void reverseIntake() {
+        reverseIntake(LiftPosition.ONE);
+    }
+
+    public void reverseIntake(LiftPosition pos) {
         intakeMotor.setPower(-0.7);
         closeLid();
-        if (gotFreight()) {
-            setLiftPosition(LiftPosition.BOTTOM);
-        }
-        else {
-            setLiftPosition(LiftPosition.ONE);
-        }
+        setLiftPosition(pos);
     }
 
     public void stopIntake() {
+        stopIntake(LiftPosition.ONE);
+    }
+
+    public void stopIntake(LiftPosition pos) {
         intakeMotor.setPower(-0.2);
         closeLid();
-        if (gotFreight()) {
-            setLiftPosition(LiftPosition.BOTTOM);
-        }
-        else {
-            setLiftPosition(LiftPosition.ONE);
-        }
+        setLiftPosition(pos);
     }
 
     public void startDuckAuto(int alliance) {
@@ -518,8 +520,17 @@ public class RobotHardware {
         }
     }
 
-    public boolean gotFreight() {
-        return getColorSensorAlpha()>profile.hardwareSpec.emptyBoxAlpha;
+    public Freight gotFreight() {
+        int alpha = getColorSensorAlpha();
+        if (alpha>profile.hardwareSpec.ballBoxAlpha) {
+            return Freight.BALL;
+        }
+        else if (alpha>profile.hardwareSpec.emptyBoxAlpha) {
+            return Freight.CUBE;
+        }
+        else {
+            return Freight.NONE;
+        }
     }
 
     int getColorSensorAlpha() {

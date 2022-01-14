@@ -96,6 +96,7 @@ public class RobotProfile {
         hardwareSpec.rearCameraMinPower = 0.15;
         hardwareSpec.cameraHubDistance = 8;
         hardwareSpec.emptyBoxAlpha = 150;
+        hardwareSpec.ballBoxAlpha = 1500;
 
         cvParam = new CVParam();
         cvParam.cropTop = 20;
@@ -240,6 +241,7 @@ public class RobotProfile {
         double rearCameraMinPower;
         double cameraHubDistance;
         int emptyBoxAlpha;
+        int ballBoxAlpha;
     }
 
     public class RoadRunnerParam {
