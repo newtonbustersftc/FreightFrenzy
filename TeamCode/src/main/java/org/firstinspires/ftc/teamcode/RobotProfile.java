@@ -91,6 +91,7 @@ public class RobotProfile {
         hardwareSpec.boxFlapOpen = 0.25;
         hardwareSpec.boxFlapClose = 0.35;
         hardwareSpec.lidOpen = 0.34;
+        hardwareSpec.lidMid = 0.4;
         hardwareSpec.lidClose = 0.45;
         hardwareSpec.dropToHubTime = 2000;
         hardwareSpec.rearCameraMinPower = 0.15;
@@ -236,6 +237,7 @@ public class RobotProfile {
         double boxFlapOpen;
         double boxFlapClose;
         double lidOpen;
+        double lidMid;
         double lidClose;
         int dropToHubTime;
         double rearCameraMinPower;

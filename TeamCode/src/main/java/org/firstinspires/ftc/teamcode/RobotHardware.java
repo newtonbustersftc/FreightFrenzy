@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
@@ -41,6 +40,7 @@ public class RobotHardware {
         }
     }
     LiftPosition currLiftPos;
+    int currLiftEncoder;
 
     public enum Freight {
         NONE, CUBE, BALL
@@ -66,7 +66,6 @@ public class RobotHardware {
     //Rev2mDistanceSensor ;
     RobotProfile profile;
 
-    public int originLiftMotorEncoder;
     boolean isDelivered;
 
     public void init(HardwareMap hardwareMap, RobotProfile profile) {
@@ -378,9 +377,6 @@ public class RobotHardware {
         liftMotor.setPower(profile.hardwareSpec.liftMotorPower);
         int newPosNum = 0;
         closeBoxFlap();
-        if (pos!=LiftPosition.ZERO) {
-            closeLid();
-        }
         switch (pos) {
             case ZERO:
                 newPosNum = profile.hardwareSpec.liftPositionZero;
@@ -398,7 +394,16 @@ public class RobotHardware {
                 newPosNum = profile.hardwareSpec.liftPositionTop;
                 break;
         }
-        liftMotor.setTargetPosition(newPosNum);
+        if (pos!=LiftPosition.ZERO) {
+            if (currLiftEncoder>newPosNum) {
+                keepLidMid();   // when it come from above to lower, mid lid
+            }
+            else {
+                closeLid();     // when move up, close the lid
+            }
+        }
+        currLiftEncoder = newPosNum;
+        liftMotor.setTargetPosition(currLiftEncoder);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
@@ -439,6 +444,7 @@ public class RobotHardware {
         while (!liftBottomTouched()) {
         }
         resetLiftEncoderCount();
+        currLiftEncoder = profile.hardwareSpec.liftPositionMiddle; //so we keep lid at MID
         setLiftPosition(RobotHardware.LiftPosition.ONE);
     }
 
@@ -478,11 +484,10 @@ public class RobotHardware {
         Logger.logFile("lift position:"+currLiftPos);
     }
 
-    public void
-    closeBoxFlap(){
+    public void closeBoxFlap(){
         boxFlapServo.setPosition(profile.hardwareSpec.boxFlapClose);
     }
-
+    
     public void closeLid() {
         if(boxLidServo != null)
             boxLidServo.setPosition(profile.hardwareSpec.lidClose);
@@ -491,6 +496,11 @@ public class RobotHardware {
     public void openLid() {
         if(boxLidServo!=null)
             boxLidServo.setPosition(profile.hardwareSpec.lidOpen);
+    }
+
+    public void keepLidMid(){
+        if(boxLidServo != null)
+            boxLidServo.setPosition(profile.hardwareSpec.lidMid);
     }
 
     public LiftPosition getCurrLiftPos() {

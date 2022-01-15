@@ -329,28 +329,41 @@ public class RobotVision {
         return tfod.getRecognitions();
     }
 */
-    public AutonomousGoal getAutonomousRecognition(){
-        return getAutonomousRecognition(true);
+    public AutonomousGoal getAutonomousRecognition(boolean isRed){
+        return getAutonomousRecognition(true, isRed);
     }
 
-    public AutonomousGoal getAutonomousRecognition(boolean keepImg){
+    public AutonomousGoal getAutonomousRecognition(boolean keepImg, boolean isRed){
         this.saveImage = keepImg;
 
         handleRingImage();
 
         ArrayList<Rect> rects = pipeline.getRingRecList();
-        if(rects.size() == 0) {
-            return AutonomousGoal.NONE;
+
+        if(isRed && rects.size() == 0) {
+            return AutonomousGoal.LEFT;
+        }else if(!isRed && rects.size() == 0){
+            return  AutonomousGoal.RIGHT;
         }
         Rect r = rects.get(0);
-        if(r.x+ r.width/2 < 250) {
-            return AutonomousGoal.LEFT;
+        int objCenter = r.x + r.width/2;
+        if (isRed) {
+            if (objCenter > 400) {
+                return AutonomousGoal.RIGHT;
+            } else if (objCenter > 220) {
+                return AutonomousGoal.MIDDLE;
+            } else {
+                return AutonomousGoal.LEFT;
+            }
         }
-        else if (r.x+r.width/2 > 450) {
-            return AutonomousGoal.RIGHT;
-        }
-        else{
-            return AutonomousGoal.MIDDLE;
+        else {
+            if (objCenter > 450) {
+                return AutonomousGoal.RIGHT;
+            } else if (objCenter  > 220 ) {
+                return AutonomousGoal.MIDDLE;
+            } else {
+                return AutonomousGoal.LEFT;
+            }
         }
     }
 

@@ -9,16 +9,7 @@ public class DriverOptions {
     private String parkingOnly;
     private int freightDeliveryCount;
     private boolean isDuckParkingCCW;
-
-    public boolean isSetDeliver_to_hub_using_opencv() {
-        return setDeliver_to_hub_using_opencv;
-    }
-
-    public void setSetDeliver_to_hub_using_opencv(boolean setDeliver_to_hub_using_opencv) {
-        this.setDeliver_to_hub_using_opencv = setDeliver_to_hub_using_opencv;
-    }
-
-    private boolean setDeliver_to_hub_using_opencv;
+    private boolean deliver_to_hub_using_opencv;
 
     public boolean isDeliver_to_hub_using_opencv() {
         return deliver_to_hub_using_opencv;
@@ -28,7 +19,6 @@ public class DriverOptions {
         this.deliver_to_hub_using_opencv = deliver_to_hub_using_opencv;
     }
 
-    private boolean deliver_to_hub_using_opencv;
 
     public boolean isDuckParkingCCW() {
         return isDuckParkingCCW;

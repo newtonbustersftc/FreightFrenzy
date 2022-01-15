@@ -53,19 +53,20 @@
     "realSenseAngleModifier": 90,
     "liftPositionZero": 10,
     "liftPositionOne": 130,
-    "liftPositionBottom": 700,
+    "liftPositionBottom": 900,
     "liftPositionIntermediate": 1500,
     "liftPositionMiddle":1500,
     "liftPositionTop":2200,
     "liftMotorPower": 1.0,
-    "boxFlapOpen": 0.56,
-    "boxFlapClose": 0.3,
-    "lidOpen": 0.28,
-    "lidClose": 0.43,
+    "boxFlapOpen": 0.575,
+    "boxFlapClose": 0.315,
+    "lidOpen": 0.33,
+    "lidMid": 0.45,
+    "lidClose": 0.65,
     "emptyBoxAlpha": 150,
     "ballBoxAlpha": 500,
     "cameraHubDistance": 10,
-    "rearCameraMinPower": 0.2
+    "rearCameraMinPower": 0.3
   },
   "rrParam": {
     "kA": 0.0,
@@ -84,13 +85,13 @@
       "val": [
         230.0,
         150.0,
-        50.0,
+        100.0,
         0.0
       ]
     },
     "maskHighRed": {
       "val": [
-        10.0,
+        15.0,
         255.0,
         255.0,
         0.0
@@ -98,9 +99,9 @@
     },
     "maskLowBlue": {
       "val": [
-        150.0,
-        50.0,
-        20.0,
+        140.0,
+        100.0,
+        60.0,
         0.0
       ]
     },
@@ -138,8 +139,13 @@
     },
     "BLUE_DEPOT_HUB": {
       "x": -20,
-      "y": -23,
+      "y": -20,
       "heading": 80
+    },
+    "BLUE_DEPOT_AFTER_HUB_ESTIMATE": {
+      "x": -20,
+      "y": -23,
+      "heading": 80.0
     },
     "BLUE_DEPOT_PREWALL": {
       "x": 0,
@@ -188,8 +194,13 @@
     },
     "RED_DEPOT_HUB": {
       "x": -20.5,
-      "y": 25,
+      "y": 19,
       "heading": 290
+    },
+    "RED_DEPOT_AFTER_HUB_ESTIMATE": {
+      "x": -20.5,
+      "y": 23,
+      "heading": 290.0
     },
     "RED_DEPOT_PREWALL": {
       "x": 15,
@@ -244,22 +255,22 @@
     "RED_DUCK_PREHUB_1": {
       "x": -15,
       "y": 12,
-      "heading": 90.0
+      "heading": 270.0
     },
     "RED_DUCK_PREHUB_2": {
       "x": -20,
       "y": 25,
-      "heading": 90.0
+      "heading": 270.0
     },
     "RED_DUCK_HUB": {
       "x": 0,
-      "y": 44,
-      "heading": 0
+      "y": 42,
+      "heading": 180
     },
     "RED_DUCK_AFTER_HUB_ESTIMATE": {
-      "x": 6,
-      "y": 44,
-      "heading": 180.0
+      "x": 5.5,
+      "y": 41,
+      "heading": 180
     },
     "RED_DUCK_PRE_PARK_CW_0": {
       "x": -3,
@@ -322,28 +333,28 @@
       "heading": 180.0
     },
     "BLUE_DUCK_CAROUSEL": {
-      "x": -22,
-      "y": -5.5,
-      "heading": 165.0
+      "x": -24,
+      "y": -6.5,
+      "heading": 170.0
     },
     "BLUE_DUCK_PREHUB_1": {
       "x": -15,
       "y": -12,
-      "heading": 270.0
+      "heading": 90.0
     },
     "BLUE_DUCK_PREHUB_2": {
       "x": -20,
       "y": -25,
-      "heading": 270.0
+      "heading": 90.0
     },
     "BLUE_DUCK_HUB": {
       "x": -6,
-      "y": -40,
-      "heading": 0.0
+      "y": -44,
+      "heading": 180.0
     },
     "BLUE_DUCK_AFTER_HUB_ESTIMATE": {
-      "x": 4,
-      "y": -40,
+      "x": 6,
+      "y": -41.5,
       "heading": 180.0
     },
     "BLUE_DUCK_PRE_PARK_CW_0": {

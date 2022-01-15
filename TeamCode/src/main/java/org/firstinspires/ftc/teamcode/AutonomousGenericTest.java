@@ -92,7 +92,7 @@ public class AutonomousGenericTest extends LinearOpMode {
         }
 
         robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0,0,0));
-        Logger.logFile("Recognition Result: " + robotVision.getAutonomousRecognition());
+        Logger.logFile("Recognition Result: " + robotVision.getAutonomousRecognition(startPosStr.contains("BULE") ? false : true));
         taskList = new ArrayList<RobotControl>();
 //        setupTaskList3();
 //        setupTaskList1();
@@ -307,12 +307,10 @@ public class AutonomousGenericTest extends LinearOpMode {
 
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
 
-        ParallelComboTask par1b = new ParallelComboTask();
         Trajectory traj1d = drive.trajectoryBuilder(hubPos)
                 .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
                 .build();
-        par1b.addTask(new SplineMoveTask(drive, traj1d));
-        taskList.add(par1b);
+        taskList.add(new SplineMoveTask(drive, traj1d));
 
         Trajectory traj1e = drive.trajectoryBuilder(afterHubPos_0)
                 .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
@@ -341,12 +339,10 @@ public class AutonomousGenericTest extends LinearOpMode {
 
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
 
-        ParallelComboTask par2b = new ParallelComboTask();
         Trajectory traj2d = drive.trajectoryBuilder(hubPos)
                 .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
                 .build();
-        par2b.addTask(new SplineMoveTask(drive, traj2d));
-        taskList.add(par2b);
+        taskList.add(new SplineMoveTask(drive, traj2d));
 
         Trajectory traj2e = drive.trajectoryBuilder(afterHubPos_0, true)
                 .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
@@ -375,12 +371,10 @@ public class AutonomousGenericTest extends LinearOpMode {
 
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
 
-        ParallelComboTask par3b = new ParallelComboTask();
         Trajectory traj3d = drive.trajectoryBuilder(hubPos)
                 .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
                 .build();
-        par3b.addTask(new SplineMoveTask(drive, traj3d));
-        taskList.add(par3b);
+        taskList.add(new SplineMoveTask(drive, traj3d));
 
         Trajectory traj3e = drive.trajectoryBuilder(afterHubPos_0, true)
                 .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
@@ -409,12 +403,10 @@ public class AutonomousGenericTest extends LinearOpMode {
 
         taskList.add(new DeliverToHubTask(robotHardware, robotProfile));
 
-        ParallelComboTask par4b = new ParallelComboTask();
         Trajectory traj4d = drive.trajectoryBuilder(hubPos)
                 .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
                 .build();
-        par4b.addTask(new SplineMoveTask(drive, traj4d));
-        taskList.add(par4b);
+        taskList.add(new SplineMoveTask(drive, traj4d));
 
         Trajectory traj4e = drive.trajectoryBuilder(afterHubPos_0)
                 .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())

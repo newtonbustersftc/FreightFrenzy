@@ -29,6 +29,7 @@ public class AutonomousGeneric extends LinearOpMode {
     long loopCount = 0;
     int countTasks = 0;
     private int delay;
+    boolean isRedAlliance = false;
 
     public void initRobot() {
         try {
@@ -79,9 +80,12 @@ public class AutonomousGeneric extends LinearOpMode {
             if(prefs.getString("Deliver to hub using openCV", "").equals("YES")){
                 driverOptions.setDeliver_to_hub_using_opencv(true);
             }else{
-                driverOptions.isSetDeliver_to_hub_using_opencv();
+                driverOptions.setDeliver_to_hub_using_opencv(false);
             }
 
+            if(driverOptions.getStartingPositionModes().contains("RED")) {
+                isRedAlliance = true;
+            }
 
             Logger.logFile("starting position: " + driverOptions.getStartingPositionModes());
             Logger.logFile("parking: " + driverOptions.getParking());
@@ -106,6 +110,30 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware.getRobotVision().initRearCamera(driverOptions.getStartingPositionModes().contains("RED"));  //boolean isRed
 
         robotHardware.resetLiftPositionAutonomous();
+        // reset arm position
+        int warningSoundID = hardwareMap.appContext.getResources().getIdentifier("backing_up", "raw", hardwareMap.appContext.getPackageName());
+        if (warningSoundID != 0) {
+            Logger.logFile("Found warning sound backing_up");
+            if (SoundPlayer.getInstance().preload(hardwareMap.appContext, warningSoundID)) {
+                SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, warningSoundID);
+            }
+        }
+        robotHardware.setLiftMotorPosition(robotProfile.hardwareSpec.liftPositionTop, 0.15);
+        while (robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT)<robotProfile.hardwareSpec.liftPositionTop-20) {
+            try {
+                Thread.sleep(100);
+            }
+            catch (Exception ex) {
+            }
+        }
+        robotHardware.openLid();
+        try {
+            Thread.sleep(3000);
+        }
+        catch (Exception ex) {
+        }
+        robotHardware.closeLid();
+        robotHardware.setLiftPosition(RobotHardware.LiftPosition.ONE);
         long loopStart = System.currentTimeMillis();
         long loopCnt = 0;
 
@@ -120,7 +148,7 @@ public class AutonomousGeneric extends LinearOpMode {
                 robotHardware.getLocalizer().setPoseEstimate(new Pose2d());
             }
             if (loopCnt%10000==0) {
-                RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(false);
+                RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(false, isRedAlliance);
                 telemetry.addData("goal",goal);
 //                telemetry.addData("CurrPose", currPose);
                 telemetry.addData("T265 CFD:",  ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence());
@@ -141,7 +169,7 @@ public class AutonomousGeneric extends LinearOpMode {
 
 //        robotHardware.setMotorStopBrake(true);  // so no sliding when we move
 
-        RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition();
+        RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(isRedAlliance);
         Logger.logFile("recognition result: " + goal);
 
         AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, robotHardware, robotProfile, goal);

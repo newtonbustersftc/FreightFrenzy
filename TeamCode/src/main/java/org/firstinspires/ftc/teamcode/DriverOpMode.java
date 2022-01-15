@@ -43,7 +43,7 @@ public class DriverOpMode extends OpMode {
     // DriveThru combos
     SequentialComboTask intakeAndLift, deliverTask,  sharedHubTask;
     RobotControl currentTask = null;
-
+    String startPosStr ;
 
     @Override
     public void init() {
@@ -80,9 +80,14 @@ public class DriverOpMode extends OpMode {
         Logger.logFile("IMU Offset is " + Math.toDegrees(imuAngleOffset));
         Logger.logFile("Current IMU Angle " + Math.toDegrees(robotHardware.getImuHeading()));
 
-        robotHardware.getRobotVision().initRearCamera(isRedTeam);
+        //robotHardware.getRobotVision().initRearCamera(isRedTeam);
 
+        startPosStr = prefs.getString(START_POS_MODES_PREF, "NONE").contains("BLUE") ? "BLUE" : "RED";
         setupCombos();
+        if (robotHardware.getCurrLiftPos()== RobotHardware.LiftPosition.NOT_INIT) {
+            currentTask = new ResetLiftPositionDriverOpModeTask(robotHardware);
+            currentTask.prepare();
+        }
     }
 
     /**
@@ -211,12 +216,12 @@ public class DriverOpMode extends OpMode {
             fieldMode = true;
         }
 
-        if (gamepad1.left_trigger > 0 && gamepad1.dpad_left) {
-            String startPosStr = "BLUE";
-            robotHardware.getLocalizer().setPoseEstimate(robotProfile.getProfilePose(startPosStr + "_SHARE_START"));
-            currentTask = sharedHubTask;
-            sharedHubTask.prepare();
-        }
+//        if (gamepad1.left_trigger > 0 && gamepad1.dpad_left) {
+//            String startPosStr = START_POS_MODES_PREF.contains("BLUE") ? "BLUE" : "RED";
+//            robotHardware.getLocalizer().setPoseEstimate(robotProfile.getProfilePose(startPosStr + "_SHARE_START"));
+//            currentTask = sharedHubTask;
+//            sharedHubTask.prepare();
+//        }
 
     }
 
@@ -261,162 +266,161 @@ public class DriverOpMode extends OpMode {
 //        intakeAndLift.addTask(new RobotSleep(500));
 //        intakeAndLift.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.MIDDLE));
 
-        sharedHubTask = new SequentialComboTask();
-        TrajectoryVelocityConstraint velConstraints = SampleMecanumDrive.getVelocityConstraint(25, 25, 10.25);
-        TrajectoryVelocityConstraint fastVelConstraints = SampleMecanumDrive.getVelocityConstraint(100, 100, 10.25);
-        TrajectoryVelocityConstraint slowVelConstraints = SampleMecanumDrive.getVelocityConstraint(10, 10, 10.25);
-        TrajectoryAccelerationConstraint accConstraint = SampleMecanumDrive.getAccelerationConstraint((15));
-        SampleMecanumDrive drive = (SampleMecanumDrive) robotHardware.getMecanumDrive();
-        String startPosStr = "BLUE";
-
-        Pose2d startPos = robotProfile.getProfilePose(startPosStr + "_SHARE_START");
-        Pose2d intakePos_0 = robotProfile.getProfilePose(startPosStr + "_SHARE_INTAKE_0");
-        Pose2d intakePos_1 = robotProfile.getProfilePose(startPosStr + "_SHARE_INTAKE_1");
-        Pose2d intakePos_2 = robotProfile.getProfilePose(startPosStr + "_SHARE_INTAKE_2");
-        Pose2d intakePos_3 = robotProfile.getProfilePose(startPosStr + "_SHARE_INTAKE_3");
-        Pose2d preHubPos_1 = robotProfile.getProfilePose(startPosStr + "_SHARE_PRE_HUB_1");
-        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_SHARE_HUB");
-        Pose2d afterHubPos_0 = robotProfile.getProfilePose(startPosStr + "_SHARE_AFTER_HUB");
-
-        Trajectory traj1a = drive.trajectoryBuilder(startPos)
-                .splineToLinearHeading(intakePos_0, intakePos_0.getHeading(), velConstraints, accConstraint)
-                .build();
-        ParallelComboTask par1a = new ParallelComboTask();
-        par1a.addTask(new SplineMoveTask(drive, traj1a));
-        par1a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
-        sharedHubTask.addTask(par1a);
-
-        Trajectory traj1b = drive.trajectoryBuilder(intakePos_0, true)
-                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading() + Math.PI, velConstraints, accConstraint)
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj1b));
-        sharedHubTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.BOTTOM));
-
-        Trajectory traj1c = drive.trajectoryBuilder(preHubPos_1, true)
-                .splineToLinearHeading(hubPos, hubPos.getHeading()+Math.PI,  velConstraints, accConstraint)
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj1c));
-
-        sharedHubTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
-
-        ParallelComboTask par1b = new ParallelComboTask();
-        Trajectory traj1d = drive.trajectoryBuilder(hubPos)
-                .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
-                .build();
-        par1b.addTask(new SplineMoveTask(drive, traj1d));
-        sharedHubTask.addTask(par1b);
-
-        Trajectory traj1e = drive.trajectoryBuilder(afterHubPos_0)
-                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj1e));
-
-//        2nd pickup
-        ParallelComboTask par2a = new ParallelComboTask();
-        Trajectory traj2a = drive.trajectoryBuilder(preHubPos_1)
-                .splineToLinearHeading(intakePos_1, intakePos_1.getHeading())
-                .build();
-        par2a.addTask(new SplineMoveTask(drive, traj2a));
-        par2a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
-        sharedHubTask.addTask(par2a);
-
-        Trajectory traj2b = drive.trajectoryBuilder(intakePos_1, true)
-                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading() + Math.PI, velConstraints, accConstraint)
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj2b));
-        sharedHubTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.BOTTOM));
-
-        Trajectory traj2c = drive.trajectoryBuilder(preHubPos_1, true)
-                .splineToLinearHeading(hubPos, hubPos.getHeading()+Math.PI,  velConstraints, accConstraint)
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj2c));
-
-        sharedHubTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
-
-        ParallelComboTask par2b = new ParallelComboTask();
-        Trajectory traj2d = drive.trajectoryBuilder(hubPos)
-                .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
-                .build();
-        par2b.addTask(new SplineMoveTask(drive, traj2d));
-        sharedHubTask.addTask(par2b);
-
-        Trajectory traj2e = drive.trajectoryBuilder(afterHubPos_0, true)
-                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj2e));
-
-        //3rd pick up
-        Trajectory traj3a = drive.trajectoryBuilder(preHubPos_1)
-                .splineToLinearHeading(intakePos_2, intakePos_2.getHeading())
-                .build();
-        ParallelComboTask par3a = new ParallelComboTask();
-        par3a.addTask(new SplineMoveTask(drive, traj3a));
-        par3a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
-        sharedHubTask.addTask(par3a);
-
-        Trajectory traj3b = drive.trajectoryBuilder(intakePos_2, true)
-                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading() + Math.PI, velConstraints, accConstraint)
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj3b));
-        sharedHubTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.BOTTOM));
-
-        Trajectory traj3c = drive.trajectoryBuilder(preHubPos_1, true)
-                .splineToLinearHeading(hubPos, hubPos.getHeading()+Math.PI,  velConstraints, accConstraint)
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj3c));
-
-        sharedHubTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
-
-        ParallelComboTask par3b = new ParallelComboTask();
-        Trajectory traj3d = drive.trajectoryBuilder(hubPos)
-                .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
-                .build();
-        par3b.addTask(new SplineMoveTask(drive, traj3d));
-        sharedHubTask.addTask(par3b);
-
-        Trajectory traj3e = drive.trajectoryBuilder(afterHubPos_0, true)
-                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj3e));
-
-        //4th pick up
-        ParallelComboTask par4a = new ParallelComboTask();
-        Trajectory traj4a = drive.trajectoryBuilder(preHubPos_1)
-                .splineToLinearHeading(intakePos_3, intakePos_3.getHeading())
-                .build();
-        par4a.addTask(new SplineMoveTask(drive, traj4a));
-        par4a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
-        sharedHubTask.addTask(par4a);
-
-        Trajectory traj4b = drive.trajectoryBuilder(intakePos_3, true)
-                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading() + Math.PI, velConstraints, accConstraint)
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj4b));
-        sharedHubTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.MIDDLE));
-
-        Trajectory traj4c = drive.trajectoryBuilder(preHubPos_1, true)
-                .splineToLinearHeading(hubPos, hubPos.getHeading()+Math.PI,  velConstraints, accConstraint)
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj4c));
-
-        sharedHubTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
-
-        ParallelComboTask par4b = new ParallelComboTask();
-        Trajectory traj4d = drive.trajectoryBuilder(hubPos)
-                .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
-                .build();
-        par4b.addTask(new SplineMoveTask(drive, traj4d));
-        sharedHubTask.addTask(par4b);
-
-        Trajectory traj4e = drive.trajectoryBuilder(afterHubPos_0)
-                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj4e));
-
-        Trajectory traj4f = drive.trajectoryBuilder(preHubPos_1)
-                .splineToLinearHeading(startPos, startPos.getHeading(),  velConstraints, accConstraint)
-                .build();
-        sharedHubTask.addTask(new SplineMoveTask(drive, traj4f));
+//        sharedHubTask = new SequentialComboTask();
+//        TrajectoryVelocityConstraint velConstraints = SampleMecanumDrive.getVelocityConstraint(25, 25, 10.25);
+//        TrajectoryVelocityConstraint fastVelConstraints = SampleMecanumDrive.getVelocityConstraint(100, 100, 10.25);
+//        TrajectoryVelocityConstraint slowVelConstraints = SampleMecanumDrive.getVelocityConstraint(10, 10, 10.25);
+//        TrajectoryAccelerationConstraint accConstraint = SampleMecanumDrive.getAccelerationConstraint((15));
+//        SampleMecanumDrive drive = (SampleMecanumDrive) robotHardware.getMecanumDrive();
+//
+//        Pose2d startPos = robotProfile.getProfilePose(startPosStr + "_SHARE_START");
+//        Pose2d intakePos_0 = robotProfile.getProfilePose(startPosStr + "_SHARE_INTAKE_0");
+//        Pose2d intakePos_1 = robotProfile.getProfilePose(startPosStr + "_SHARE_INTAKE_1");
+//        Pose2d intakePos_2 = robotProfile.getProfilePose(startPosStr + "_SHARE_INTAKE_2");
+//        Pose2d intakePos_3 = robotProfile.getProfilePose(startPosStr + "_SHARE_INTAKE_3");
+//        Pose2d preHubPos_1 = robotProfile.getProfilePose(startPosStr + "_SHARE_PRE_HUB_1");
+//        Pose2d hubPos = robotProfile.getProfilePose(startPosStr + "_SHARE_HUB");
+//        Pose2d afterHubPos_0 = robotProfile.getProfilePose(startPosStr + "_SHARE_AFTER_HUB");
+//
+//        Trajectory traj1a = drive.trajectoryBuilder(startPos)
+//                .splineToLinearHeading(intakePos_0, intakePos_0.getHeading(), velConstraints, accConstraint)
+//                .build();
+//        ParallelComboTask par1a = new ParallelComboTask();
+//        par1a.addTask(new SplineMoveTask(drive, traj1a));
+//        par1a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+//        sharedHubTask.addTask(par1a);
+//
+//        Trajectory traj1b = drive.trajectoryBuilder(intakePos_0, true)
+//                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading() + Math.PI, velConstraints, accConstraint)
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj1b));
+//        sharedHubTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.BOTTOM));
+//
+//        Trajectory traj1c = drive.trajectoryBuilder(preHubPos_1, true)
+//                .splineToLinearHeading(hubPos, hubPos.getHeading()+Math.PI,  velConstraints, accConstraint)
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj1c));
+//
+//        sharedHubTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
+//
+//        ParallelComboTask par1b = new ParallelComboTask();
+//        Trajectory traj1d = drive.trajectoryBuilder(hubPos)
+//                .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
+//                .build();
+//        par1b.addTask(new SplineMoveTask(drive, traj1d));
+//        sharedHubTask.addTask(par1b);
+//
+//        Trajectory traj1e = drive.trajectoryBuilder(afterHubPos_0)
+//                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj1e));
+//
+////        2nd pickup
+//        ParallelComboTask par2a = new ParallelComboTask();
+//        Trajectory traj2a = drive.trajectoryBuilder(preHubPos_1)
+//                .splineToLinearHeading(intakePos_1, intakePos_1.getHeading())
+//                .build();
+//        par2a.addTask(new SplineMoveTask(drive, traj2a));
+//        par2a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+//        sharedHubTask.addTask(par2a);
+//
+//        Trajectory traj2b = drive.trajectoryBuilder(intakePos_1, true)
+//                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading() + Math.PI, velConstraints, accConstraint)
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj2b));
+//        sharedHubTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.BOTTOM));
+//
+//        Trajectory traj2c = drive.trajectoryBuilder(preHubPos_1, true)
+//                .splineToLinearHeading(hubPos, hubPos.getHeading()+Math.PI,  velConstraints, accConstraint)
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj2c));
+//
+//        sharedHubTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
+//
+//        ParallelComboTask par2b = new ParallelComboTask();
+//        Trajectory traj2d = drive.trajectoryBuilder(hubPos)
+//                .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
+//                .build();
+//        par2b.addTask(new SplineMoveTask(drive, traj2d));
+//        sharedHubTask.addTask(par2b);
+//
+//        Trajectory traj2e = drive.trajectoryBuilder(afterHubPos_0, true)
+//                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj2e));
+//
+//        //3rd pick up
+//        Trajectory traj3a = drive.trajectoryBuilder(preHubPos_1)
+//                .splineToLinearHeading(intakePos_2, intakePos_2.getHeading())
+//                .build();
+//        ParallelComboTask par3a = new ParallelComboTask();
+//        par3a.addTask(new SplineMoveTask(drive, traj3a));
+//        par3a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+//        sharedHubTask.addTask(par3a);
+//
+//        Trajectory traj3b = drive.trajectoryBuilder(intakePos_2, true)
+//                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading() + Math.PI, velConstraints, accConstraint)
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj3b));
+//        sharedHubTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.BOTTOM));
+//
+//        Trajectory traj3c = drive.trajectoryBuilder(preHubPos_1, true)
+//                .splineToLinearHeading(hubPos, hubPos.getHeading()+Math.PI,  velConstraints, accConstraint)
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj3c));
+//
+//        sharedHubTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
+//
+//        ParallelComboTask par3b = new ParallelComboTask();
+//        Trajectory traj3d = drive.trajectoryBuilder(hubPos)
+//                .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
+//                .build();
+//        par3b.addTask(new SplineMoveTask(drive, traj3d));
+//        sharedHubTask.addTask(par3b);
+//
+//        Trajectory traj3e = drive.trajectoryBuilder(afterHubPos_0, true)
+//                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj3e));
+//
+//        //4th pick up
+//        ParallelComboTask par4a = new ParallelComboTask();
+//        Trajectory traj4a = drive.trajectoryBuilder(preHubPos_1)
+//                .splineToLinearHeading(intakePos_3, intakePos_3.getHeading())
+//                .build();
+//        par4a.addTask(new SplineMoveTask(drive, traj4a));
+//        par4a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+//        sharedHubTask.addTask(par4a);
+//
+//        Trajectory traj4b = drive.trajectoryBuilder(intakePos_3, true)
+//                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading() + Math.PI, velConstraints, accConstraint)
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj4b));
+//        sharedHubTask.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.MIDDLE));
+//
+//        Trajectory traj4c = drive.trajectoryBuilder(preHubPos_1, true)
+//                .splineToLinearHeading(hubPos, hubPos.getHeading()+Math.PI,  velConstraints, accConstraint)
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj4c));
+//
+//        sharedHubTask.addTask(new DeliverToHubTask(robotHardware, robotProfile));
+//
+//        ParallelComboTask par4b = new ParallelComboTask();
+//        Trajectory traj4d = drive.trajectoryBuilder(hubPos)
+//                .splineToLinearHeading(afterHubPos_0, afterHubPos_0.getHeading(),  velConstraints, accConstraint)
+//                .build();
+//        par4b.addTask(new SplineMoveTask(drive, traj4d));
+//        sharedHubTask.addTask(par4b);
+//
+//        Trajectory traj4e = drive.trajectoryBuilder(afterHubPos_0)
+//                .splineToLinearHeading(preHubPos_1, preHubPos_1.getHeading())
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj4e));
+//
+//        Trajectory traj4f = drive.trajectoryBuilder(preHubPos_1)
+//                .splineToLinearHeading(startPos, startPos.getHeading(),  velConstraints, accConstraint)
+//                .build();
+//        sharedHubTask.addTask(new SplineMoveTask(drive, traj4f));
 
 
         deliverTask = new SequentialComboTask();

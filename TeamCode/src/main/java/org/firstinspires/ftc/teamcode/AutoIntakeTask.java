@@ -69,20 +69,20 @@ public class AutoIntakeTask implements RobotControl{
     }
 
     void setEndLiftPos() {
-        if (freight==RobotHardware.Freight.BALL) {
-            endLiftPos = RobotHardware.LiftPosition.TOP;
-        }
-        else if (freight==RobotHardware.Freight.CUBE) {
-            endLiftPos = RobotHardware.LiftPosition.BOTTOM;
+        if (freight==RobotHardware.Freight.NONE) {
+            endLiftPos = RobotHardware.LiftPosition.ONE;
         }
         else {
-            endLiftPos = RobotHardware.LiftPosition.ONE;
+            endLiftPos = RobotHardware.LiftPosition.BOTTOM;
         }
     }
 
     @Override
     public void cleanUp() {
         robotHardware.stopIntake(endLiftPos);
+        if (endLiftPos==RobotHardware.LiftPosition.ONE) {
+            robotHardware.keepLidMid();
+        }
     }
 
     @Override
