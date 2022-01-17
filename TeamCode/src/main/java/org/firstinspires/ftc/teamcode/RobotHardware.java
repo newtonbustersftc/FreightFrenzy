@@ -57,6 +57,8 @@ public class RobotHardware {
     RevBulkData bulkData1, bulkData2;
     SampleMecanumDrive mecanumDrive;
     BNO055IMU imu;
+    RobotVision.AutonomousGoal autonomousGoal = null;
+
     RealSenseLocalizer realSenseLocalizer;
     RobotVision robotVision;
     static T265Camera t265 = null;

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import org.checkerframework.checker.units.qual.A;
+
 public class LiftBucketTask implements RobotControl {
     RobotHardware robotHardware;
     RobotProfile robotProfile;
@@ -13,6 +15,11 @@ public class LiftBucketTask implements RobotControl {
         this.liftPos = liftPos;
     }
 
+    public LiftBucketTask(RobotHardware hardware){
+        this.robotHardware = hardware;
+        liftPos = null;
+    }
+
     public String toString() {
         return "Lift Bucket to " + liftPos;
     }
@@ -21,6 +28,20 @@ public class LiftBucketTask implements RobotControl {
     public void prepare() {
         robotHardware.setLiftPosition(liftPos);
         startTime = System.currentTimeMillis();
+        if(liftPos == null) {
+            switch (robotHardware.autonomousGoal) {
+                case MIDDLE:
+                    liftPos = RobotHardware.LiftPosition.MIDDLE;
+                    break;
+                case LEFT:
+                    liftPos = RobotHardware.LiftPosition.BOTTOM;
+                    break;
+                case RIGHT:
+                default:
+                    liftPos = RobotHardware.LiftPosition.TOP;
+                    break;
+            }
+        }
     }
 
     @Override

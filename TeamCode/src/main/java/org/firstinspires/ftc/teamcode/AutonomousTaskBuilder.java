@@ -131,7 +131,7 @@ public class AutonomousTaskBuilder {
                 .splineTo(hubPos.vec(), hubPos.getHeading()+Math.PI, velConstraints, slowAccConstraint)
                 .build();
         par1.addTask(new SplineMoveTask(drive, traj1));
-        par1.addTask(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
+        par1.addTask(new LiftBucketTask(robotHardware));
         taskList.add(par1);
 
         // deliver to hub
@@ -280,7 +280,7 @@ public class AutonomousTaskBuilder {
                                 .splineTo(hubPos.vec(), hubPos.getHeading()+Math.PI)
                                 .build();
         par1.addTask(new SplineMoveTask(drive, traj2));
-        par1.addTask(new LiftBucketTask(robotHardware, robotProfile, targetLiftLevel));
+        par1.addTask(new LiftBucketTask(robotHardware));
         taskList.add(par1);
 
         if(driverOptions.isDeliver_to_hub_using_opencv()) {

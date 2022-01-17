@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.checkerframework.checker.units.qual.A;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
@@ -158,6 +159,14 @@ public class AutonomousGeneric extends LinearOpMode {
                 telemetry.addData("Parking:", driverOptions.getParking());
                 telemetry.update();
             }
+
+            robotHardware.autonomousGoal = robotHardware.getRobotVision().getAutonomousRecognition(isRedAlliance);
+            Logger.logFile("recognition result: " + robotHardware.autonomousGoal);
+
+
+            TaskReporter.report(taskList);
+            Logger.logFile("Task list items: " + taskList.size());
+            Logger.flushToFile();
         }
 //        robotHardware.getBulkData1();
 //        robotHardware.getBulkData2();
@@ -171,14 +180,8 @@ public class AutonomousGeneric extends LinearOpMode {
 
         RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(isRedAlliance);
         Logger.logFile("recognition result: " + goal);
-
         AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, robotHardware, robotProfile, goal);
 
-        taskList = builder.buildTaskList(goal);
-
-        TaskReporter.report(taskList);
-        Logger.logFile("Task list items: " + taskList.size());
-        Logger.flushToFile();
 
         if (taskList.size() > 0) {
             taskList.get(0).prepare();
