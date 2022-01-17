@@ -32,6 +32,8 @@ public class AutonomousGeneric extends LinearOpMode {
     private int delay;
     boolean isRedAlliance = false;
 
+    Pose2d startPos = new Pose2d();
+
     public void initRobot() {
         try {
             robotProfile = RobotProfile.loadFromFile();
@@ -101,6 +103,7 @@ public class AutonomousGeneric extends LinearOpMode {
             this.delay = 0;
         }
         Logger.logFile("Done with init in autonomous");
+
     }
 
     @Override
@@ -135,12 +138,24 @@ public class AutonomousGeneric extends LinearOpMode {
         }
         robotHardware.closeLid();
         robotHardware.setLiftPosition(RobotHardware.LiftPosition.ONE);
+
+        RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(isRedAlliance);
+        Logger.logFile("recognition result: " + goal);
+
+        AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, robotHardware, robotProfile, goal);
+        taskList = builder.buildTaskList(goal);
+
+        TaskReporter.report(taskList);
+        Logger.logFile("Task list items: " + taskList.size());
+        Logger.flushToFile();
+
         long loopStart = System.currentTimeMillis();
         long loopCnt = 0;
 
         //warmUpT265();
 
         while (!isStarted()) {
+
             robotHardware.getLocalizer().update();
             Pose2d currPose = robotHardware.getLocalizer().getPoseEstimate();
             loopCnt++;
@@ -149,8 +164,8 @@ public class AutonomousGeneric extends LinearOpMode {
                 robotHardware.getLocalizer().setPoseEstimate(new Pose2d());
             }
             if (loopCnt%10000==0) {
-                RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(false, isRedAlliance);
-                telemetry.addData("goal",goal);
+                goal = robotHardware.getRobotVision().getAutonomousRecognition(false, isRedAlliance);
+                telemetry.addData("goal", goal);
 //                telemetry.addData("CurrPose", currPose);
                 telemetry.addData("T265 CFD:",  ((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence());
                 telemetry.addData("LoopTPS:", (loopCnt * 1000 / (System.currentTimeMillis() - loopStart)));
@@ -160,27 +175,23 @@ public class AutonomousGeneric extends LinearOpMode {
                 telemetry.update();
             }
 
-            robotHardware.autonomousGoal = robotHardware.getRobotVision().getAutonomousRecognition(isRedAlliance);
-            Logger.logFile("recognition result: " + robotHardware.autonomousGoal);
 
-
-            TaskReporter.report(taskList);
-            Logger.logFile("Task list items: " + taskList.size());
-            Logger.flushToFile();
         }
+
+        robotHardware.autonomousGoal = robotHardware.getRobotVision().getAutonomousRecognition(isRedAlliance);
+        Logger.logFile("recognition result: " + robotHardware.autonomousGoal);
+
 //        robotHardware.getBulkData1();
 //        robotHardware.getBulkData2();
 
 //        robotHardware.getLocalizer().update();
         robotHardware.resetImu();
-        robotHardware.getLocalizer().setPoseEstimate(new Pose2d(0, 0, 0));
+
+        startPos = robotProfile.getProfilePose(driverOptions.getStartingPositionModes() + "_START");
+        robotHardware.getLocalizer().setPoseEstimate(startPos);
 //        robotHardware.getMecanumDrive().setPoseEstimate(getProfilePose("START_STATE"));
 
 //        robotHardware.setMotorStopBrake(true);  // so no sliding when we move
-
-        RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(isRedAlliance);
-        Logger.logFile("recognition result: " + goal);
-        AutonomousTaskBuilder builder = new AutonomousTaskBuilder(driverOptions, robotHardware, robotProfile, goal);
 
 
         if (taskList.size() > 0) {

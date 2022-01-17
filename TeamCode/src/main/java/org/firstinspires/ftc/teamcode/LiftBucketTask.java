@@ -26,8 +26,6 @@ public class LiftBucketTask implements RobotControl {
 
     @Override
     public void prepare() {
-        robotHardware.setLiftPosition(liftPos);
-        startTime = System.currentTimeMillis();
         if(liftPos == null) {
             switch (robotHardware.autonomousGoal) {
                 case MIDDLE:
@@ -42,6 +40,8 @@ public class LiftBucketTask implements RobotControl {
                     break;
             }
         }
+        robotHardware.setLiftPosition(liftPos);
+        startTime = System.currentTimeMillis();
     }
 
     @Override

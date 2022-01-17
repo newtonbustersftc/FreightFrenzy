@@ -24,6 +24,7 @@ public class DuckSplineMoveTask implements RobotControl {
     @Override
     public void execute() {
         currDuckEncoder = hardware.getEncoderCounts(RobotHardware.EncoderType.DUCK);
+        drive.update();
     }
 
     @Override
