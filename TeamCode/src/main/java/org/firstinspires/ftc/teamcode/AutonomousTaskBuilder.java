@@ -270,7 +270,7 @@ public class AutonomousTaskBuilder {
                             .splineTo(duckSpinPos.vec(), duckSpinPos.getHeading(), velConstraints, slowAccConstraint)
                             .forward(1)
                             .build();
-        taskList.add(new SplineMoveTask(drive, traj1));
+        taskList.add(new DuckSplineMoveTask(drive, traj1, robotHardware));
         taskList.add(new DuckCarouselSpinTask(robotHardware, startPosStr));
 
         ParallelComboTask par1 = new ParallelComboTask();

@@ -41,6 +41,7 @@ public class RobotHardware {
     }
     LiftPosition currLiftPos;
     int currLiftEncoder;
+    int ogDuckEncoder;
 
     public enum Freight {
         NONE, CUBE, BALL
@@ -195,6 +196,8 @@ public class RobotHardware {
             return rlMotor.getCurrentPosition();
         }else if(encoder == EncoderType.RIGHT_WHEEL){
             return rrMotor.getCurrentPosition();
+        } else if(encoder == EncoderType.DUCK){
+            return duckMotor.getCurrentPosition();
         }
         return 0;
     }
@@ -467,7 +470,7 @@ public class RobotHardware {
         }
     }
 
-    public enum EncoderType {LIFT, INTAKE, LEFT_WHEEL, RIGHT_WHEEL}
+    public enum EncoderType {LIFT, INTAKE, LEFT_WHEEL, RIGHT_WHEEL, DUCK}
 
     public void setLed1(boolean on) {
         led1.setState(!on);
