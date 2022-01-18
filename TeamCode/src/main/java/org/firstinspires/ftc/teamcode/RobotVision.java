@@ -648,8 +648,11 @@ public class RobotVision {
                     if (saveImage) {    // update drawing only when saving the picture
                         Imgproc.rectangle(input, rec, DRAW_COLOR_RED, 2);
                     }
+                    Log.i("Vision", " x:" + rec.x + " w:" + rec.width + " h:" + rec.height);
                 }
-                Log.i("Area", "Ndx:" + ndx + " Area:" + area);
+                else {
+                    Log.i("Vision", "Ndx:" + ndx + " Area:" + area);
+                }
                 ndx++;
             }
             lastHubResult = model.getResult();
@@ -662,8 +665,17 @@ public class RobotVision {
             if (saveImage) {
                 SavePicturePipeline sp = new SavePicturePipeline();
                 sp.processFrame(input);
+                savePicture(maskMat);
                 saveImage = false;
             }
+            return input;
+        }
+        public Mat savePicture(Mat input) {
+            String timestamp = new SimpleDateFormat("MMdd-HHmmssSSS", Locale.US).format(new Date());
+            Mat mbgr = new Mat();
+            Imgproc.cvtColor(input, mbgr, Imgproc.COLOR_RGB2BGR, 3);
+            Imgcodecs.imwrite("/sdcard/FIRST/MASK-" + timestamp + ".jpg", mbgr);
+            mbgr.release();
             return input;
         }
     }
