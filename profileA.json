@@ -208,7 +208,7 @@
       "heading": 0
     },
     "RED_DEPOT_PICKUPWALL_0": {
-      "x": 40,
+      "x": 45,
       "y": 2,
       "heading": 0
     },
@@ -218,9 +218,9 @@
       "heading": 0
     },
     "RED_DEPOT_PICKUPWALL_2": {
-      "x": 46,
-      "y": 2,
-      "heading": 25
+      "x": 55,
+      "y": 15,
+      "heading": 270
     },
     "RED_DEPOT_PARKWALL": {
       "x": 30,
@@ -233,9 +233,9 @@
       "heading": 0
     },
     "RED_DEPOT_PARKCENTRAL": {
-      "x": 35,
+      "x": 55,
       "y": 25,
-      "heading": 0
+      "heading": 270
     },
     "RED_DUCK_START": {
       "x": 0,

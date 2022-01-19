@@ -535,7 +535,7 @@ public class RobotHardware {
         }
     }
 
-    public Freight gotFreight() {
+    public Freight getFreight() {
         int alpha = getColorSensorAlpha();
         if (alpha>profile.hardwareSpec.ballBoxAlpha) {
             return Freight.BALL;

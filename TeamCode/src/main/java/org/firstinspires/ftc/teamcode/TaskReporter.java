@@ -17,6 +17,9 @@ public class TaskReporter {
             if (taskList.get(i) instanceof ParallelComboTask) {
                 report(indent+ "  ", ((ParallelComboTask)taskList.get(i)).taskList, false);
             }
+            if (taskList.get(i) instanceof ParallelComboIntakeMovePriorityTask){
+                report(indent +"  ",((ParallelComboIntakeMovePriorityTask)taskList.get(i)).taskList, false);
+            }
         }
     }
 }
