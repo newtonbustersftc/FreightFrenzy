@@ -646,7 +646,8 @@ public class RobotVision {
                         model.addRect(rec);
                     }
                     if (saveImage) {    // update drawing only when saving the picture
-                        Imgproc.rectangle(input, rec, DRAW_COLOR_RED, 2);
+                        Imgproc.rectangle(input, new Rect(rec.x, rec.y+robotProfile.hvParam.cropTop, rec.width, rec.height),
+                                DRAW_COLOR_RED, 2);
                     }
                     Log.i("Vision", " x:" + rec.x + " w:" + rec.width + " h:" + rec.height);
                 }

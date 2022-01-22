@@ -70,8 +70,30 @@ public class HubVisionMathModel {
     LineCandidate[] candidates;
     int cnt = 0;
     Line centerLine;
+    Rect currRect = null;
 
     public void addRect(Rect rect) {
+        if (currRect!=null) {
+            // if two rec are close horizontally, and gap in between, and no overlap, then
+            // probably caused by reflection, then combine
+            if (Math.abs(rect.y + rect.height/2 - currRect.y - currRect.height/2)<10 &&
+                    ((rect.x+rect.width) < currRect.x || (currRect.x + currRect.width) < rect.x)) {
+                // Combine the existing currRect with rect
+                if  ((rect.x+rect.width) < currRect.x) {    // new rect left of currRect
+                    rect.width = currRect.x + currRect.width - rect.x;
+                }
+                else {  // new rect right of currRect
+                    rect.width = rect.x + rect.width - currRect.x;
+                    rect.x = currRect.x;
+                }
+            }
+            else {
+                // if currRect is bigger, ignore the new rect
+                if (currRect.width * currRect.height > rect.width*rect.height) {
+                    return;
+                }
+            }
+        }
         cnt = 2;
         candidates[0].x = rect.x;
         candidates[1].x = rect.x + rect.width;

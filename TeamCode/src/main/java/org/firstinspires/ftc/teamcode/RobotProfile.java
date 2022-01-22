@@ -244,6 +244,7 @@ public class RobotProfile {
         double cameraHubDistance;
         int emptyBoxAlpha;
         int ballBoxAlpha;
+        double lightPower;
     }
 
     public class RoadRunnerParam {

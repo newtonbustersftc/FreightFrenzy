@@ -9,9 +9,11 @@ public class AutoHubApproachTask implements RobotControl {
     RobotHardware robot;
     RobotProfile profile;
     RobotVision robotVision;
+    public static int START_DELAY = 250;
 
     transient boolean completed;
     transient int loopCount = 0;
+    long startTime;
     //transient double pathAngle = 0;
     transient double pathDistance = 0;
     transient double targetAngle;
@@ -55,36 +57,42 @@ public class AutoHubApproachTask implements RobotControl {
      * 4. No movement for last 40 measures
      * @return
      */
-    public boolean isDone(){
-        HubVisionMathModel.Result r = robotVision.getLastHubResult();
-        if (r==null || r.result== HubVisionMathModel.RecognitionResult.NONE) {
-            robotVision.saveNextImage();
-            return true;
-        }
-
-        if (r.width> profile.hvParam.finalWidth - cameraHubDistance) {
-            robot.setMotorPower(0,0,0,0);
-            robotVision.saveNextImage();
-            return true;
+    public boolean isDone() {
+        if (System.currentTimeMillis() - startTime>START_DELAY) {
+            HubVisionMathModel.Result r = robotVision.getLastHubResult();
+            if (r == null || r.result == HubVisionMathModel.RecognitionResult.NONE) {
+                robotVision.saveNextImage();
+                return true;
+            }
+            if (r.width > profile.hvParam.finalWidth - cameraHubDistance) {
+                robot.setMotorPower(0, 0, 0, 0);
+                robotVision.saveNextImage();
+                return true;
+            }
         }
         return false;
     }
 
     public void prepare(){
+        robot.turnOnTargetLight();
+        startTime = System.currentTimeMillis();
         HubVisionMathModel.Result r = robotVision.getLastHubResult();
     }
 
     public void execute() {
-        HubVisionMathModel.Result r = robotVision.getLastHubResult();
-        if (r!=null && r.result!= HubVisionMathModel.RecognitionResult.NONE) {
-            double pwr = (power - minPower) * (profile.hvParam.finalWidth - r.width) / profile.hvParam.finalWidth + minPower;
-            Logger.logFile("AutoHub " + r + " pwr:" + pwr);
-            robot.mecanumDrive2(pwr, Math.PI, r.getAngleCorrection());
+        if (System.currentTimeMillis() - startTime>START_DELAY) {
+            HubVisionMathModel.Result r = robotVision.getLastHubResult();
+            if (r != null && r.result != HubVisionMathModel.RecognitionResult.NONE) {
+                double pwr = (power - minPower) * (profile.hvParam.finalWidth - r.width) / profile.hvParam.finalWidth + minPower;
+                Logger.logFile("AutoHub " + r + " pwr:" + pwr);
+                robot.mecanumDrive2(pwr, Math.PI, r.getAngleCorrection());
+            }
         }
     }
 
     public void cleanUp(){
         robot.setMotorPower(0,0,0,0);
+        robot.turnOffTargetLight();
     }
 }
 

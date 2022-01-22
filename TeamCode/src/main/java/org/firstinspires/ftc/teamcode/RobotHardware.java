@@ -50,6 +50,7 @@ public class RobotHardware {
     HardwareMap hardwareMap;
     ExpansionHubMotor rrMotor, rlMotor, frMotor, flMotor;
     ExpansionHubMotor liftMotor, duckMotor, intakeMotor;
+    DcMotor targetLight;
     DigitalChannel led1, led2;
     ExpansionHubServo boxFlapServo, boxLidServo;
     ColorSensor colorSensor;
@@ -117,11 +118,14 @@ public class RobotHardware {
         try {
             boxLidServo = (ExpansionHubServo)hardwareMap.servo.get("BoxLid");
             colorSensor = hardwareMap.get(ColorSensor.class, "ColorSensor");
-            Logger.logFile("Got BoxLid and ColorSensor");
+            targetLight = hardwareMap.dcMotor.get("TargetLight");
+            targetLight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            Logger.logFile("Got BoxLid and ColorSensor and light");
         }
         catch (Exception ex) {
             boxLidServo = null;
             colorSensor = null;
+            targetLight = null;
         }
         Logger.logFile("Encoder Read:" + rrMotor.getCurrentPosition() + "," + rlMotor.getCurrentPosition());
         getBulkData1();
@@ -555,6 +559,14 @@ public class RobotHardware {
         else {
             return 0;
         }
+    }
+
+    void turnOnTargetLight() {
+        targetLight.setPower(profile.hardwareSpec.lightPower);
+    }
+
+    void turnOffTargetLight() {
+        targetLight.setPower(0);
     }
 
     RobotProfile getRobotProfile() {

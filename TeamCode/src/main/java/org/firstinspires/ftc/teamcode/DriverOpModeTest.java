@@ -38,6 +38,7 @@ public class DriverOpModeTest extends OpMode {
     boolean xPressed = false;
     boolean aPressed = false;
     boolean bPressed = false;
+    boolean lightOn = false;
     RobotControl currentTask = null;
     GoalTargetRecognition goalRecog = null;
 
@@ -214,7 +215,18 @@ public class DriverOpModeTest extends OpMode {
             telemetry.addData("Err:", r.getAngleCorrection());
         }
         if (gamepad1.a && !aPressed) {
-            robotVision.saveNextImage();
+            if (gamepad1.left_trigger>0) {
+                lightOn = !lightOn;
+                if (lightOn) {
+                    robotHardware.turnOnTargetLight();
+                }
+                else {
+                    robotHardware.turnOffTargetLight();
+                }
+            }
+            else {
+                robotVision.saveNextImage();
+            }
         }
         aPressed = gamepad1.a;
         telemetry.addData("VidTPS", robotVision.getHubVicTps());
