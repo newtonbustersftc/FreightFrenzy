@@ -99,6 +99,7 @@ public class HubVisionMathModel {
         candidates[1].x = rect.x + rect.width;
         candidates[0].angle = Math.PI/2;
         candidates[1].angle = Math.PI/2;
+        currRect = rect;
     }
 
     public void addLine(int x0, int y0, int x1, int y1) {

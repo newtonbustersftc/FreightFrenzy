@@ -291,7 +291,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .build();
         ParallelComboTask par1a = new ParallelComboTask();
         par1a.addTask(new SplineMoveTask(drive, traj1a));
-        par1a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+        par1a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, null, null));
         taskList.add(par1a);
 
         Trajectory traj1b = drive.trajectoryBuilder(intakePos_0, true)
@@ -323,7 +323,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .splineToLinearHeading(intakePos_1, intakePos_1.getHeading())
                 .build();
         par2a.addTask(new SplineMoveTask(drive, traj2a));
-        par2a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+        par2a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, null, null));
         taskList.add(par2a);
 
         Trajectory traj2b = drive.trajectoryBuilder(intakePos_1, true)
@@ -355,7 +355,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .build();
         ParallelComboTask par3a = new ParallelComboTask();
         par3a.addTask(new SplineMoveTask(drive, traj3a));
-        par3a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+        par3a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, null, null));
         taskList.add(par3a);
 
         Trajectory traj3b = drive.trajectoryBuilder(intakePos_2, true)
@@ -387,7 +387,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .splineToLinearHeading(intakePos_3, intakePos_3.getHeading())
                 .build();
         par4a.addTask(new SplineMoveTask(drive, traj4a));
-        par4a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+        par4a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, null, null));
         taskList.add(par4a);
 
         Trajectory traj4b = drive.trajectoryBuilder(intakePos_3, true)

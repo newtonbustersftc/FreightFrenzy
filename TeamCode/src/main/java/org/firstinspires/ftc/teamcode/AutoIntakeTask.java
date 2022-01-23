@@ -111,6 +111,7 @@ public class AutoIntakeTask implements RobotControl{
                         .build();
                 drive.followTrajectoryAsync(traj);
             }
+            robotHardware.stopIntake(RobotHardware.LiftPosition.TOP);
         }
     }
 
