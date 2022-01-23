@@ -230,7 +230,7 @@ public class DriverOpMode extends OpMode {
      */
     private void handleIntake() {
         if (gamepad1.right_trigger > 0 && !rightTriggerPressed) {
-            currentTask = new AutoIntakeTask(robotHardware, robotProfile, gamepad1);
+            currentTask = new DriverAutoIntakeTask(robotHardware, robotProfile, gamepad1);
             currentTask.prepare();
             //robotHardware.startIntake();
         }
