@@ -15,8 +15,8 @@ public class AutoIntakeSplineMoveTask implements RobotControl {
     RobotProfile robotProfile;
     Pose2d nextPos;
 
-    public AutoIntakeSplineMoveTask(SampleMecanumDrive drive, Trajectory trajectory, RobotHardware hardware, Pose2d nextPos){
-        this.drive = drive;
+    public AutoIntakeSplineMoveTask(Trajectory trajectory, RobotHardware hardware, Pose2d nextPos){
+        this.drive = hardware.mecanumDrive;
         this.trajectory = trajectory;
         this.hardware = hardware;
         this.nextPos = nextPos;

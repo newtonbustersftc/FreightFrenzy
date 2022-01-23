@@ -22,11 +22,11 @@ public class AutoIntakeTask implements RobotControl{
     SampleMecanumDrive drive;
     Pose2d nextPos;
 
-    public AutoIntakeTask(RobotHardware hardware, RobotProfile robotProfile, long timeOut, SampleMecanumDrive drive, Pose2d nextPos){
+    public AutoIntakeTask(RobotHardware hardware, RobotProfile robotProfile, long timeOut, Pose2d nextPos){
         this.robotHardware = hardware;
         this.robotProfile = robotProfile;
         this.timeOut = timeOut;
-        this.drive = drive;
+        this.drive = hardware.mecanumDrive;
         this.nextPos = nextPos;
         Logger.logFile("in AutoIntakeTask");
     }
