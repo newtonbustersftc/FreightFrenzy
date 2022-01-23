@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -59,18 +61,12 @@ public class AutoIntakeTask implements RobotControl{
                 if(timeOut == 0 && gamepad.right_trigger == 0) {
                     Logger.logFile("Reverse intake - freigt: " + freight);
                     setEndLiftPos();
-//                    mode = Mode.REVERSE;
-//                    robotHardware.reverseIntake(endLiftPos);
-//                    cleanUpTime = System.currentTimeMillis();
-                }else if(timeOut > 0){  //this is autonomous
+                }else if(timeOut > 0 ){  //this is autonomous
                     Logger.logFile("autonomous, autointake get - freigt: " + freight);
-//                    setEndLiftPos();
-//                    cleanUpTime = System.currentTimeMillis();
-//                    mode = Mode.DONE; //autonomous, once intake freight, exit early without reverse
+                    mode = Mode.REVERSE;
+                    robotHardware.reverseIntake(endLiftPos);
+                    cleanUpTime = System.currentTimeMillis();
                 }
-                mode = Mode.REVERSE;
-                robotHardware.reverseIntake(endLiftPos);
-                cleanUpTime = System.currentTimeMillis();
             }
         }
         else {
@@ -100,6 +96,9 @@ public class AutoIntakeTask implements RobotControl{
                 robotHardware.keepLidMid();
             }
         }else{ //autonomous
+            TrajectoryAccelerationConstraint slowAccConstraint = SampleMecanumDrive.getAccelerationConstraint((25));
+            TrajectoryVelocityConstraint slowVelConstraints = SampleMecanumDrive.getVelocityConstraint(10, 10, 10.25);
+
             Logger.logFile("autoIntakeTask clean up");
             Pose2d curPos = robotHardware.getLocalizer().getPoseEstimate();
             Logger.logFile("pick up pose in AutoIntakeTask: " + curPos);
@@ -107,7 +106,7 @@ public class AutoIntakeTask implements RobotControl{
             robotHardware.stopIntake(RobotHardware.LiftPosition.TOP);
             if(drive !=null && nextPos!=null) {   //this is only for ParallelComboIntakeMovePriority
                 Trajectory traj = drive.trajectoryBuilder(curPos, true)
-                        .splineToLinearHeading(nextPos, nextPos.getHeading() + Math.PI)
+                        .splineTo(nextPos.vec(), nextPos.getHeading() + Math.PI, slowVelConstraints, slowAccConstraint)
                         .build();
                 drive.followTrajectoryAsync(traj);
             }
@@ -118,12 +117,9 @@ public class AutoIntakeTask implements RobotControl{
     @Override
     public boolean isDone() {
         if (mode==Mode.REVERSE) {
-            return System.currentTimeMillis() - cleanUpTime > 500;
+//            return System.currentTimeMillis() - cleanUpTime > 500;
+            return true;
         }
-//        else if(mode == Mode.DONE){
-//            Logger.logFile("autoIntakeTask - intake is done, no reverse");
-//            return true;
-//        }
         else {
             return false;
         }
