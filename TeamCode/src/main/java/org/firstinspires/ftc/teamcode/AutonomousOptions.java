@@ -30,7 +30,7 @@ public class AutonomousOptions extends OpMode {
     // ADD preference values here
     public static final String[] START_POS_MODES = {"RED_DUCK", "RED_DEPOT","BLUE_DUCK", "BLUE_DEPOT"};
     public static final String[] DELAYS = {"0 " + "sec", "1 sec", "2 sec", "3 sec", "4 sec", "5 sec", "25 sec"};
-    public static final String[] PARKING_LOCATION = {"STORAGE", "WAREHOUSE_WALL", "WAREHOUSE_CENTRAL"};
+    public static final String[] PARKING_LOCATION = {"STORAGE", "WALL", "CENTRAL"};
     public static final String[] DELAYS_PARKING = {"0 sec", "5 sec", "8 sec", "11 sec", "13 sec", "15 sec"};
     public static final String[] PARK_ONLY = {"PARK_ONLY", "NONE"};
     private static final String NONE = "none";

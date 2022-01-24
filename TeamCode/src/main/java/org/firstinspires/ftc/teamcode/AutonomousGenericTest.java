@@ -98,8 +98,8 @@ public class AutonomousGenericTest extends LinearOpMode {
 //        setupTaskList1();
 //        setupRedDuckTasks();
 //        testCentralDeliverShippingHub();
-        testDeliverSharingHub_T265();
-//        testDeliverSharingHub_encoder();
+        testDepotPickUp();
+//        testDeliverSharingHub_T265();
         robotHardware.setMotorStopBrake(true);
         TaskReporter.report(taskList);
         Logger.logFile("Task list items: " + taskList.size());
@@ -261,10 +261,45 @@ public class AutonomousGenericTest extends LinearOpMode {
         taskList.add(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ONE));
     }
 
-    void testDeliverSharingHub_encoder(){
-//        int
-//        double distance_1 = DriveConstants.encoderTicksToInches()
-//        robotHardware.setMotorPower();
+    void testDepotPickUp(){
+        TrajectoryVelocityConstraint velConstraints = SampleMecanumDrive.getVelocityConstraint(25, 25, 10.25);
+        TrajectoryVelocityConstraint fastVelConstraints = SampleMecanumDrive.getVelocityConstraint(50, 50, 10.25);
+        TrajectoryVelocityConstraint slowVelConstraints = SampleMecanumDrive.getVelocityConstraint(10, 10, 10.25);
+        TrajectoryAccelerationConstraint accConstraint = SampleMecanumDrive.getAccelerationConstraint((40));
+        TrajectoryAccelerationConstraint slowAccConstraint = SampleMecanumDrive.getAccelerationConstraint((25));
+        SampleMecanumDrive drive = (SampleMecanumDrive) robotHardware.getMecanumDrive();
+        String parking = "WALL";
+        String startPosStr = "RED_DEPOT";
+
+        Pose2d warehousePickupPos_0 = robotProfile.getProfilePose(startPosStr + "_PICKUPWALL_0");
+        Pose2d warehousePickupPos_1 = robotProfile.getProfilePose(startPosStr + "_PICKUPWALL_1");
+        Pose2d warehousePickupPos_2 = robotProfile.getProfilePose(startPosStr + "_PICKUPWALL_2");
+        Pose2d prePickPos = robotProfile.getProfilePose(startPosStr + "_PREWALL");;
+        Pose2d preParkPos = null, parkPos=null;
+        Pose2d startPos = robotProfile.getProfilePose(startPosStr + "_START");
+
+
+        if (parking.contains("WALL")) {
+            preParkPos = robotProfile.getProfilePose(startPosStr + "_PREWALL");
+            parkPos = robotProfile.getProfilePose(startPosStr + "_PARKWALL");
+        }
+
+        Trajectory traj1 = drive.trajectoryBuilder(startPos)
+                            .splineTo(prePickPos.vec(), prePickPos.getHeading())
+                            .build();
+        taskList.add(new SplineMoveTask(drive, traj1));
+
+        Trajectory traj4 = drive.trajectoryBuilder(prePickPos)
+                .splineTo(warehousePickupPos_0.vec(), warehousePickupPos_0.getHeading(), velConstraints, accConstraint)
+                .splineTo(warehousePickupPos_2.vec(), warehousePickupPos_2.getHeading(), slowVelConstraints, slowAccConstraint)
+                .build();
+        ParallelComboIntakeMovePriorityTask par4 = new ParallelComboIntakeMovePriorityTask();
+        par4.addTask(new AutoIntakeSplineMoveTask(traj4, robotHardware));
+        par4.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000));
+        taskList.add(par4);
+
+        taskList.add(new InstantaneousPostionTrajectoryTask(robotHardware, prePickPos, true));
+
 
     }
 
@@ -291,7 +326,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .build();
         ParallelComboTask par1a = new ParallelComboTask();
         par1a.addTask(new SplineMoveTask(drive, traj1a));
-        par1a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, null, null));
+        par1a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
         taskList.add(par1a);
 
         Trajectory traj1b = drive.trajectoryBuilder(intakePos_0, true)
@@ -323,7 +358,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .splineToLinearHeading(intakePos_1, intakePos_1.getHeading())
                 .build();
         par2a.addTask(new SplineMoveTask(drive, traj2a));
-        par2a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, null, null));
+        par2a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
         taskList.add(par2a);
 
         Trajectory traj2b = drive.trajectoryBuilder(intakePos_1, true)
@@ -355,7 +390,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .build();
         ParallelComboTask par3a = new ParallelComboTask();
         par3a.addTask(new SplineMoveTask(drive, traj3a));
-        par3a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, null, null));
+        par3a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
         taskList.add(par3a);
 
         Trajectory traj3b = drive.trajectoryBuilder(intakePos_2, true)
@@ -387,7 +422,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .splineToLinearHeading(intakePos_3, intakePos_3.getHeading())
                 .build();
         par4a.addTask(new SplineMoveTask(drive, traj4a));
-        par4a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, null, null));
+        par4a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
         taskList.add(par4a);
 
         Trajectory traj4b = drive.trajectoryBuilder(intakePos_3, true)

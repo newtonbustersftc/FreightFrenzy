@@ -41,7 +41,6 @@ public class ParallelComboIntakeMovePriorityTask implements RobotControl {
                     Logger.logFile("counterDone:"+counterDone);
                     i = (i==0) ? 1 : 0;
                     taskList.get(i).cleanUp();
-
                     break;
                 }
             }

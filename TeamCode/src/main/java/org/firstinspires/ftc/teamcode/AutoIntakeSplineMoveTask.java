@@ -14,49 +14,32 @@ public class AutoIntakeSplineMoveTask implements RobotControl {
     SampleMecanumDrive drive;
     Trajectory trajectory;
     RobotHardware.Freight freight;
-    Pose2d nextPos;
 
-    public AutoIntakeSplineMoveTask(Trajectory trajectory, RobotHardware hardware, Pose2d nextPos){
+    public AutoIntakeSplineMoveTask(Trajectory trajectory, RobotHardware hardware){
         this.drive = hardware.mecanumDrive;
         this.trajectory = trajectory;
         this.hardware = hardware;
-        this.nextPos = nextPos;
     }
     @Override
     public void prepare() {
+        Logger.logFile("in AutoIntakeSplineMoveTask, prepare");
         drive.followTrajectoryAsync(trajectory);
-        freight = RobotHardware.Freight.NONE;
+//        freight = RobotHardware.Freight.NONE;
     }
 
     @Override
     public void execute() {
-        freight = hardware.getFreight();
         drive.update();
     }
 
     @Override
     public void cleanUp() {
-        TrajectoryAccelerationConstraint slowAccConstraint = SampleMecanumDrive.getAccelerationConstraint((10));
-        TrajectoryVelocityConstraint slowVelConstraints = SampleMecanumDrive.getVelocityConstraint(10, 10, 10.25);
-
         Logger.logFile("AutoIntakeSplineMove clean up");
         hardware.setMotorPower(0, 0, 0, 0);
-
-        if(nextPos !=null) {  //only for ParallelComboIntakeMovePriority
-            Pose2d curPos = hardware.getLocalizer().getPoseEstimate();
-            Logger.logFile("pick up pose in AutoIntakeSplineMoveTask: " + curPos);
-            Trajectory traj = drive.trajectoryBuilder(curPos, true)
-                    .splineToLinearHeading(nextPos, nextPos.getHeading() + Math.PI, slowVelConstraints, slowAccConstraint)
-                    .build();
-            drive.followTrajectoryAsync(traj);
-        }
     }
 
     @Override
     public boolean isDone() {
-        if(freight != RobotHardware.Freight.NONE){
-            Logger.logFile("pick up pose in autoIntakeSplineMove: " + hardware.getLocalizer().getPoseEstimate());
-        }
-        return !drive.isBusy() || freight != RobotHardware.Freight.NONE;
+        return !drive.isBusy();
     }
 }
