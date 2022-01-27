@@ -22,11 +22,13 @@ public class AutoIntakeTask implements RobotControl{
     long timeOut;
     RobotHardware.Freight freight;
     RobotHardware.LiftPosition endLiftPos = RobotHardware.LiftPosition.ONE;
+    boolean liftImmediately;
 
-    public AutoIntakeTask(RobotHardware hardware, RobotProfile robotProfile, long timeOut){
+    public AutoIntakeTask(RobotHardware hardware, RobotProfile robotProfile, long timeOut, boolean liftImmediately){
         this.robotHardware = hardware;
         this.robotProfile = robotProfile;
         this.timeOut = timeOut;
+        this.liftImmediately = liftImmediately;
         Logger.logFile("in AutoIntakeTask");
     }
 
@@ -80,7 +82,10 @@ public class AutoIntakeTask implements RobotControl{
     @Override
     public void cleanUp() {
         Logger.logFile("autoIntakeTask clean up");
-        robotHardware.stopIntake(RobotHardware.LiftPosition.TOP);
+        if(liftImmediately)
+            robotHardware.stopIntake(RobotHardware.LiftPosition.TOP);
+        else
+            robotHardware.stopIntake(RobotHardware.LiftPosition.ONE);
     }
 
     @Override
@@ -89,6 +94,8 @@ public class AutoIntakeTask implements RobotControl{
             return true;
         }
         else {
+            if(System.currentTimeMillis()-startTime>timeOut)
+                Logger.logFile("time out, exit");
             return System.currentTimeMillis()-startTime>timeOut;
         }
     }
