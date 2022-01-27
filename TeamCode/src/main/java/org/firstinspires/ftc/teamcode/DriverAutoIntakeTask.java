@@ -55,16 +55,19 @@ public class DriverAutoIntakeTask implements RobotControl{
                 robotHardware.startIntake();
                 mode = Mode.INTAKE;
             } else if (gamepad.right_trigger == 0){
+                cleanUpTime = System.currentTimeMillis();
                 mode = Mode.REVERSE;
                 setEndLiftPos();
             }
         } else if (mode == Mode.INTAKE){
             freight = robotHardware.getFreight();
             if (RobotHardware.Freight.NONE!=freight){
-                robotHardware.closeLid();
+                robotHardware.keepLidMid(); // not fully close, so 2nd brick can fall out
+                robotHardware.reverseIntake();
                 mode = Mode.LID;
                 lidTime = System.currentTimeMillis();
             } else if (gamepad.right_trigger == 0){
+                cleanUpTime = System.currentTimeMillis();
                 mode = Mode.REVERSE;
                 setEndLiftPos();
             }
@@ -73,16 +76,18 @@ public class DriverAutoIntakeTask implements RobotControl{
                 freight = robotHardware.getFreight();
                 if (RobotHardware.Freight.NONE != freight){
                     mode = Mode.REVERSE;
+                    robotHardware.closeLid();
                     robotHardware.reverseIntake(endLiftPos);
                     setEndLiftPos();
                     cleanUpTime = System.currentTimeMillis();
                 } else {
                     mode = Mode.INTAKE;
                     robotHardware.openLid();
+                    Logger.logFile("Intake bounced out");
+                    robotHardware.startIntake();
                 }
             }
         }
-
     }
 
     void setEndLiftPos() {
@@ -105,12 +110,8 @@ public class DriverAutoIntakeTask implements RobotControl{
     @Override
     public boolean isDone() {
         if (mode==Mode.REVERSE) {
-            return System.currentTimeMillis() - cleanUpTime > 500;
+            return System.currentTimeMillis() - cleanUpTime > 200;
         }
-//        else if(mode == Mode.DONE){
-//            Logger.logFile("autoIntakeTask - intake is done, no reverse");
-//            return true;
-//        }
         else {
             return false;
         }
