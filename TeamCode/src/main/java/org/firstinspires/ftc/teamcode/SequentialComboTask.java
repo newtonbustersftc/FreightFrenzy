@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.text.DecimalFormat;
 
 public class SequentialComboTask implements RobotControl {
-
-    transient RobotHardware robotHardware;
-    transient RobotProfile robotProfile;
     String taskName = "SequentialComboTask";
 
     int i = 0; //counter
@@ -26,7 +23,6 @@ public class SequentialComboTask implements RobotControl {
     public void execute() {
         if (sqTaskList.size() > i) {
             sqTaskList.get(i).execute();
-            //Logger.logFile("Sequential Task Size = " + taskList.size());
             if (sqTaskList.get(i).isDone()) {
                 Logger.logFile("Sequential  Task Is Done: " + sqTaskList.get(i));
                 sqTaskList.get(i).cleanUp();
@@ -43,6 +39,7 @@ public class SequentialComboTask implements RobotControl {
 
     public void cleanUp(){
         i = 0;
+        Logger.logFile("SequentialComboTask clean up - " + this);
     }
 
     public boolean isDone() {
