@@ -47,7 +47,7 @@ public class AutonomousGenericTest extends LinearOpMode {
 
     private TrajectoryVelocityConstraint velConstraint;
     private TrajectoryAccelerationConstraint accelConstraint;
-    String startPosStr = "BLUE";
+    String startPosStr = "RED";
 
     public void initRobot() {
         try{
@@ -98,8 +98,9 @@ public class AutonomousGenericTest extends LinearOpMode {
 //        setupTaskList1();
 //        setupRedDuckTasks();
 //        testCentralDeliverShippingHub();
-        testDepotPickUp();
+//        testDepotPickUp();
 //        testDeliverSharingHub_T265();
+        testDuckTurnAfterHub();
         robotHardware.setMotorStopBrake(true);
         TaskReporter.report(taskList);
         Logger.logFile("Task list items: " + taskList.size());
@@ -285,22 +286,20 @@ public class AutonomousGenericTest extends LinearOpMode {
         }
 
         Trajectory traj1 = drive.trajectoryBuilder(startPos)
-                            .splineTo(prePickPos.vec(), prePickPos.getHeading())
+                            .splineTo(prePickPos.vec(), prePickPos.getHeading(), fastVelConstraints, accConstraint)
                             .build();
         taskList.add(new SplineMoveTask(drive, traj1));
 
         Trajectory traj4 = drive.trajectoryBuilder(prePickPos)
-                .splineTo(warehousePickupPos_0.vec(), warehousePickupPos_0.getHeading(), velConstraints, accConstraint)
-                .splineTo(warehousePickupPos_2.vec(), warehousePickupPos_2.getHeading(), slowVelConstraints, slowAccConstraint)
+                .splineTo(warehousePickupPos_0.vec(), warehousePickupPos_0.getHeading(), slowVelConstraints, accConstraint)
+                .splineTo(warehousePickupPos_1.vec(), warehousePickupPos_1.getHeading(), slowVelConstraints, slowAccConstraint)
                 .build();
         ParallelComboIntakeMovePriorityTask par4 = new ParallelComboIntakeMovePriorityTask();
         par4.addTask(new AutoIntakeSplineMoveTask(traj4, robotHardware));
-        par4.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000));
+        par4.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000, false));
         taskList.add(par4);
 
         taskList.add(new InstantaneousPostionTrajectoryTask(robotHardware, prePickPos, true));
-
-
     }
 
     void testDeliverSharingHub_T265() {
@@ -326,7 +325,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .build();
         ParallelComboTask par1a = new ParallelComboTask();
         par1a.addTask(new SplineMoveTask(drive, traj1a));
-        par1a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+        par1a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, true));
         taskList.add(par1a);
 
         Trajectory traj1b = drive.trajectoryBuilder(intakePos_0, true)
@@ -358,7 +357,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .splineToLinearHeading(intakePos_1, intakePos_1.getHeading())
                 .build();
         par2a.addTask(new SplineMoveTask(drive, traj2a));
-        par2a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+        par2a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, true));
         taskList.add(par2a);
 
         Trajectory traj2b = drive.trajectoryBuilder(intakePos_1, true)
@@ -390,7 +389,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .build();
         ParallelComboTask par3a = new ParallelComboTask();
         par3a.addTask(new SplineMoveTask(drive, traj3a));
-        par3a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+        par3a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, true));
         taskList.add(par3a);
 
         Trajectory traj3b = drive.trajectoryBuilder(intakePos_2, true)
@@ -422,7 +421,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .splineToLinearHeading(intakePos_3, intakePos_3.getHeading())
                 .build();
         par4a.addTask(new SplineMoveTask(drive, traj4a));
-        par4a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000));
+        par4a.addTask(new AutoIntakeTask(robotHardware, robotProfile, 5000, true));
         taskList.add(par4a);
 
         Trajectory traj4b = drive.trajectoryBuilder(intakePos_3, true)
@@ -572,5 +571,29 @@ public class AutonomousGenericTest extends LinearOpMode {
 
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
+    }
+
+    public void testDuckTurnAfterHub(){
+        Pose2d p0 = new Pose2d(0,0,0);
+        Pose2d p1 = new Pose2d(8.5, 28, 225);
+        //Pose2d p2 = new Pose2d(10,5,0);
+
+        robotHardware.getLocalizer().setPoseEstimate(p0);
+
+        Trajectory trj1 = robotHardware.mecanumDrive.trajectoryBuilder(p0, true)
+                .splineTo(p1.vec(), Math.toRadians(p1.getHeading())+Math.PI,velConstraint, accelConstraint)
+                //.splineToSplineHeading(p2, p2.getHeading(), constraints)
+                .build();
+        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trj1));
+
+//        Pose2d p2 = new Pose2d(-5,14,235);
+        Pose2d p3 = new Pose2d(30, 20, 330);
+        //Pose2d p2 = new Pose2d(10,5,0);
+        Trajectory trj2 = robotHardware.mecanumDrive.trajectoryBuilder(p1)
+//                .splineTo(p2.vec(), Math.toRadians(p2.getHeading()), velConstraint, accelConstraint)
+                .splineTo(p3.vec(), Math.toRadians(p3.getHeading()))
+                .build();
+        taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trj2));
+
     }
 }

@@ -42,6 +42,7 @@ public class LiftBucketTask implements RobotControl {
         }
         robotHardware.setLiftPosition(liftPos);
         startTime = System.currentTimeMillis();
+        Logger.logFile("LiftBucketTask: lift pos = " + liftPos);
     }
 
     @Override

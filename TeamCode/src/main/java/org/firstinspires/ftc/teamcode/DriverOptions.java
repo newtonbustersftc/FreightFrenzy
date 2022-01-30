@@ -1,22 +1,33 @@
 package org.firstinspires.ftc.teamcode;
 
 public class DriverOptions {
-    private int delay;
+    private int startDelay;
     private String startingPositionModes;
     private String parking;
-    private int delayParking;
+    private int delayParkingByStorageFromEnding;
+    private int delayParkingByWarehouseFromEnding;
     private int alliance;
     private String parkingOnly;
     private int freightDeliveryCount;
     private boolean isDuckParkingCCW;
-    private boolean deliver_to_hub_using_opencv;
+    private boolean deliverToHubUsingOpencv;
+    private boolean deliverToHubBySideRoute;
 
-    public boolean isDeliver_to_hub_using_opencv() {
-        return deliver_to_hub_using_opencv;
+
+    public boolean isDeliverToHubBySideRoute() {
+        return deliverToHubBySideRoute;
     }
 
-    public void setDeliver_to_hub_using_opencv(boolean deliver_to_hub_using_opencv) {
-        this.deliver_to_hub_using_opencv = deliver_to_hub_using_opencv;
+    public void setDeliverToHubBySideRoute(boolean deliverToHubBySideRoute) {
+        this.deliverToHubBySideRoute = deliverToHubBySideRoute;
+    }
+
+    public boolean isDeliverToHubUsingOpencv() {
+        return deliverToHubUsingOpencv;
+    }
+
+    public void setDeliverToHubUsingOpencv(boolean deliverToHubUsingOpencv) {
+        this.deliverToHubUsingOpencv = deliverToHubUsingOpencv;
     }
 
 
@@ -64,24 +75,31 @@ public class DriverOptions {
         this.parking = parking;
     }
 
-    public int getDelay() {
-        return delay;
+    public int getStartDelay() {
+        return startDelay;
     }
 
-    public void setDelay(int delay) {
-        this.delay = delay;
+    public void setStartDelay(int delay) {
+        this.startDelay = delay;
     }
 
     public int getAlliance(){
         return alliance;
     }
 
-    public int getDelayParking() {
-        return delayParking;
+    public int getDelayParkingByStorageFromEnding() {
+        return delayParkingByStorageFromEnding;
     }
 
-    public void setDelayParking(int delayParking) {
-        this.delayParking = delayParking;
+    public void setDelayParkingByStorageFromEnding(int delayParkingByStorageFromEnding) {
+        this.delayParkingByStorageFromEnding = delayParkingByStorageFromEnding;
     }
 
+    public int getDelayParkingByWarehouseFromEnding() {
+        return delayParkingByWarehouseFromEnding;
+    }
+
+    public void setDelayParkingByWarehouseFromEnding(int delayParkingByWarehouseFromEnding) {
+        this.delayParkingByWarehouseFromEnding = delayParkingByWarehouseFromEnding;
+    }
 }

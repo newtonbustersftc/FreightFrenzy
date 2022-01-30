@@ -24,6 +24,7 @@ public class DeliverToHubTask implements RobotControl {
     @Override
     public void cleanUp() {
         robotHardware.closeBoxFlap();
+        robotHardware.setLiftPosition(RobotHardware.LiftPosition.ONE);
 //        robotHardware.keepLidMid();
     }
 

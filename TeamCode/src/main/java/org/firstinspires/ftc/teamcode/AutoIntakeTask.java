@@ -13,12 +13,14 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 public class AutoIntakeTask implements RobotControl{
     enum Mode {
-        LIFT, INTAKE, LID, REVERSE, DONE
+        LIFT, INTAKE, LID, REVERSE, JAM, DONE
     }
     Mode mode;
     RobotHardware robotHardware;
     RobotProfile robotProfile;
-    long startTime, lidTime, cleanUpTime;
+    long startTime, lidTime, jamTime, cleanUpTime;
+    boolean checkIntakeVelo;
+    long intakeSlowDetectTime;
     long timeOut;
     RobotHardware.Freight freight;
     RobotHardware.LiftPosition endLiftPos = RobotHardware.LiftPosition.ONE;
@@ -47,17 +49,49 @@ public class AutoIntakeTask implements RobotControl{
             if (robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT) < robotProfile.hardwareSpec.liftPositionOne) {
                 Logger.logFile("Starting intake.");
                 robotHardware.startIntake();
+                checkIntakeVelo = false;
                 mode = Mode.INTAKE;
             }
         }
         if (mode==Mode.INTAKE) {
             freight = robotHardware.getFreight();
             if (RobotHardware.Freight.NONE!=freight) {
-                robotHardware.closeLid();
+                robotHardware.keepLidMid(); // to allow 2nd cube to drop if there
                 robotHardware.reverseIntake();
                 lidTime = System.currentTimeMillis();
                 mode = Mode.LID;
-                Logger.logFile("AutoIntakeTask: there is fright: " + freight);
+                Logger.logFile("AutoIntakeTask: there is freight: " + freight);
+            }
+            else {
+                int intakeVelo = robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE);
+                if (checkIntakeVelo==false) {
+                    if (intakeVelo > robotProfile.hardwareSpec.intakeVelocity) {
+                        // once pass the threshold, then we start looking for slow down
+                        checkIntakeVelo = true;
+                        intakeSlowDetectTime = -1;
+                    }
+                }
+                else {
+                    if (intakeVelo < robotProfile.hardwareSpec.intakeVelocity) {
+                        if (intakeSlowDetectTime==-1) {
+                            // initial detection
+                            intakeSlowDetectTime = System.currentTimeMillis();
+                        }
+                        else {
+                            jamTime = System.currentTimeMillis();
+                            if (jamTime-intakeSlowDetectTime>1500) {
+                                // jam for 1 second
+                                robotHardware.reverseIntake();
+                                mode = Mode.JAM;
+                                checkIntakeVelo = false;
+                                Logger.logFile("AutoIntake jam detected");
+                            }
+                        }
+                    }
+                    else {
+                        intakeSlowDetectTime = -1;  // reset the jam clock
+                    }
+                }
             }
         }
         else if (mode==Mode.LID){
@@ -66,6 +100,7 @@ public class AutoIntakeTask implements RobotControl{
                 if (RobotHardware.Freight.NONE!=freight) {
                     mode = Mode.REVERSE;
                     cleanUpTime = System.currentTimeMillis();
+                    robotHardware.closeLid();
                     robotHardware.setLiftPosition(RobotHardware.LiftPosition.BOTTOM);
                     Logger.logFile("AIT: reverse intake");
                 }
@@ -73,8 +108,16 @@ public class AutoIntakeTask implements RobotControl{
                     robotHardware.openLid();
                     Logger.logFile("Intake bounced out");
                     robotHardware.startIntake();
+                    checkIntakeVelo = false;
                     mode = Mode.INTAKE;
                 }
+            }
+        }
+        else if (mode==Mode.JAM) {
+            if (System.currentTimeMillis()-jamTime>500) {
+                mode = Mode.INTAKE;
+                robotHardware.startIntake();
+                checkIntakeVelo = false;
             }
         }
     }

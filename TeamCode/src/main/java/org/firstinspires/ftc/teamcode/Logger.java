@@ -11,6 +11,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.Buffer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -50,6 +51,17 @@ public class Logger {
             pw.flush();
         } catch(Exception e) {
             throw new RuntimeException("cannot flush");
+        }
+    }
+
+    public static void folderCleanup(String startsWith, String endsWith, int count) {
+        // could use wildcardfilter, but not want to include another Library
+        File file = new File(Environment.getExternalStorageDirectory().getPath() + "/FIRST/");
+        ArrayList<File> fileList = new ArrayList<File>();
+        for(File f : file.listFiles()) {
+            if (f.isFile() && f.getName().startsWith(startsWith) && f.getName().endsWith(endsWith)) {
+                fileList.add(f);
+            }
         }
     }
 }

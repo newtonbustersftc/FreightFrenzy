@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.ftccommon.SoundPlayer;
@@ -9,12 +8,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.checkerframework.checker.units.qual.A;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 @Autonomous(name="Newton Autonomous", group="Main")
@@ -62,17 +58,21 @@ public class AutonomousGeneric extends LinearOpMode {
         Logger.logFile("Init completed");
         try {
             SharedPreferences prefs = AutonomousOptions.getSharedPrefs(hardwareMap);
-            String delayString = prefs.getString("delay", "0").replace(" sec", "");
-            driverOptions.setDelay(Integer.parseInt(delayString));
-            Logger.logFile("delay: " + driverOptions.getDelay());
+            String delayString = prefs.getString("start_delay", "0").replace(" sec", "");
+            driverOptions.setStartDelay(Integer.parseInt(delayString));
+            Logger.logFile("start_delay: " + driverOptions.getStartDelay());
             String freightDeliveryCount = prefs.getString("freight delivery count", "0").replace(" sec", "");
             driverOptions.setFreightDeliveryCount(Integer.parseInt(freightDeliveryCount));
 
             driverOptions.setStartingPositionModes(prefs.getString("starting position", ""));
             driverOptions.setParking(prefs.getString("parking", ""));
-            String delay_parking = prefs.getString("delay parking", "0").replace( " sec", "");
-            driverOptions.setDelayParking(Integer.parseInt(delay_parking));
+            String delay_parking_by_storage = prefs.getString("delay parking by storage", "0").replace( " sec", "");
+            String delay_parking_by_warehouse = prefs.getString("delay parking by warehouse", "0").replace( " sec", "");
+            driverOptions.setDelayParkingByStorageFromEnding(Integer.parseInt(delay_parking_by_storage));
+            driverOptions.setDelayParkingByWarehouseFromEnding(Integer.parseInt(delay_parking_by_warehouse));
             driverOptions.setParkingOnly(prefs.getString("park only", ""));
+
+            String isBySideRoute = prefs.getString("Deliver to hub by side route", "");
             String duckParking = prefs.getString("duck parking direction", "");
             if(driverOptions.getStartingPositionModes().contains("RED")){
                 driverOptions.setDuckParkingDirection(duckParking.equals("CCW") ? true : false);
@@ -80,23 +80,31 @@ public class AutonomousGeneric extends LinearOpMode {
                 driverOptions.setDuckParkingDirection(duckParking.equals("CW") ? true : false);
             }
 
-            if(prefs.getString("Deliver to hub using openCV", "").equals("YES")){
-                driverOptions.setDeliver_to_hub_using_opencv(true);
+            if(isBySideRoute.equals("YES")){
+                driverOptions.setDeliverToHubBySideRoute(true);
             }else{
-                driverOptions.setDeliver_to_hub_using_opencv(false);
+                driverOptions.setDeliverToHubBySideRoute(false);
+            }
+
+            if(prefs.getString("Deliver to hub using openCV", "").equals("YES")){
+                driverOptions.setDeliverToHubUsingOpencv(true);
+            }else{
+                driverOptions.setDeliverToHubUsingOpencv(false);
             }
 
             if(driverOptions.getStartingPositionModes().contains("RED")) {
                 isRedAlliance = true;
             }
 
+
             Logger.logFile("starting position: " + driverOptions.getStartingPositionModes());
             Logger.logFile("parking: " + driverOptions.getParking());
-            Logger.logFile("parking_delay: " + driverOptions.getDelayParking());
+            Logger.logFile("parking_delay_storage: " + driverOptions.getDelayParkingByStorageFromEnding());
+            Logger.logFile("parking_delay_warehouse: " + driverOptions.getDelayParkingByWarehouseFromEnding());
             Logger.logFile("park only: " + driverOptions.getParkingOnly());
             Logger.logFile("Is duck parking counter clockwise: " + driverOptions.isDuckParkingCCW());
             Logger.logFile("feight delivery count:"+ driverOptions.getFreightDeliveryCount());
-            Logger.logFile("setDeliver to hub using opencv:" + driverOptions.isDeliver_to_hub_using_opencv());
+            Logger.logFile("setDeliver to hub using opencv:" + driverOptions.isDeliverToHubUsingOpencv());
         }
         catch (Exception e) {
             RobotLog.e("SharedPref exception " + e);
@@ -114,30 +122,33 @@ public class AutonomousGeneric extends LinearOpMode {
         robotHardware.getRobotVision().initRearCamera(driverOptions.getStartingPositionModes().contains("RED"));  //boolean isRed
 
         robotHardware.resetLiftPositionAutonomous();
-        // reset arm position
-        int warningSoundID = hardwareMap.appContext.getResources().getIdentifier("backing_up", "raw", hardwareMap.appContext.getPackageName());
-        if (warningSoundID != 0) {
-            Logger.logFile("Found warning sound backing_up");
-            if (SoundPlayer.getInstance().preload(hardwareMap.appContext, warningSoundID)) {
-                SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, warningSoundID);
+
+        if(robotHardware.getFreight()==RobotHardware.Freight.NONE) {
+            // reset arm position
+            int warningSoundID = hardwareMap.appContext.getResources().getIdentifier("backing_up", "raw", hardwareMap.appContext.getPackageName());
+            if (warningSoundID != 0) {
+                Logger.logFile("Found warning sound backing_up");
+                if (SoundPlayer.getInstance().preload(hardwareMap.appContext, warningSoundID)) {
+                    SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, warningSoundID);
+                }
             }
-        }
-        robotHardware.setLiftMotorPosition(robotProfile.hardwareSpec.liftPositionTop, 0.15);
-        while (robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT)<robotProfile.hardwareSpec.liftPositionTop-20) {
-            try {
-                Thread.sleep(100);
+            robotHardware.setLiftMotorPosition(robotProfile.hardwareSpec.liftPositionTop, 0.15);
+            while (robotHardware.getEncoderCounts(RobotHardware.EncoderType.LIFT) < robotProfile.hardwareSpec.liftPositionTop - 20) {
+                try {
+                    Thread.sleep(100);
+                } catch (Exception ex) {
+                }
             }
-            catch (Exception ex) {
+            robotHardware.openLid();
+            while (robotHardware.getFreight()==RobotHardware.Freight.NONE) {
+                try {
+                    Thread.sleep(100);
+                } catch (Exception ex) {
+                }
             }
+            robotHardware.closeLid();
+            robotHardware.setLiftPosition(RobotHardware.LiftPosition.ONE);
         }
-        robotHardware.openLid();
-        try {
-            Thread.sleep(3000);
-        }
-        catch (Exception ex) {
-        }
-        robotHardware.closeLid();
-        robotHardware.setLiftPosition(RobotHardware.LiftPosition.ONE);
 
         RobotVision.AutonomousGoal goal = robotHardware.getRobotVision().getAutonomousRecognition(isRedAlliance);
         Logger.logFile("recognition result: " + goal);
@@ -186,6 +197,7 @@ public class AutonomousGeneric extends LinearOpMode {
 
 //        robotHardware.getLocalizer().update();
         robotHardware.resetImu();
+        robotHardware.ignoreT265Confidence = false;
 
         startPos = robotProfile.getProfilePose(driverOptions.getStartingPositionModes() + "_START");
         robotHardware.getLocalizer().setPoseEstimate(startPos);
@@ -208,7 +220,7 @@ public class AutonomousGeneric extends LinearOpMode {
             robotHardware.getBulkData2();
             robotHardware.getLocalizer().update();
 
-            if (!((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence().equals("High")){
+            if (!robotHardware.ignoreT265Confidence && !((RealSenseLocalizer)robotHardware.getLocalizer()).getT265Confidence().equals("High")){
                 taskList.clear();
             }
             if (taskList.size() > 0) {

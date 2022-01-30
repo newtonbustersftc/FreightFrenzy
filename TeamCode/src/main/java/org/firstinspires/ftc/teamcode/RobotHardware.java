@@ -40,6 +40,7 @@ public class RobotHardware {
         }
     }
     LiftPosition currLiftPos;
+    boolean ignoreT265Confidence = false;
     int currLiftEncoder;
     int ogDuckEncoder;
 
@@ -567,6 +568,14 @@ public class RobotHardware {
 
     void turnOffTargetLight() {
         targetLight.setPower(0);
+    }
+
+    void setIgnoreT265Confidence(boolean ignoreT265Confidence) {
+        this.ignoreT265Confidence = ignoreT265Confidence;
+    }
+
+    boolean isIgnoreT265Confidence() {
+        return this.ignoreT265Confidence;
     }
 
     RobotProfile getRobotProfile() {
