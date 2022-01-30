@@ -32,6 +32,12 @@ public class SplineMoveTask implements RobotControl {
         this.targetPose = targetPose;
     }
 
+    public SplineMoveTask(SampleMecanumDrive drive, TrajectorySequence trajectorySequence) {
+        this.drive = drive;
+        this.trajectorySequence = trajectorySequence;
+        this.targetPose = null;
+    }
+
     public String toString() {
         return "SplineMove " + trajectory.start() + " -> " + trajectory.end() ;
     }
@@ -47,8 +53,12 @@ public class SplineMoveTask implements RobotControl {
             boolean forward = Math.abs(currPose.getHeading() - ang) < Math.PI / 2;
             trajectory = drive.trajectoryBuilder(currPose, !forward)
                         .splineToSplineHeading(targetPose, targetPose.getHeading()).build();
+            drive.followTrajectoryAsync(trajectory);
+        }else if(trajectorySequence!=null) {
+            drive.followTrajectorySequenceAsync(trajectorySequence);
+        }else if(trajectory !=null) {
+            drive.followTrajectoryAsync(trajectory);
         }
-        drive.followTrajectoryAsync(trajectory);
     }
 
     public void execute() {
