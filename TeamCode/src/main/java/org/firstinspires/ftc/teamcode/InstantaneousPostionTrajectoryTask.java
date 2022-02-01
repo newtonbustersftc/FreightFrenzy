@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
@@ -57,11 +59,13 @@ public class InstantaneousPostionTrajectoryTask implements RobotControl {
                     Pose2d pose = poses.get(i);
                     TrajectoryVelocityConstraint myVelocityConstraint = poseSpeed.get(i);
                     trajectoryBuilder.splineTo(pose.vec(), pose.getHeading()+Math.PI, myVelocityConstraint, accConstraint );
+                    Logger.logFile("**pose angle:"+pose.getHeading());
                 }
 //                Pose2d pose = poses.get(poses.size()-1);
-//                trajectoryBuilder.splineToLinearHeading(pose
-//                        , pose.getHeading()+Math.PI, velConstraints, accConstraint );
+//                trajectoryBuilder.splineTo(pose.vec()
+//                        , pose.getHeading()+Math.PI, poseSpeed.get(poses.size()-1), accConstraint );
                 traj = trajectoryBuilder.build();
+//                Logger.logFile("pose angle:"+ pose.getHeading());
             }
         }else{
             if(poses == null){
@@ -72,10 +76,11 @@ public class InstantaneousPostionTrajectoryTask implements RobotControl {
                 trajectoryBuilder = drive.trajectoryBuilder(curPos, true);
                 for(int i = 0; i<poses.size()-1; i++){
                     Pose2d pose = poses.get(i);
+                    TrajectoryVelocityConstraint myVelocityConstraint = poseSpeed.get(i);
                     trajectoryBuilder.splineTo(pose.vec(), pose.getHeading()+Math.PI, fastVelConstraints, accConstraint );
                 }
                 Pose2d pose = poses.get(poses.size()-1);
-                trajectoryBuilder.splineTo(pose.vec(), pose.getHeading()+Math.PI, velConstraints, accConstraint );
+                trajectoryBuilder.splineToLinearHeading(pose, pose.getHeading()+Math.PI, poseSpeed.get(poses.size()-1), accConstraint );
                 traj = trajectoryBuilder.build();
             }
         }

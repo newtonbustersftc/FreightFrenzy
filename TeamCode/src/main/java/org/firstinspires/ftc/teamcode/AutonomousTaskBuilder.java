@@ -5,10 +5,12 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
+import com.qualcomm.robotcore.util.Hardware;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 /**
  * sophia 11-6-21 14:32
@@ -133,7 +135,6 @@ public class AutonomousTaskBuilder {
         ParallelComboTask par1 = new ParallelComboTask();
         Trajectory traj0 =  drive.trajectoryBuilder(startPos)
                 .strafeTo(preHubPos.vec(), fastVelConstraints, accConstraint)
-//                .turn(Math.toRadians(90))
                 .build();
         par1.addTask(new SplineMoveTask(drive, traj0));
         par1.addTask(new LiftBucketTask(robotHardware));
@@ -148,7 +149,6 @@ public class AutonomousTaskBuilder {
             sc0.addTask(new AutoHubApproachTask(robotHardware, robotProfile));
         }else {
             Trajectory traj1b = drive.trajectoryBuilder(preHubPos, true)
-//                                .splineTo(hubPos_1.vec(), hubPos_1.getHeading()+Math.PI, fastVelConstraints, accConstraint)
                                 .splineToLinearHeading(afterHubEstimatePos, afterHubEstimatePos.getHeading()+Math.PI, fastVelConstraints, accConstraint)
                                 .build();
             sc0.addTask(new SplineMoveTask(drive, traj1b));
@@ -201,8 +201,10 @@ public class AutonomousTaskBuilder {
             pickupToHubPoses.add(afterHubEstimatePos);
             poseSpeed.add(fastVelConstraints);
             poseSpeed.add(fastVelConstraints);
+//            poseSpeed.add(fastVelConstraints);
             poseSpeed.add(fastVelConstraints);
-            poseSpeed.add(velConstraints);
+//            poseSpeed.add(velConstraints);
+            poseSpeed.add(slowVelConstraints);
 
             sc1a.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, pickupToHubPoses, poseSpeed,true));
         }
@@ -229,13 +231,18 @@ public class AutonomousTaskBuilder {
 
             // deliver to hub
             pickupToHubPoses.clear();
+            poseSpeed.clear();
             SequentialComboTask sc4 = new SequentialComboTask();
             if(driverOptions.isDeliverToHubUsingOpencv()) {
                 pickupToHubPoses.add(prePickPos_1);
                 pickupToHubPoses.add(prePickPos_0);
 //                pickupToHubPoses.add(hubPos_0);
                 pickupToHubPoses.add(hubPos_1);
-                sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, pickupToHubPoses, null,true));
+                poseSpeed.add(fastVelConstraints);
+                poseSpeed.add(velConstraints);
+                poseSpeed.add(fastVelConstraints);
+                poseSpeed.add(fastVelConstraints);
+                sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, pickupToHubPoses, poseSpeed,true));
                 sc4.addTask(new AutoHubApproachTask(robotHardware, robotProfile));
             }else {
                 pickupToHubPoses.add(prePickPos_1);
@@ -244,7 +251,12 @@ public class AutonomousTaskBuilder {
                 pickupToHubPoses.add(hubPos_1);
 //                pickupToHubPoses.add(preHubPos);
                 pickupToHubPoses.add(afterHubEstimatePos);
-                sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, pickupToHubPoses, null,true));
+
+                poseSpeed.add(fastVelConstraints);
+                poseSpeed.add(velConstraints);
+                poseSpeed.add(fastVelConstraints);
+                poseSpeed.add(velConstraints);
+                sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, pickupToHubPoses, poseSpeed,true));
             }
             sc4.addTask(new DeliverToHubTask(robotHardware, robotProfile));
             taskList.add(sc4);
@@ -258,10 +270,32 @@ public class AutonomousTaskBuilder {
         par6.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.ONE));
         par6.addTask(new SplineMoveTask(drive, traj6));
         taskList.add(par6);
+
+        //todo pick up one more freight and park in both parking locations.
+//        Trajectory traj7 = drive.trajectoryBuilder(parkPos)
+//                .splineTo(intakePos_0.vec(), intakePos_0.getHeading(), slowVelConstraints, accConstraint)
+//                .splineTo(intakePos_1.vec(), intakePos_1.getHeading(), slowVelConstraints, accConstraint)
+//                .build();
+//        ParallelComboIntakeMovePriorityTask par2 = new ParallelComboIntakeMovePriorityTask();
+//        par2.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000, true));
+//        SequentialComboTask sc3 = new SequentialComboTask();
+//        sc3.addTask(new AutoIntakeSplineMoveTask(traj6, robotHardware));
+//        sc3.addTask(new RobotSleep(3000));
+//        par2.addTask(sc3);
+//        par2.addTask(new WaitForPoseTask((RealSenseLocalizer) robotHardware.getLocalizer(), new Pose2d(63,-8,0), new Pose2d(106,36,0)));
+//        sc2.addTask(par2);
+//        if(parkCentralFarPos!=null){
+//            sc2.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, parkCentralFarPos, true));
+//        }else{
+//            sc2.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, parkPos, true));
+//        }
+//        sc2.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.BOTTOM));
+//        taskList.add(sc2);
     }
 
     public void buildDuckTasks(String startPosStr) {
         Pose2d preParkPos_0 = null, preParkPos_1 = null;
+        Pose2d intakePos_0 = null, intakePos_1 = null;
 
         TrajectoryVelocityConstraint velConstraints = SampleMecanumDrive.getVelocityConstraint(25, 25, 10.25);
         TrajectoryVelocityConstraint fastVelConstraints = SampleMecanumDrive.getVelocityConstraint(50, 50, 10.25);
@@ -277,8 +311,10 @@ public class AutonomousTaskBuilder {
         Pose2d duckSpinPos = robotProfile.getProfilePose(startPosStr + "_CAROUSEL");
         Pose2d hubPos_0 = robotProfile.getProfilePose(startPosStr + "_HUB_0");
         Pose2d hubPos_1 = robotProfile.getProfilePose(startPosStr + "_HUB_1");
-        Pose2d intakePos_0 = robotProfile.getProfilePose(startPosStr + "_INTAKE_0");
-        Pose2d intakePos_1 = robotProfile.getProfilePose(startPosStr + "_INTAKE_1");
+        Pose2d prehub2_0 = robotProfile.getProfilePose(startPosStr + "_PRE_HUB2_0");
+        Pose2d prehub2_1 = robotProfile.getProfilePose(startPosStr + "_PRE_HUB2_1");
+        Pose2d prehub2_2 = robotProfile.getProfilePose(startPosStr + "_PRE_HUB2_2");
+        Pose2d secondHub = robotProfile.getProfilePose(startPosStr + "_HUB2");
         Pose2d afterHubEstimatePos = robotProfile.getProfilePose(startPosStr + "_AFTER_HUB_ESTIMATE");
 
         Pose2d parking_delay_warehousePos = robotProfile.getProfilePose(startPosStr + "_PARKING_DELAY_WAREHOUSE");
@@ -293,8 +329,10 @@ public class AutonomousTaskBuilder {
                 preParkPos_0 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_CW_0");
                 preParkPos_1 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_CW_1");
             }else {
-                preParkPos_0 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_CCW_0");
-                preParkPos_1 = robotProfile.getProfilePose(startPosStr + "_PRE_PARK_CCW_1");
+                preParkPos_0 = parking.contains("WALL") ? robotProfile.getProfilePose(startPosStr + "_WALL_PRE_PARK_CCW_0")
+                                                        : robotProfile.getProfilePose(startPosStr + "_CENTRAL_PRE_PARK_CCW_0");
+                preParkPos_1 = parking.contains("WALL") ? robotProfile.getProfilePose(startPosStr + "_WALL_PRE_PARK_CCW_1")
+                                                        : robotProfile.getProfilePose(startPosStr + "_CENTRAL_PRE_PARK_CCW_1");
             }
             preParkPos = parking.contains("WALL") ? robotProfile.getProfilePose(startPosStr + "_PREWALL")
                                                   : robotProfile.getProfilePose(startPosStr + "_PRE_CENTRAL");
@@ -302,7 +340,10 @@ public class AutonomousTaskBuilder {
                                                : robotProfile.getProfilePose(startPosStr + "_PARK_CENTRAL");
             parkCentralFarPos = parking.contains("WALL") ? null
                                                 : robotProfile.getProfilePose(startPosStr + "_PARK_CENTRAL_FAR");
-
+            intakePos_0 = parking.contains("WALL") ? robotProfile.getProfilePose(startPosStr + "_WALL_INTAKE_0")
+                                                : robotProfile.getProfilePose(startPosStr + "_CENTRAL_INTAKE_0");
+            intakePos_1 = parking.contains("WALL") ? robotProfile.getProfilePose(startPosStr + "_WALL_INTAKE_1")
+                                                : robotProfile.getProfilePose(startPosStr + "_CENTRAL_INTAKE_1");
         }
 
         SequentialComboTask sc0 = new SequentialComboTask();
@@ -353,6 +394,7 @@ public class AutonomousTaskBuilder {
                                .strafeTo(parkPos.vec())
                                .build();
             sc2.addTask(new SplineMoveTask(drive, traj4));
+            taskList.add(sc2);
         } else {   //wall or central parking
             Trajectory traj3;
             Pose2d nextPos = afterHubEstimatePos;
@@ -363,10 +405,15 @@ public class AutonomousTaskBuilder {
                                     .build();
                 sc2.addTask(new SplineMoveTask(drive, traj3a));
                 sc2.addTask(new RobotSleep(delay_parking_storage * 1000));
-                nextPos = parking_delay_storage;
-            }
-
-            if(!isDuckParkingCCW){  //cw
+//                nextPos = parking_delay_storage;
+                Trajectory traj3b = drive.trajectoryBuilder(parking_delay_storage)
+                        .splineTo(preParkPos_1.vec(), preParkPos_1.getHeading(), fastVelConstraints, accConstraint)
+                        .splineTo(preParkPos.vec(), preParkPos.getHeading(), fastVelConstraints, accConstraint)
+                        .splineToLinearHeading(parkPos, parkPos.getHeading(), velConstraints, accConstraint)
+                        .build();
+                sc2.addTask(new SplineMoveTask(drive, traj3b));
+                taskList.add(sc2);
+            }else if(!isDuckParkingCCW){  //cw
                 traj3 = drive.trajectoryBuilder(nextPos)
                                 .splineTo(preParkPos_0.vec(), preParkPos_0.getHeading(), velConstraints, accConstraint)
                                 .splineTo(preParkPos_1.vec(), preParkPos_1.getHeading(),fastVelConstraints, accConstraint)
@@ -387,6 +434,7 @@ public class AutonomousTaskBuilder {
                                         .splineTo(parkPos.vec(), parkPos.getHeading(), fastVelConstraints, accConstraint)
                                         .build();
                     sc2.addTask(new SplineMoveTask(drive, traj6));
+                    taskList.add(sc2);
                 }else {  //no warehouse delay
                     Trajectory traj4 = drive.trajectoryBuilder(preParkPos_1)
                             .strafeTo(preParkPos.vec())
@@ -418,7 +466,7 @@ public class AutonomousTaskBuilder {
                     sc2.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.BOTTOM));
                     taskList.add(sc2);
                 }
-            } else {  //ccw
+            } else if(isDuckParkingCCW){  //ccw
                 ParallelComboTask parNoT265_a = new ParallelComboTask();
                 parNoT265_a.addTask(new T265IgnoreConfidenceLevelTask(robotHardware, true));
                 Trajectory traj3a = drive.trajectoryBuilder(nextPos)
@@ -435,75 +483,154 @@ public class AutonomousTaskBuilder {
                 parNoT265_a.addTask(sc2);
                 taskList.add(parNoT265_a);
 
-                Trajectory traj4 = drive.trajectoryBuilder(parkPos)
-                        .splineTo(intakePos_0.vec(), intakePos_0.getHeading(), velConstraints,accConstraint)
-                        .splineTo(intakePos_1.vec(), intakePos_1.getHeading(), slowVelConstraints,accConstraint)
-                        .build();
+                //following is for parking in wall - pick up one more cargo, deliver and park in wall side
+                if(parking.contains("WALL")) {
+                    Trajectory traj4 = drive.trajectoryBuilder(parkPos)
+                            .splineTo(intakePos_0.vec(), intakePos_0.getHeading(), velConstraints, accConstraint)
+                            .splineTo(intakePos_1.vec(), intakePos_1.getHeading(), slowVelConstraints, accConstraint)
+                            .build();
 
-                ParallelComboIntakeMovePriorityTask par2 = new ParallelComboIntakeMovePriorityTask();
-                par2.addTask(new T265IgnoreConfidenceLevelTask(robotHardware,true));
-                par2.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000, true));
-                SequentialComboTask sc3 = new SequentialComboTask();
-                sc3.addTask(new AutoIntakeSplineMoveTask(traj4, robotHardware));
-                sc3.addTask(new RobotSleep(3000));
-                par2.addTask(sc3);
-                par2.addTask(new WaitForPoseTask((RealSenseLocalizer) robotHardware.getLocalizer(), new Pose2d(63,-8,0), new Pose2d(106,36,0)));
-                sc2.addTask(par2);
+                    ParallelComboIntakeMovePriorityTask par2 = new ParallelComboIntakeMovePriorityTask();
+                    par2.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000, true));
+                    SequentialComboTask sc3 = new SequentialComboTask();
+                    sc3.addTask(new AutoIntakeSplineMoveTask(traj4, robotHardware));
+                    sc3.addTask(new RobotSleep(3000));
+                    par2.addTask(sc3);
+                    par2.addTask(new WaitForPoseTask((RealSenseLocalizer) robotHardware.getLocalizer(), new Pose2d(63, -8, 0), new Pose2d(106, 36, 0)));
+                    taskList.add(par2);
 
-                Pose2d prehub2 = new Pose2d(37,30,320);
-                Pose2d secondHub = new Pose2d(33,37,320);
-                ArrayList<Pose2d> backToHubPoses = new ArrayList<>();
-                ArrayList<TrajectoryVelocityConstraint> posesSpeed = new ArrayList<>();
+//                Trajectory traj4 = drive.trajectoryBuilder(parkPos)
+//                        .splineTo(intakePos_0.vec(), intakePos_0.getHeading(), velConstraints,accConstraint)
+//                        .splineTo(intakePos_1.vec(), intakePos_1.getHeading(), slowVelConstraints,accConstraint)
+//                        .build();
+//
+//                ParallelComboIntakeMovePriorityTask par2 = new ParallelComboIntakeMovePriorityTask();
+//                par2.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000, true));
+//                SequentialComboTask sc3 = new SequentialComboTask();
+//                sc3.addTask(new AutoIntakeSplineMoveTask(traj4, robotHardware));
+//                sc3.addTask(new RobotSleep(3000));
+//                par2.addTask(sc3);
+//                par2.addTask(new WaitForPoseTask((RealSenseLocalizer) robotHardware.getLocalizer(), new Pose2d(63,-8,0), new Pose2d(106,36,0)));
+//                taskList.add(par2);
+
+//                Pose2d prehub2 = new Pose2d(38.5,20,340);
+//                Pose2d secondHub = new Pose2d(35,27,330);
+                    ArrayList<Pose2d> backToHubPoses = new ArrayList<>();
+                    ArrayList<TrajectoryVelocityConstraint> posesSpeed = new ArrayList<>();
 //                ParallelComboTask par3 = new ParallelComboTask();
 //                par3.addTask(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.TOP));
 //                par3.addTask(new InstantaneousPostionTrajectoryTask(robotHardware,preParkPos, true ));
 //                sc2.addTask(par3);
 
-                //this probably will be replaced by autoApproach:
-                ParallelComboTask parNoT265_b = new ParallelComboTask();
-                parNoT265_b.addTask(new T265IgnoreConfidenceLevelTask(robotHardware, true));
+                    //this probably will be replaced by autoApproach:
+                    ParallelComboTask parNoT265_b = new ParallelComboTask();
+                    parNoT265_b.addTask(new T265IgnoreConfidenceLevelTask(robotHardware, true));
 
-                SequentialComboTask sc4 = new SequentialComboTask();
-                if(driverOptions.isDeliverToHubUsingOpencv()){
-                    backToHubPoses.add(parkPos);
-                    backToHubPoses.add(preParkPos);
-                    backToHubPoses.add(prehub2);
-                    posesSpeed.add(fastVelConstraints);
-                    posesSpeed.add(velConstraints);
-                    posesSpeed.add(slowVelConstraints);
+                    SequentialComboTask sc4 = new SequentialComboTask();
+                    if (driverOptions.isDeliverToHubUsingOpencv()) {
+                        backToHubPoses.add(parkPos);
+                        backToHubPoses.add(preParkPos);
+                        posesSpeed.add(fastVelConstraints);
+                        posesSpeed.add(velConstraints);
+
 //                    Trajectory traj5 = drive.trajectoryBuilder(preParkPos, true)
 //                            .splineTo(prehub2.vec(), Math.toRadians(prehub2.getHeading())+Math.PI, slowVelConstraints, accConstraint)
 //                            .build();
 //                    sc4.addTask(new SplineMoveTask(drive, traj5));
-                    sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware,backToHubPoses, posesSpeed, true ));
-                    sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware,secondHub, true ));
-                    sc4.addTask(new AutoHubApproachTask(robotHardware, robotProfile));
-                }else {
-                    backToHubPoses.add(parkPos);
-                    backToHubPoses.add(preParkPos);
-                    backToHubPoses.add(prehub2);
-                    backToHubPoses.add(secondHub);
+                        sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, backToHubPoses, posesSpeed, true));
+                        sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, secondHub, true));
+                        sc4.addTask(new AutoHubApproachTask(robotHardware, robotProfile));
+                    } else {
+                        backToHubPoses.add(parkPos);
+                        backToHubPoses.add(preParkPos);
+//                    backToHubPoses.add(prehub2);
+//                    backToHubPoses.add(secondHub);
+//                    backToHubPoses.add(prehub2_0);
 
-                    posesSpeed.add(fastVelConstraints);
-                    posesSpeed.add(slowVelConstraints);
-                    posesSpeed.add(fastVelConstraints);
-                    posesSpeed.add(velConstraints);
+                        posesSpeed.add(fastVelConstraints);
+                        posesSpeed.add(velConstraints);
+//                    posesSpeed.add(fastVelConstraints);
+//                    posesSpeed.add(slowVelConstraints);
+//                    posesSpeed.add(fastVelConstraints);
 
-//                    Trajectory traj5 = drive.trajectoryBuilder(preParkPos, true)
-//                            .splineTo(secondHub.vec(), Math.toRadians(secondHub.getHeading()) + Math.PI, velConstraints, accConstraint)
-//                            .build();
-//                    sc4.addTask(new SplineMoveTask(drive, traj5));
-                    sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware,backToHubPoses, posesSpeed, true ));
+                        sc4.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, backToHubPoses, posesSpeed, true));
+                        Trajectory traj5a = drive.trajectoryBuilder(preParkPos, true)
+                                .strafeTo(prehub2_1.vec())
+//                            .splineToLinearHeading(secondHub, secondHub.getHeading()+Math.PI, velConstraints, accConstraint)
+                                .build();
+                        sc4.addTask(new SplineMoveTask(drive, traj5a));
+                        Trajectory traj5b = drive.trajectoryBuilder(prehub2_1, true)
+                                .splineTo(prehub2_2.vec(), prehub2_2.getHeading() + Math.PI, fastVelConstraints, accConstraint)
+                                .build();
+                        sc4.addTask(new SplineMoveTask(drive, traj5b));
+                        Trajectory traj5c = drive.trajectoryBuilder(prehub2_2)
+                                .splineToLinearHeading(secondHub, secondHub.getHeading() + Math.PI, fastVelConstraints, accConstraint)
+                                .build();
+                        sc4.addTask(new SplineMoveTask(drive, traj5c));
+                    }
+                    sc4.addTask(new DeliverToHubTask(robotHardware, robotProfile));
+
+
+
+//                    ParallelComboTask parNoT265_c = new ParallelComboTask();
+//                    parNoT265_c.addTask(new T265IgnoreConfidenceLevelTask(robotHardware, true));
+//                    SequentialComboTask sc5 = new SequentialComboTask();
+                    Trajectory traj6 = drive.trajectoryBuilder(secondHub)
+                            .splineTo(preParkPos.vec(), preParkPos.getHeading(), fastVelConstraints, accConstraint)
+                            .splineToLinearHeading(parkPos, parkPos.getHeading(), fastVelConstraints, accConstraint)
+                            .build();
+                    sc4.addTask(new SplineMoveTask(drive, traj6));
+                    parNoT265_b.addTask(sc4);
+                    taskList.add(parNoT265_b);
                 }
-                sc4.addTask(new DeliverToHubTask(robotHardware, robotProfile));
-                parNoT265_b.addTask(sc4);
-                taskList.add(parNoT265_b);
 
-                Trajectory traj6 = drive.trajectoryBuilder(secondHub)
-                        .splineTo(preParkPos.vec(), preParkPos.getHeading(), fastVelConstraints, accConstraint)
-                        .splineToLinearHeading(parkPos, parkPos.getHeading(), fastVelConstraints, accConstraint)
-                        .build();
-                taskList.add(new SplineMoveTask(drive, traj6));
+                ParallelComboTask parNoT265_c = new ParallelComboTask();
+                parNoT265_c.addTask(new T265IgnoreConfidenceLevelTask(robotHardware, true));
+
+                SequentialComboTask sc5 = new SequentialComboTask();
+                Trajectory traj7 = drive.trajectoryBuilder(parkPos)
+                                    .splineTo(intakePos_0.vec(), intakePos_0.getHeading(), velConstraints,accConstraint)
+                                    .splineTo(intakePos_1.vec(), intakePos_1.getHeading(), slowVelConstraints,accConstraint)
+                                    .build();
+
+                ParallelComboIntakeMovePriorityTask par3 = new ParallelComboIntakeMovePriorityTask();
+                par3.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000, true));
+                SequentialComboTask sc6 = new SequentialComboTask();
+                sc6.addTask(new AutoIntakeSplineMoveTask(traj7, robotHardware));
+                sc6.addTask(new RobotSleep(3000));
+                par3.addTask(sc6);
+                par3.addTask(new WaitForPoseTask((RealSenseLocalizer) robotHardware.getLocalizer(), new Pose2d(63,-8,0), new Pose2d(106,36,0)));
+                sc5.addTask(par3);
+                if(parkCentralFarPos!=null){
+                    sc5.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, parkCentralFarPos, true));
+                }else {
+                    sc5.addTask(new InstantaneousPostionTrajectoryTask(robotHardware, parkPos, true));
+                }
+                parNoT265_c.addTask(sc5);
+                taskList.add(parNoT265_c);
+
+                taskList.add(new LiftBucketTask(robotHardware, robotProfile, RobotHardware.LiftPosition.BOTTOM));
+//                Trajectory traj6 = drive.trajectoryBuilder(secondHub)
+//                        .splineTo(preParkPos.vec(), preParkPos.getHeading(), fastVelConstraints, accConstraint)
+//                        .splineToLinearHeading(parkPos, parkPos.getHeading(), fastVelConstraints, accConstraint)
+//                        .build();
+//                taskList.add(new SplineMoveTask(drive, traj6));
+
+//                Trajectory traj7 = drive.trajectoryBuilder(parkPos)
+//                        .splineTo(intakePos_0.vec(), intakePos_0.getHeading(), velConstraints,accConstraint)
+//                        .splineTo(intakePos_1.vec(), intakePos_1.getHeading(), slowVelConstraints,accConstraint)
+//                        .build();
+//
+//                ParallelComboIntakeMovePriorityTask par3 = new ParallelComboIntakeMovePriorityTask();
+//                par3.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000, true));
+//                SequentialComboTask sc5 = new SequentialComboTask();
+//                sc5.addTask(new AutoIntakeSplineMoveTask(traj7, robotHardware));
+//                sc5.addTask(new RobotSleep(3000));
+//                par3.addTask(sc5);
+//                par3.addTask(new WaitForPoseTask((RealSenseLocalizer) robotHardware.getLocalizer(), new Pose2d(63,-8,0), new Pose2d(106,36,0)));
+//                taskList.add(par3);
+
+//                taskList.add(new InstantaneousPostionTrajectoryTask(robotHardware,parkPos, true ));
             }
         }
     }
