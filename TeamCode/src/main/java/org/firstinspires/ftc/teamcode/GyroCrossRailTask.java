@@ -17,6 +17,13 @@ public class GyroCrossRailTask implements RobotControl {
     int totalCnt;
     int frCnt, flCnt, rrCnt, rlCnt;
 
+    /**
+     * Constructor
+     * @param robot
+     * @param profile
+     * @param crossCnt  encoder count to cross the rail using high power
+     * @param finalCnt  final encoder count to stop
+     */
     public GyroCrossRailTask(RobotHardware robot, RobotProfile profile, long crossCnt, long finalCnt) {
         this.robot = robot;
         this.profile = profile;
@@ -42,6 +49,7 @@ public class GyroCrossRailTask implements RobotControl {
     }
 
     public boolean isDone() {
+        // at least one of the wheels should not be slipping :)
         int frCnt1 = robot.getEncoderCounts(RobotHardware.EncoderType.FRONT_RIGHT);
         int flCnt1 = robot.getEncoderCounts(RobotHardware.EncoderType.FRONT_LEFT);
         int rrCnt1 = robot.getEncoderCounts(RobotHardware.EncoderType.REAR_RIGHT);
