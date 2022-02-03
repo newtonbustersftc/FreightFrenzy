@@ -521,7 +521,7 @@ public class RobotVision {
                 String timestamp = new SimpleDateFormat("MMdd-HHmmss", Locale.US).format(new Date());
                 Mat mbgr = new Mat();
                 Imgproc.cvtColor(input, mbgr, Imgproc.COLOR_RGB2BGR, 3);
-                Imgcodecs.imwrite("/sdcard/FIRST/S" + timestamp + ".jpg", mbgr);
+                Imgcodecs.imwrite("/sdcard/FIRST/GOAL" + timestamp + ".jpg", mbgr);
                 mbgr.release();
             }
 
