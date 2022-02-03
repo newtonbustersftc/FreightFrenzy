@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import android.os.Environment;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +25,10 @@ public class Logger {
 
     public static void init() {
         try {
+            folderCleanup("driver", ".txt");
+            folderCleanup("MASK", ".jpg");
+            folderCleanup("REAR", ".jpg");
+            folderCleanup("GOAL", ".jpg");
             String timestamp = new SimpleDateFormat("yyyyMMdd-HHmm", Locale.US).format(new Date());
             File file = new File(Environment.getExternalStorageDirectory().getPath() + "/FIRST/driver_" + timestamp + ".txt");
 
@@ -54,13 +60,17 @@ public class Logger {
         }
     }
 
-    public static void folderCleanup(String startsWith, String endsWith, int count) {
+    /** Delete files more than 30 minutes old */
+    public static void folderCleanup(String startsWith, String endsWith) {
         // could use wildcardfilter, but not want to include another Library
         File file = new File(Environment.getExternalStorageDirectory().getPath() + "/FIRST/");
         ArrayList<File> fileList = new ArrayList<File>();
         for(File f : file.listFiles()) {
             if (f.isFile() && f.getName().startsWith(startsWith) && f.getName().endsWith(endsWith)) {
-                fileList.add(f);
+                if (f.lastModified() < System.currentTimeMillis()-1800000) {
+                    RobotLog.i("Deleting " + f.getName());
+                    f.delete();
+                }
             }
         }
     }
