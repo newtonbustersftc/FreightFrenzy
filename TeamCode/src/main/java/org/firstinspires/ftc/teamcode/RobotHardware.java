@@ -13,8 +13,6 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.AxesSigns;
 import org.firstinspires.ftc.teamcode.util.BNO055IMUUtil;
@@ -197,10 +195,14 @@ public class RobotHardware {
     public int getEncoderCounts(EncoderType encoder) {
         if(encoder == EncoderType.LIFT) {
             return liftMotor.getCurrentPosition();
-        }else if(encoder == EncoderType.LEFT_WHEEL){
+        }else if(encoder == EncoderType.REAR_LEFT){
             return rlMotor.getCurrentPosition();
-        }else if(encoder == EncoderType.RIGHT_WHEEL){
+        }else if(encoder == EncoderType.REAR_RIGHT){
             return rrMotor.getCurrentPosition();
+        } else if(encoder == EncoderType.FRONT_LEFT){
+            return flMotor.getCurrentPosition();
+        } else if(encoder == EncoderType.FRONT_RIGHT){
+            return frMotor.getCurrentPosition();
         } else if(encoder == EncoderType.DUCK){
             return duckMotor.getCurrentPosition();
         }
@@ -475,7 +477,7 @@ public class RobotHardware {
         }
     }
 
-    public enum EncoderType {LIFT, INTAKE, LEFT_WHEEL, RIGHT_WHEEL, DUCK}
+    public enum EncoderType {LIFT, INTAKE, REAR_LEFT, REAR_RIGHT, FRONT_LEFT, FRONT_RIGHT, DUCK}
 
     public void setLed1(boolean on) {
         led1.setState(!on);
