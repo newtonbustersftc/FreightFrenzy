@@ -79,8 +79,8 @@ public class AutoIntakeTask implements RobotControl{
                         }
                         else {
                             jamTime = System.currentTimeMillis();
-                            if (jamTime-intakeSlowDetectTime>1500) {
-                                // jam for 1 second
+                            if (jamTime-intakeSlowDetectTime>1000) {
+                                // jam for 1.5 second
                                 robotHardware.reverseIntake();
                                 mode = Mode.JAM;
                                 checkIntakeVelo = false;

@@ -52,7 +52,7 @@
     "cameraHeadingOffset": -2.5,
     "realSenseAngleModifier": 90,
     "liftPositionZero": 10,
-    "liftPositionOne": 130,
+    "liftPositionOne": 250,
     "liftPositionBottom": 900,
     "liftPositionIntermediate": 1500,
     "liftPositionMiddle":1500,
@@ -67,7 +67,7 @@
     "ballBoxAlpha": 500,
     "cameraHubDistance": 11,
     "rearCameraMinPower": 0.5,
-    "lightPower": 0.2
+    "lightPower": 0.05
   },
   "rrParam": {
     "kA": 0.0,
@@ -114,12 +114,12 @@
         0.0
       ]
     },
-    "finalWidth": 56,
-    "finalCenter": 87,
-    "finalDist": 11.0,
-    "awayWidth": 22,
-    "awayCenter": 162,
-    "awayDist": 28,
+    "finalWidth": 52,
+    "finalCenter": 103,
+    "finalDist": 10.5,
+    "awayWidth": 20,
+    "awayCenter": 177,
+    "awayDist": 29,
     "minLineGap": 5,
     "maxLineCandidates": 4,
     "centerY": 70,
@@ -141,17 +141,17 @@
     "BLUE_DEPOT_HUB_0": {
       "x": -7.5,
       "y": -18.5,
-      "heading": 290
+      "heading": 20
     },
     "BLUE_DEPOT_HUB_1": {
-      "x": -9.5,
-      "y": -25,
-      "heading": 320
+      "x": -3,
+      "y": -10,
+      "heading": 60
     },
     "BLUE_DEPOT_AFTER_HUB_ESTIMATE": {
-      "x": -11,
-      "y": -28,
-      "heading": 80.0
+      "x": -10.5,
+      "y": -27.5,
+      "heading": 60.0
     },
     "BLUE_DEPOT_PREWALL": {
       "x": 15,
@@ -160,7 +160,7 @@
     },
     "BLUE_DEPOT_PREPICK": {
       "x": 25,
-      "y": 1.5,
+      "y": -1.75,
       "heading": 0
     },
     "BLUE_DEPOT_PICKUPWALL_0": {
@@ -189,8 +189,13 @@
       "heading": 0
     },
     "BLUE_DEPOT_PARKCENTRAL": {
-      "x": 55,
+      "x": 45,
       "y": -25,
+      "heading": 90
+    },
+    "BLUE_DEPOT_PARK_CENTRAL_FAR": {
+      "x": 50,
+      "y": -23,
       "heading": 90
     },
     "RED_DEPOT_START": {
@@ -239,7 +244,7 @@
       "heading": 0
     },
     "RED_DEPOT_PICKUPWALL_2": {
-      "x": 48,
+      "x": 50,
       "y": 2,
       "heading": 0
     },
@@ -254,6 +259,11 @@
       "heading": 0
     },
     "RED_DEPOT_PARKCENTRAL": {
+      "x": 45,
+      "y": 25,
+      "heading": 270
+    },
+    "RED_DEPOT_PARK_CENTRAL_FAR": {
       "x": 55,
       "y": 25,
       "heading": 270
@@ -283,10 +293,16 @@
       "y": 20,
       "heading": 225
     },
-    "RED_DUCK_AFTER_HUB_ESTIMATE": {
+    "RED_DUCK_AFTER_HUB_ESTIMATE_SHORTEST_DISTANCE": {
       "x": 9.5,
       "y": 29,
       "heading": 225
+    },
+    "RED_DUCK_AFTER_HUB_ESTIMATE_SAFE_DIRECTION": {
+      "x": 6.5,
+      "y": 34,
+      "heading": 200
+
     },
     "RED_DUCK_PRE_PARK_CW_0": {
       "x": -3,
@@ -319,13 +335,13 @@
       "heading": 0.0
     },
     "RED_DUCK_CENTRAL_INTAKE_0": {
-      "x": 83,
-      "y": 17,
-      "heading": 350
+      "x": 95,
+      "y": -12,
+      "heading": 340
     },
     "RED_DUCK_CENTRAL_INTAKE_1": {
-      "x": 92,
-      "y": 14,
+      "x": 98,
+      "y": 11,
       "heading": 330
     },
     "RED_DUCK_WALL_INTAKE_0": {
@@ -340,26 +356,26 @@
     },
     "RED_DUCK_PREWALL": {
       "x": 47,
-      "y": 1,
+      "y": 1.25,
       "heading": 0
     },
     "RED_DUCK_PARKWALL": {
       "x": 78,
-      "y": 1,
+      "y": 1.25,
       "heading": 0.0
     },
     "RED_DUCK_PRE_CENTRAL": {
-      "x": 50,
+      "x": 43,
       "y": 23,
       "heading": 0
     },
     "RED_DUCK_PARK_CENTRAL": {
-      "x": 85,
+      "x": 94,
       "y": 23,
-      "heading": 0
+      "heading": 270
     },
     "RED_DUCK_PARK_CENTRAL_FAR": {
-      "x": 95,
+      "x": 96,
       "y": 23,
       "heading": 270
     },
@@ -396,12 +412,12 @@
     "RED_DUCK_PRE_HUB2_2": {
       "x": 37.5,
       "y": 25,
-      "heading": 320
+      "heading": 230
     },
     "RED_DUCK_HUB2": {
       "x": 36,
       "y": 28,
-      "heading": 320.0
+      "heading": 230.0
     },
     "BLUE_DUCK_START": {
       "x": 0,
@@ -431,52 +447,57 @@
     "BLUE_DUCK_HUB_1": {
       "x": -2,
       "y": -20,
-      "heading": 315.0
+      "heading": 135.0
     },
-    "BLUE_DUCK_AFTER_HUB_ESTIMATE": {
-      "x": 6,
+    "BLUE_DUCK_AFTER_HUB_ESTIMATE_SHORTEST_DISTANCE": {
+      "x": 10,
       "y": -28,
-      "heading": 315.0
+      "heading": 135.0
     },
-    "BLUE_DUCK_PRE_PARK_CW_0": {
+    "BLUE_DUCK_AFTER_HUB_ESTIMATE_SAFE_DIRECTION": {
+      "x": 4,
+      "y": -38,
+      "heading": 170.0
+    },
+    "BLUE_DUCK_PRE_PARK_CCW_0": {
       "x": -3,
       "y": -45,
       "heading": 270
     },
-    "BLUE_DUCK_PRE_PARK_CW_1": {
-      "x": 45,
-      "y": -55,
+    "BLUE_DUCK_PRE_PARK_CCW_1": {
+      "x": 42,
+      "y": -62,
       "heading": 0
     },
-    "BLUE_DUCK_CENTRAL_PRE_PARK_CCW_0": {
-      "x": -3,
-      "y": -20,
+    "BLUE_DUCK_CENTRAL_PRE_PARK_CW_0": {
+      "x": 0,
+      "y": -15,
       "heading": 270.0
     },
-    "BLUE_DUCK_CENTRAL_PRE_PARK_CCW_1": {
+    "BLUE_DUCK_CENTRAL_PRE_PARK_CW_1": {
       "x": 30,
       "y": -20,
       "heading": 0.0
     },
-    "BLUE_DUCK_WALL_PRE_PARK_CCW_0": {
+    "BLUE_DUCK_WALL_PRE_PARK_CW_0": {
       "x": -3,
-      "y": -10,
-      "heading": 270.0
+      "y": -20,
+      "heading": 90.0
     },
-    "BLUE_DUCK_WALL_PRE_PARK_CCW_1": {
+    "BLUE_DUCK_WALL_PRE_PARK_CW_1": {
       "x": 30,
       "y": -2,
       "heading": 0.0
     },
     "BLUE_DUCK_CENTRAL_INTAKE_0": {
-      "x": 83,
-      "y": -17,
-      "heading": 350
+      "x": 95,
+      "y": -12,
+      "heading": 75
     },
     "BLUE_DUCK_CENTRAL_INTAKE_1": {
-      "x": 92,
-      "y": -14,
-      "heading": 330
+      "x": 98,
+      "y": -11,
+      "heading": 65
     },
     "BLUE_DUCK_WALL_INTAKE_0": {
       "x": 85,
@@ -484,34 +505,34 @@
       "heading": 0
     },
     "BLUE_DUCK_WALL_INTAKE_1": {
-      "x": 92,
+      "x": 88,
       "y": -2,
       "heading": 20
     },
     "BLUE_DUCK_PREWALL": {
-      "x": 48,
-      "y": -1,
+      "x": 47,
+      "y": -1.85,
       "heading": 0
     },
     "BLUE_DUCK_PARKWALL": {
       "x": 80,
-      "y": -1,
+      "y": -1.85,
       "heading": 0.0
     },
     "BLUE_DUCK_PRE_CENTRAL": {
-      "x": 50,
+      "x": 43,
       "y": -23,
       "heading": 0
     },
     "BLUE_DUCK_PARK_CENTRAL": {
-      "x": 85,
+      "x": 90,
       "y": -23,
-      "heading": 0.0
+      "heading": 90.0
     },
     "BLUE_DUCK_PARK_CENTRAL_FAR": {
       "x": 95,
       "y": -23,
-      "heading": 270
+      "heading": 90
     },
     "BLUE_DUCK_PREPARKSTORAGE": {
       "x": -24,
@@ -546,12 +567,12 @@
     "BLUE_DUCK_PRE_HUB2_2": {
       "x": 37.5,
       "y": -25,
-      "heading": 320
+      "heading": 45
     },
     "BLUE_DUCK_HUB2": {
       "x": 36,
-      "y": -28,
-      "heading": 320.0
+      "y": -29,
+      "heading": 45.0
     },
     "RED_AUTO_HUB_DELIVERY_START": {
       "x": -5,

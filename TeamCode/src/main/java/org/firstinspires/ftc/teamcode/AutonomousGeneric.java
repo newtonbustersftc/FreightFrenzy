@@ -72,18 +72,18 @@ public class AutonomousGeneric extends LinearOpMode {
             driverOptions.setDelayParkingByWarehouseFromEnding(Integer.parseInt(delay_parking_by_warehouse));
             driverOptions.setParkingOnly(prefs.getString("park only", ""));
 
-            String isBySideRoute = prefs.getString("Deliver to hub by side route", "");
+            String isDuckBySideRoute = prefs.getString("Duck deliver to hub by side route", "");
             String duckParking = prefs.getString("duck parking direction", "");
             if(driverOptions.getStartingPositionModes().contains("RED")){
                 driverOptions.setDuckParkingDirection(duckParking.equals("CCW") ? true : false);
             }else if(driverOptions.getStartingPositionModes().contains("BLUE")) {
-                driverOptions.setDuckParkingDirection(duckParking.equals("CW") ? true : false);
+                driverOptions.setDuckParkingDirection(duckParking.equals("CW") ? false : true);
             }
 
-            if(isBySideRoute.equals("YES")){
-                driverOptions.setDeliverToHubBySideRoute(true);
+            if(isDuckBySideRoute.equals("YES")){
+                driverOptions.setDuckDeliverToHubBySideRoute(true);
             }else{
-                driverOptions.setDeliverToHubBySideRoute(false);
+                driverOptions.setDuckDeliverToHubBySideRoute(false);
             }
 
             if(prefs.getString("Deliver to hub using openCV", "").equals("YES")){

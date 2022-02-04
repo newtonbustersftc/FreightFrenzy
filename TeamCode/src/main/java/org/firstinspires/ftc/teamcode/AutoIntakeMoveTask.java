@@ -9,25 +9,41 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAcceleration
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-public class AutoIntakeSplineMoveTask implements RobotControl {
+public class AutoIntakeMoveTask implements RobotControl {
     RobotHardware hardware;
     SampleMecanumDrive drive;
     Trajectory trajectory;
+    TrajectorySequence trajectorySequence;
+//    double turnDegree;
+//    double distance;
+//    boolean isTurnFirst;
 
-    public AutoIntakeSplineMoveTask(Trajectory trajectory, RobotHardware hardware){
+    public AutoIntakeMoveTask(Trajectory trajectory, RobotHardware hardware){
         this.drive = hardware.mecanumDrive;
         this.hardware = hardware;
         this.trajectory = trajectory;
     }
 
+    public AutoIntakeMoveTask(RobotHardware hardware, TrajectorySequence trajectorySequence){
+        this.drive = hardware.mecanumDrive;
+        this.hardware = hardware;
+        this.trajectorySequence = trajectorySequence;
+//        this.turnDegree = turnDegree;
+//        this.distance = distance;
+    }
     @Override
     public void prepare() {
         Logger.logFile("in AutoIntakeSplineMoveTask, prepare");
-        drive.followTrajectoryAsync(trajectory);
+        if(trajectory != null) {
+            drive.followTrajectoryAsync(trajectory);
+        }else{
+           drive.followTrajectorySequenceAsync(trajectorySequence);
+        }
    }
 
     @Override

@@ -22,7 +22,7 @@ public class AutonomousOptions extends OpMode {
     public static final String START_DELAY_PREF = "start_delay";
     public static final String PARK_ONLY_PREF = "park only";
     public static final String DELIVER_TO_HUB_USING_OPENCV_PREF ="Deliver to hub using openCV";
-    public static final String DELIVER_TO_HUB_BY_SIDE_PREF = "Deliver to hub by side route";
+    public static final String DUCK_DELIVER_TO_HUB_BY_SIDE_PREF = "Duck deliver to hub by side route";
     public static final String FREIGHT_DELIVERY_COUNT_PREF = "freight delivery count";
     public static final String DUCK_PARKING_DIRECTION_PREF = "duck parking direction";
     public static final String DELAY_PARKING_STORAGE_PREF = "delay parking by storage";
@@ -33,7 +33,7 @@ public class AutonomousOptions extends OpMode {
     public static final String[] START_DELAY = {"0 " + "sec", "1 sec", "2 sec", "3 sec", "4 sec", "5 sec", "25 sec"};
     public static final String[] PARK_ONLY = {"PARK_ONLY", "NONE"};
     public static final String[] DELIVER_TO_HUB_USING_OPENCV ={"YES", "NO"};
-    public static final String[] DELIVER_TO_HUB_BY_SIDE ={"YES", "NO"};
+    public static final String[] DUCK_DELIVER_TO_HUB_BY_SIDE ={"YES", "NO"};
     public static final String[] FREIGHT_DELIVERY_COUNT = {"0", "1","2"};
     public static final String[] DUCK_PARKING_DIRECTION = {"NONE", "CW","CCW"};
     public static final String[] DELAY_TIME_PARKING_STORAGE_FROM_ENDING = {"0 sec", "5 sec", "8 sec", "10 sec"};
@@ -42,7 +42,7 @@ public class AutonomousOptions extends OpMode {
     private static final String NONE = "none";
 
     public static Map<String, String[]> prefMap = new HashMap<>();
-    private static String[] prefKeys = {START_POS_MODES_PREF, START_DELAY_PREF, PARK_ONLY_PREF,DELIVER_TO_HUB_USING_OPENCV_PREF, DELIVER_TO_HUB_BY_SIDE_PREF, FREIGHT_DELIVERY_COUNT_PREF,DUCK_PARKING_DIRECTION_PREF, DELAY_PARKING_STORAGE_PREF, DELAY_PARKING_WAREHOUSE_PREF, PARKING_PREF};
+    private static String[] prefKeys = {START_POS_MODES_PREF, START_DELAY_PREF, PARK_ONLY_PREF,DELIVER_TO_HUB_USING_OPENCV_PREF, DUCK_DELIVER_TO_HUB_BY_SIDE_PREF, FREIGHT_DELIVERY_COUNT_PREF,DUCK_PARKING_DIRECTION_PREF, DELAY_PARKING_STORAGE_PREF, DELAY_PARKING_WAREHOUSE_PREF, PARKING_PREF};
     private static int keyIdx = 0;
 
     //private static String[] prefKeys = prefMap.keySet().toArray(new String[prefMap.keySet().size()]);

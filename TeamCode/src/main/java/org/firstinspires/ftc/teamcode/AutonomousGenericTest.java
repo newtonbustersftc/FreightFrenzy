@@ -1,11 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
-
-import android.util.Log;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 //import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
@@ -18,10 +13,8 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAcceleration
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.robot.Robot;
 
 
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import java.io.File;
@@ -100,7 +93,9 @@ public class AutonomousGenericTest extends LinearOpMode {
 //        testCentralDeliverShippingHub();
 //        testDepotPickUp();
 //        testDeliverSharingHub_T265();
-        testDuckTurnAfterHub();
+//        testDuckTurnAfterHub();
+//        makeIntakeVideo();
+        testGyroCrossRail();
         robotHardware.setMotorStopBrake(true);
         TaskReporter.report(taskList);
         Logger.logFile("Task list items: " + taskList.size());
@@ -295,7 +290,7 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .splineTo(warehousePickupPos_1.vec(), warehousePickupPos_1.getHeading(), slowVelConstraints, slowAccConstraint)
                 .build();
         ParallelComboIntakeMovePriorityTask par4 = new ParallelComboIntakeMovePriorityTask();
-        par4.addTask(new AutoIntakeSplineMoveTask(traj4, robotHardware));
+        par4.addTask(new AutoIntakeMoveTask(traj4, robotHardware));
         par4.addTask(new AutoIntakeTask(robotHardware, robotProfile, 6000, false));
         taskList.add(par4);
 
@@ -595,5 +590,27 @@ public class AutonomousGenericTest extends LinearOpMode {
                 .build();
         taskList.add(new SplineMoveTask(robotHardware.mecanumDrive, trj2));
 
+    }
+
+    void testGyroCrossRail() {
+        taskList.add(new MecanumRotateTask(robotHardware.mecanumDrive, Math.PI));
+        taskList.add(new GyroCrossRailTask(robotHardware, robotProfile, 1500, 1700));
+    }
+
+    void makeIntakeVideo() {
+        velConstraint = getVelocityConstraint(5, 5, TRACK_WIDTH);
+        accelConstraint = getAccelerationConstraint(5);
+        // move to pick up
+        Pose2d p0 = new Pose2d(0,0,0);
+        Pose2d p1 = new Pose2d(40, 0, 0);
+        //Pose2d p2 = new Pose2d(10,5,0);
+        Trajectory trj = robotHardware.mecanumDrive.trajectoryBuilder(p0)
+                .lineTo(p1.vec(), velConstraint, accelConstraint)
+                .build();
+        ParallelComboIntakeMovePriorityTask par = new ParallelComboIntakeMovePriorityTask();
+        par.addTask(new AutoIntakeTask(robotHardware, robotProfile, 10000, true));
+        par.addTask(new SplineMoveTask(robotHardware.mecanumDrive, trj));
+        taskList.add(par);
+        taskList.add(new InstantaneousPostionTrajectoryTask(robotHardware, p0, true));
     }
 }

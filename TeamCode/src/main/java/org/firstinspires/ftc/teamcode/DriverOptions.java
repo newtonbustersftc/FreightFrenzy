@@ -11,15 +11,15 @@ public class DriverOptions {
     private int freightDeliveryCount;
     private boolean isDuckParkingCCW;
     private boolean deliverToHubUsingOpencv;
-    private boolean deliverToHubBySideRoute;
+    private boolean duckDeliverToHubBySideRoute;
 
 
-    public boolean isDeliverToHubBySideRoute() {
-        return deliverToHubBySideRoute;
+    public boolean isDuckDeliverToHubBySideRoute() {
+        return duckDeliverToHubBySideRoute;
     }
 
-    public void setDeliverToHubBySideRoute(boolean deliverToHubBySideRoute) {
-        this.deliverToHubBySideRoute = deliverToHubBySideRoute;
+    public void setDuckDeliverToHubBySideRoute(boolean deliverToHubBySideRoute) {
+        this.duckDeliverToHubBySideRoute = deliverToHubBySideRoute;
     }
 
     public boolean isDeliverToHubUsingOpencv() {

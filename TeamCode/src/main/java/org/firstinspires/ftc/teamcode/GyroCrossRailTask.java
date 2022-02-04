@@ -38,6 +38,7 @@ public class GyroCrossRailTask implements RobotControl {
     }
 
     public void prepare() {
+        robot.resetImu();
         startHeading = robot.getImuHeading();
         totalCnt = 0;
         robot.setIgnoreT265Confidence(true);
@@ -65,6 +66,7 @@ public class GyroCrossRailTask implements RobotControl {
     public void execute() {
         double currHeading = robot.getImuHeading();
         double corr = (currHeading - startHeading);
+        //Logger.logFile("Gyro heading:" + currHeading);
         double baseP;
         if (totalCnt<crossCnt) {
             baseP = powerHigh;
