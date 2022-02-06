@@ -33,6 +33,7 @@ public class AutoHubApproachTask implements RobotControl {
         }
         prevNdx = 0;
         loopCount = 0;
+        power = profile.hardwareSpec.rearCameraMaxPower;
         minPower = profile.hardwareSpec.rearCameraMinPower;
         cameraHubDistance = profile.hardwareSpec.cameraHubDistance;
     }
@@ -80,8 +81,8 @@ public class AutoHubApproachTask implements RobotControl {
     }
 
     public void execute() {
+        HubVisionMathModel.Result r = robotVision.getLastHubResult();
         if (System.currentTimeMillis() - startTime>START_DELAY) {
-            HubVisionMathModel.Result r = robotVision.getLastHubResult();
             if (r != null && r.result != HubVisionMathModel.RecognitionResult.NONE) {
                 double pwr = (power - minPower) * (profile.hvParam.finalWidth - r.width) / profile.hvParam.finalWidth + minPower;
                 Logger.logFile("AutoHub " + r + " pwr:" + pwr);
