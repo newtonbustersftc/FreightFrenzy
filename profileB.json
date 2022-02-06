@@ -51,6 +51,7 @@
     "cameraLeftDisplacement": -1.5,
     "cameraHeadingOffset": -2.5,
     "realSenseAngleModifier": 90,
+    "liftPositionInit": 50,
     "liftPositionZero":5,
     "liftPositionOne": 10,
     "liftPositionBottom":600,

@@ -51,11 +51,12 @@
     "cameraLeftDisplacement": -1.5,
     "cameraHeadingOffset": -2.5,
     "realSenseAngleModifier": 90,
+    "liftPositionInit": 50,
     "liftPositionZero": 10,
     "liftPositionOne": 250,
-    "liftPositionBottom": 900,
+    "liftPositionBottom": 780,
     "liftPositionIntermediate": 1500,
-    "liftPositionMiddle":1500,
+    "liftPositionMiddle":1385,
     "liftPositionTop":2200,
     "liftMotorPower": 1.0,
     "boxFlapOpen": 0.55,
@@ -65,8 +66,9 @@
     "lidClose": 0.65,
     "emptyBoxAlpha": 170,
     "ballBoxAlpha": 500,
-    "cameraHubDistance": 11,
-    "rearCameraMinPower": 0.5,
+    "cameraHubDistance": 4,
+    "rearCameraMaxPower": 0.5,
+    "rearCameraMinPower": 0.2,
     "lightPower": 0.05
   },
   "rrParam": {
@@ -125,7 +127,7 @@
     "centerY": 70,
     "minArea": 200,
     "minHeight": 10,
-    "errorFactor": 0.1
+    "errorFactor": 0.025
   },
   "poses": {
     "BLUE_DEPOT_START": {
@@ -234,19 +236,19 @@
       "heading": 0
     },
     "RED_DEPOT_PICKUPWALL_0": {
-      "x": 42,
+      "x": 43,
       "y": 2,
       "heading": 0
     },
     "RED_DEPOT_PICKUPWALL_1": {
-      "x": 45,
+      "x": 47,
       "y": 3,
-      "heading": 0
+      "heading": 10
     },
     "RED_DEPOT_PICKUPWALL_2": {
       "x": 50,
       "y": 2,
-      "heading": 0
+      "heading": -10
     },
     "RED_DEPOT_PARKWALL": {
       "x": 30,
