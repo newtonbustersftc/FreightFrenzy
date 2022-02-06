@@ -38,8 +38,10 @@ public class GyroCrossRailTask implements RobotControl {
     }
 
     public void prepare() {
-        robot.resetImu();
         startHeading = robot.getImuHeading();
+        if (startHeading < -Math.PI*3/4) {  // because IMU heading is +0 -> PI and then -PI -> -0
+            startHeading += Math.PI*2;
+        }
         totalCnt = 0;
         robot.setIgnoreT265Confidence(true);
         frCnt = robot.getEncoderCounts(RobotHardware.EncoderType.FRONT_RIGHT);
@@ -65,6 +67,9 @@ public class GyroCrossRailTask implements RobotControl {
 
     public void execute() {
         double currHeading = robot.getImuHeading();
+        if (currHeading <  -Math.PI*3/4) {  // because IMU heading is +0 -> PI and then -PI -> -0
+            currHeading += Math.PI*2;
+        }
         double corr = (currHeading - startHeading);
         //Logger.logFile("Gyro heading:" + currHeading);
         double baseP;
