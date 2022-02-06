@@ -84,7 +84,7 @@ public class RobotProfile {
         hardwareSpec.liftPositionZero = 20;
         hardwareSpec.liftPositionOne = 150;
         hardwareSpec.liftPositionBottom = 540;
-        hardwareSpec.liftPositionIntermediate = 900;
+        hardwareSpec.liftPositionInit = 900;
         hardwareSpec.liftPositionMiddle = 1200;
         hardwareSpec.liftPositionTop = 1950;
         hardwareSpec.liftMotorPower = 0.3;
@@ -227,10 +227,10 @@ public class RobotProfile {
         float cameraLeftDisplacement;
         double cameraHeadingOffset;
         double realSenseAngleModifier;
+        int liftPositionInit;
         int liftPositionZero;
         int liftPositionOne;
         int liftPositionBottom;
-        int liftPositionIntermediate;
         int liftPositionMiddle;
         int liftPositionTop;
         double liftMotorPower;
@@ -241,6 +241,7 @@ public class RobotProfile {
         double lidClose;
         int dropToHubTime;
         double rearCameraMinPower;
+        double rearCameraMaxPower;
         double cameraHubDistance;
         int emptyBoxAlpha;
         int ballBoxAlpha;
