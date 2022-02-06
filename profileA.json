@@ -82,8 +82,8 @@
     "maxAcc": 30
   },
   "hvParam": {
-    "cropTop": 100,
-    "cropBottom": 130,
+    "cropTop": 80,
+    "cropBottom": 150,
     "maskLowRed": {
       "val": [
         230.0,

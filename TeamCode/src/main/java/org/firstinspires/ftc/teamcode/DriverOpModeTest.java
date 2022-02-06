@@ -205,6 +205,7 @@ public class DriverOpModeTest extends OpMode {
         telemetry.addData("Lift:", currLiftPos);
         telemetry.addData("Flap:", flapServoPos);
         telemetry.addData("Lid:", lidServoPos);
+        telemetry.addData("IMU:", robotHardware.getImuHeading());
     }
 
     public void testHubVision() {

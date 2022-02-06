@@ -34,7 +34,7 @@ public class AutonomousOptions extends OpMode {
     public static final String[] PARK_ONLY = {"PARK_ONLY", "NONE"};
     public static final String[] DELIVER_TO_HUB_USING_OPENCV ={"YES", "NO"};
     public static final String[] DUCK_DELIVER_TO_HUB_BY_SIDE ={"YES", "NO"};
-    public static final String[] FREIGHT_DELIVERY_COUNT = {"0", "1","2"};
+    public static final String[] FREIGHT_DELIVERY_COUNT = {"0", "1","2","3"};
     public static final String[] DUCK_PARKING_DIRECTION = {"NONE", "CW","CCW"};
     public static final String[] DELAY_TIME_PARKING_STORAGE_FROM_ENDING = {"0 sec", "5 sec", "8 sec", "10 sec"};
     public static final String[] DELAY_TIME_PARKING_WAREHOUSE_FROM_ENDING = {"0 sec", "5 sec", "8 sec", "10 sec"};
@@ -58,6 +58,7 @@ public class AutonomousOptions extends OpMode {
         prefMap.put(FREIGHT_DELIVERY_COUNT_PREF,FREIGHT_DELIVERY_COUNT);
         prefMap.put(DUCK_PARKING_DIRECTION_PREF, DUCK_PARKING_DIRECTION);
         prefMap.put(DELIVER_TO_HUB_USING_OPENCV_PREF, DELIVER_TO_HUB_USING_OPENCV);
+        prefMap.put(DUCK_DELIVER_TO_HUB_BY_SIDE_PREF, DUCK_DELIVER_TO_HUB_BY_SIDE);
     }
 
 //    static {
