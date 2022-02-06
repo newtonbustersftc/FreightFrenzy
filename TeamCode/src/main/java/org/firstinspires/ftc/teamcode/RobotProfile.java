@@ -243,6 +243,7 @@ public class RobotProfile {
         double rearCameraMinPower;
         double rearCameraMaxPower;
         double cameraHubDistance;
+        double cameraHubExtraDist;
         int emptyBoxAlpha;
         int ballBoxAlpha;
         double lightPower;

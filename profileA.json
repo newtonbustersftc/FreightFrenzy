@@ -66,7 +66,8 @@
     "lidClose": 0.65,
     "emptyBoxAlpha": 170,
     "ballBoxAlpha": 500,
-    "cameraHubDistance": 4,
+    "cameraHubDistance": 5,
+    "cameraHubExtraDist": 4,
     "rearCameraMaxPower": 0.5,
     "rearCameraMinPower": 0.2,
     "lightPower": 0.05
@@ -137,7 +138,7 @@
     },
     "BLUE_DEPOT_PREHUB": {
       "x": 0,
-      "y": -24,
+      "y": -16,
       "heading": 0
     },
     "BLUE_DEPOT_HUB_0": {
@@ -146,8 +147,8 @@
       "heading": 20
     },
     "BLUE_DEPOT_HUB_1": {
-      "x": -3,
-      "y": -10,
+      "x": -8,
+      "y": -22,
       "heading": 60
     },
     "BLUE_DEPOT_AFTER_HUB_ESTIMATE": {
@@ -166,7 +167,7 @@
       "heading": 0
     },
     "BLUE_DEPOT_PICKUPWALL_0": {
-      "x": 42,
+      "x": 30,
       "y": -1.75,
       "heading": 0
     },
@@ -207,7 +208,7 @@
     },
     "RED_DEPOT_PREHUB": {
       "x": 0,
-      "y": 24,
+      "y": 16,
       "heading": 0
     },
     "RED_DEPOT_HUB_0": {
@@ -216,8 +217,8 @@
       "heading": 290
     },
     "RED_DEPOT_HUB_1": {
-      "x": -9.5,
-      "y": 25,
+      "x": -7,
+      "y": 22,
       "heading": 320
     },
     "RED_DEPOT_AFTER_HUB_ESTIMATE": {
@@ -236,7 +237,7 @@
       "heading": 0
     },
     "RED_DEPOT_PICKUPWALL_0": {
-      "x": 43,
+      "x": 28,
       "y": 2,
       "heading": 0
     },

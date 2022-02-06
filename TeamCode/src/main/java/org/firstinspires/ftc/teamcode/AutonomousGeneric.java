@@ -196,6 +196,7 @@ public class AutonomousGeneric extends LinearOpMode {
         new AutoTimeManager();
 
         robotHardware.resetImu();
+        Logger.logFile("Stopping Vuforia");
         robotHardware.getRobotVision().stopVuforia();
         robotHardware.ignoreT265Confidence = false;
 

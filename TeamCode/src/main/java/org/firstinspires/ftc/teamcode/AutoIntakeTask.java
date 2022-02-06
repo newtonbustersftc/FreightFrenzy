@@ -18,7 +18,7 @@ public class AutoIntakeTask implements RobotControl{
     Mode mode;
     RobotHardware robotHardware;
     RobotProfile robotProfile;
-    long lidTime, jamTime, cleanUpTime, dropOffTime,  remainingTime ;
+    long lidTime, jamTime, cleanUpTime;
     boolean checkIntakeVelo;
     long intakeSlowDetectTime;
     long timeOut;
@@ -34,7 +34,7 @@ public class AutoIntakeTask implements RobotControl{
         this.robotProfile = robotProfile;
         this.timeOut = timeOut;
         this.liftImmediately = liftImmediately;
-        this.dropOffTime = dropOffTime;
+        //this.dropOffTime = dropOffTime;
         Logger.logFile("in AutoIntakeTask");
     }
 
@@ -66,12 +66,12 @@ public class AutoIntakeTask implements RobotControl{
                 mode = Mode.LID;
                 Logger.logFile("AutoIntakeTask: there is freight: " + freight);
             }
-            else if(remainingTime < dropOffTime && robotHardware.getFreight()== RobotHardware.Freight.NONE){
-                robotHardware.stopIntake();
-                mode = Mode.DONE;
-                Logger.logFile("remaining time="+remainingTime);
-                Logger.logFile("dropfftime=" + dropOffTime);
-            }
+//            else if(remainingTime < dropOffTime && robotHardware.getFreight()== RobotHardware.Freight.NONE){
+//                robotHardware.stopIntake();
+//                mode = Mode.DONE;
+//                Logger.logFile("remaining time="+remainingTime);
+//                Logger.logFile("dropfftime=" + dropOffTime);
+//            }
             else {
                 int intakeVelo = robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE);
                 if (checkIntakeVelo==false) {
@@ -144,13 +144,9 @@ public class AutoIntakeTask implements RobotControl{
 
     @Override
     public boolean isDone() {
-        remainingTime = 30000 - (int) (System.currentTimeMillis() - AutoTimeManager.getStartTime());
+        //remainingTime = 30000 - (int) (System.currentTimeMillis() - AutoTimeManager.getStartTime());
         if (mode==Mode.REVERSE) {
             return true;
-        }
-        else if(remainingTime < dropOffTime && robotHardware.getFreight()== RobotHardware.Freight.NONE){
-           //do nothing. robot stay in same spot and wait until autonomous period ends.
-            return false;
         }
         else {
             if(System.currentTimeMillis()-startTime>timeOut)

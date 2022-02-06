@@ -4,10 +4,18 @@ public class DeliverToHubTask implements RobotControl {
     RobotHardware robotHardware;
     RobotProfile robotProfile;
     long startTime;
+    boolean isAutonomous;
 
     public DeliverToHubTask(RobotHardware robotHardware, RobotProfile profile){
         this.robotHardware = robotHardware;
         this.robotProfile = profile;
+        this.isAutonomous = false;
+    }
+
+    public DeliverToHubTask(RobotHardware robotHardware, RobotProfile profile, boolean isAutonomous){
+        this.robotHardware = robotHardware;
+        this.robotProfile = profile;
+        this.isAutonomous = true;
     }
 
     @Override
@@ -23,8 +31,10 @@ public class DeliverToHubTask implements RobotControl {
 
     @Override
     public void cleanUp() {
-        robotHardware.closeBoxFlap();
-        robotHardware.setLiftPosition(RobotHardware.LiftPosition.ONE);
+        if (!isAutonomous) {
+            robotHardware.closeBoxFlap();
+            robotHardware.setLiftPosition(RobotHardware.LiftPosition.ONE);
+        }
 //        robotHardware.keepLidMid();
     }
 

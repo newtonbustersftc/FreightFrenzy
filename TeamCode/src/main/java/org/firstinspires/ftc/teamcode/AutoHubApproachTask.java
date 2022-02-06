@@ -14,6 +14,7 @@ public class AutoHubApproachTask implements RobotControl {
     transient boolean completed;
     transient int loopCount = 0;
     long startTime;
+    double extraDist = 0;
     //transient double pathAngle = 0;
     transient double pathDistance = 0;
     transient double targetAngle;
@@ -65,7 +66,7 @@ public class AutoHubApproachTask implements RobotControl {
                 robotVision.saveNextImage();
                 return true;
             }
-            if (r.width > profile.hvParam.finalWidth - cameraHubDistance) {
+            if (r.width > profile.hvParam.finalWidth - cameraHubDistance - extraDist) {
                 robot.setMotorPower(0, 0, 0, 0);
                 robotVision.saveNextImage();
                 return true;
@@ -78,6 +79,10 @@ public class AutoHubApproachTask implements RobotControl {
         robot.turnOnTargetLight();
         startTime = System.currentTimeMillis();
         HubVisionMathModel.Result r = robotVision.getLastHubResult();
+        if (robot.getCurrLiftPos()!= RobotHardware.LiftPosition.TOP) {
+            extraDist = profile.hardwareSpec.cameraHubExtraDist;
+        }
+
     }
 
     public void execute() {
