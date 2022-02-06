@@ -9,6 +9,8 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAcceleration
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 
 import java.util.ArrayList;
 
@@ -39,8 +41,8 @@ public class InstantaneousPostionTrajectoryTask implements RobotControl {
 
     @Override
     public void prepare() {
-        TrajectoryBuilder trajectoryBuilder ;
-        Trajectory traj;
+        TrajectorySequenceBuilder trajectorySequenceBuilder ;
+        TrajectorySequence trajectorySequence;
         TrajectoryAccelerationConstraint accConstraint = SampleMecanumDrive.getAccelerationConstraint((40));
         TrajectoryVelocityConstraint velConstraints = SampleMecanumDrive.getVelocityConstraint(25, 25, 10.25);
         TrajectoryVelocityConstraint fastVelConstraints = SampleMecanumDrive.getVelocityConstraint(50, 50, 10.25);
@@ -50,41 +52,41 @@ public class InstantaneousPostionTrajectoryTask implements RobotControl {
         Logger.logFile("pick up pose in InstantaneousPositionTrajectoryTask: " + curPos);
         if(isBackward) {
             if(poses == null){  //only nextPos to handle
-                traj = drive.trajectoryBuilder(curPos, true)
+                trajectorySequence = drive.trajectorySequenceBuilder(curPos)
+                        .setReversed(true)
                         .splineTo(nextPos.vec(), nextPos.getHeading() + Math.PI, velConstraints, accConstraint)
                         .build();
             }else {
-                trajectoryBuilder = drive.trajectoryBuilder(curPos, true);
-                for(int i = 0; i<poses.size(); i++){
-                    Pose2d pose = poses.get(i);
-                    TrajectoryVelocityConstraint myVelocityConstraint = poseSpeed.get(i);
-                    trajectoryBuilder.splineTo(pose.vec(), pose.getHeading()+Math.PI, myVelocityConstraint, accConstraint );
-                    Logger.logFile("**pose angle:"+pose.getHeading());
-                }
-//                Pose2d pose = poses.get(poses.size()-1);
-//                trajectoryBuilder.splineTo(pose.vec()
-//                        , pose.getHeading()+Math.PI, poseSpeed.get(poses.size()-1), accConstraint );
-                traj = trajectoryBuilder.build();
-//                Logger.logFile("pose angle:"+ pose.getHeading());
-            }
-        }else{
-            if(poses == null){
-                traj = drive.trajectoryBuilder(curPos)
-                        .splineTo(nextPos.vec(), nextPos.getHeading(), velConstraints, accConstraint)
-                        .build();
-            }else{
-                trajectoryBuilder = drive.trajectoryBuilder(curPos, true);
+                trajectorySequenceBuilder = drive.trajectorySequenceBuilder(curPos);
+                trajectorySequenceBuilder.setReversed(true);
                 for(int i = 0; i<poses.size()-1; i++){
                     Pose2d pose = poses.get(i);
                     TrajectoryVelocityConstraint myVelocityConstraint = poseSpeed.get(i);
-                    trajectoryBuilder.splineTo(pose.vec(), pose.getHeading()+Math.PI, fastVelConstraints, accConstraint );
+                    trajectorySequenceBuilder.splineTo(pose.vec(), pose.getHeading()+Math.PI, myVelocityConstraint, accConstraint );
+               }
+                Pose2d pose = poses.get(poses.size()-1);
+                trajectorySequenceBuilder.splineToLinearHeading(pose
+                        , pose.getHeading()+Math.PI, poseSpeed.get(poses.size()-1), accConstraint );
+                trajectorySequence = trajectorySequenceBuilder.build();
+            }
+        }else{
+            if(poses == null){
+                trajectorySequence = drive.trajectorySequenceBuilder(curPos)
+                        .splineTo(nextPos.vec(), nextPos.getHeading(), velConstraints, accConstraint)
+                        .build();
+            }else{
+                trajectorySequenceBuilder = drive.trajectorySequenceBuilder(curPos);
+                for(int i = 0; i<poses.size()-1; i++){
+                    Pose2d pose = poses.get(i);
+                    TrajectoryVelocityConstraint myVelocityConstraint = poseSpeed.get(i);
+                    trajectorySequenceBuilder.splineTo(pose.vec(), pose.getHeading()+Math.PI, fastVelConstraints, accConstraint );
                 }
                 Pose2d pose = poses.get(poses.size()-1);
-                trajectoryBuilder.splineToLinearHeading(pose, pose.getHeading()+Math.PI, poseSpeed.get(poses.size()-1), accConstraint );
-                traj = trajectoryBuilder.build();
+                trajectorySequenceBuilder.splineToLinearHeading(pose, pose.getHeading()+Math.PI, poseSpeed.get(poses.size()-1), accConstraint );
+                trajectorySequence = trajectorySequenceBuilder.build();
             }
         }
-        drive.followTrajectoryAsync(traj);
+        drive.followTrajectorySequenceAsync(trajectorySequence);
     }
 
     @Override
