@@ -19,9 +19,6 @@ public class AutoIntakeMoveTask implements RobotControl {
     SampleMecanumDrive drive;
     Trajectory trajectory;
     TrajectorySequence trajectorySequence;
-//    double turnDegree;
-//    double distance;
-//    boolean isTurnFirst;
 
     public AutoIntakeMoveTask(Trajectory trajectory, RobotHardware hardware){
         this.drive = hardware.mecanumDrive;
@@ -29,12 +26,10 @@ public class AutoIntakeMoveTask implements RobotControl {
         this.trajectory = trajectory;
     }
 
-    public AutoIntakeMoveTask(RobotHardware hardware, TrajectorySequence trajectorySequence){
+    public AutoIntakeMoveTask(TrajectorySequence trajectorySequence,RobotHardware hardware){
         this.drive = hardware.mecanumDrive;
         this.hardware = hardware;
         this.trajectorySequence = trajectorySequence;
-//        this.turnDegree = turnDegree;
-//        this.distance = distance;
     }
     @Override
     public void prepare() {
