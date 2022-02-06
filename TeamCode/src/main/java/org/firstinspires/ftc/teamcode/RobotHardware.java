@@ -348,7 +348,7 @@ public class RobotHardware {
     }
 
     public void stopIntake(LiftPosition pos) {
-        intakeMotor.setPower(-0.2);
+        intakeMotor.setPower(-0.4);
         closeLid();
         setLiftPosition(pos);
     }
