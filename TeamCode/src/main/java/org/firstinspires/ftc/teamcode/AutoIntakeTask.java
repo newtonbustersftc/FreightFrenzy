@@ -18,19 +18,23 @@ public class AutoIntakeTask implements RobotControl{
     Mode mode;
     RobotHardware robotHardware;
     RobotProfile robotProfile;
-    long startTime, lidTime, jamTime, cleanUpTime;
+    long lidTime, jamTime, cleanUpTime, dropOffTime,  remainingTime ;
     boolean checkIntakeVelo;
     long intakeSlowDetectTime;
     long timeOut;
     RobotHardware.Freight freight;
     RobotHardware.LiftPosition endLiftPos = RobotHardware.LiftPosition.ONE;
     boolean liftImmediately;
+    static long startTime;
 
-    public AutoIntakeTask(RobotHardware hardware, RobotProfile robotProfile, long timeOut, boolean liftImmediately){
+    //add dropOffTime - if clean up and exit the task without cargo, and remaining time of autonomous is
+    //less than the dropOffTime, then stop everything and stay in the same place until the end of 30 seconds
+    public AutoIntakeTask(RobotHardware hardware, RobotProfile robotProfile, long timeOut, boolean liftImmediately, long dropOffTime){
         this.robotHardware = hardware;
         this.robotProfile = robotProfile;
         this.timeOut = timeOut;
         this.liftImmediately = liftImmediately;
+        this.dropOffTime = dropOffTime;
         Logger.logFile("in AutoIntakeTask");
     }
 
@@ -61,6 +65,12 @@ public class AutoIntakeTask implements RobotControl{
                 lidTime = System.currentTimeMillis();
                 mode = Mode.LID;
                 Logger.logFile("AutoIntakeTask: there is freight: " + freight);
+            }
+            else if(remainingTime < dropOffTime && robotHardware.getFreight()== RobotHardware.Freight.NONE){
+                robotHardware.stopIntake();
+                mode = Mode.DONE;
+                Logger.logFile("remaining time="+remainingTime);
+                Logger.logFile("dropfftime=" + dropOffTime);
             }
             else {
                 int intakeVelo = robotHardware.getEncoderVelocity(RobotHardware.EncoderType.INTAKE);
@@ -125,6 +135,7 @@ public class AutoIntakeTask implements RobotControl{
     @Override
     public void cleanUp() {
         Logger.logFile("autoIntakeTask clean up");
+        Logger.logFile("startTime=" + startTime);
         if(liftImmediately)
             robotHardware.stopIntake(RobotHardware.LiftPosition.TOP);
         else
@@ -133,8 +144,13 @@ public class AutoIntakeTask implements RobotControl{
 
     @Override
     public boolean isDone() {
+        remainingTime = 30000 - (int) (System.currentTimeMillis() - AutoTimeManager.getStartTime());
         if (mode==Mode.REVERSE) {
             return true;
+        }
+        else if(remainingTime < dropOffTime && robotHardware.getFreight()== RobotHardware.Freight.NONE){
+           //do nothing. robot stay in same spot and wait until autonomous period ends.
+            return false;
         }
         else {
             if(System.currentTimeMillis()-startTime>timeOut)
