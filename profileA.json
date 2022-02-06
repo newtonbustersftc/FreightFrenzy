@@ -292,9 +292,9 @@
       "heading": 225
     },
     "RED_DUCK_HUB_1": {
-      "x": -2,
-      "y": 20,
-      "heading": 225
+      "x": 0,
+      "y": 32,
+      "heading": 200
     },
     "RED_DUCK_AFTER_HUB_ESTIMATE_SHORTEST_DISTANCE": {
       "x": 9.5,
@@ -449,8 +449,8 @@
     },
     "BLUE_DUCK_HUB_1": {
       "x": -2,
-      "y": -20,
-      "heading": 135.0
+      "y": -36,
+      "heading": 170.0
     },
     "BLUE_DUCK_AFTER_HUB_ESTIMATE_SHORTEST_DISTANCE": {
       "x": 10,
