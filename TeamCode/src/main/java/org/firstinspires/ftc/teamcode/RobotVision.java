@@ -176,6 +176,10 @@ public class RobotVision {
         Logger.logFile("Vuforia Initialized");
     }
 
+    public void stopVuforia() {
+        vuforia.getCamera().close();
+    }
+
 
     void trackingTargetSetup(VuforiaLocalizer.Parameters parameters) {
         // Load the data sets for the trackable objects. These particular data
